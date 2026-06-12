@@ -985,3 +985,147 @@ getUserById   → get single user
 updateUser    → update user
 deleteUser    → delete user
 
+```
+
+# Day 5: Middleware + dotenv
+
+## Topics Learned
+
+```txt
+Middleware
+next()
+Request-response cycle
+Custom middleware
+dotenv
+process.env
+Environment variables
+PORT from .env
+```
+
+---
+
+## Middleware
+
+Middleware is a function that runs between the request and the final route/controller.
+
+Flow:
+
+```txt
+Client request
+   ↓
+Middleware
+   ↓
+Route
+   ↓
+Controller
+   ↓
+Response
+```
+
+Middleware is used for:
+
+```txt
+Logging requests
+Reading JSON body
+CORS handling
+Authentication
+Validation
+Error handling
+```
+
+## Important Middleware Rule
+
+Middleware has access to:
+
+```txt
+req  → incoming request
+res  → outgoing response
+next → move request to next middleware/route
+```
+
+Middleware must do one of these two things:
+
+```txt
+1. Send response using res
+OR
+2. Call next()
+```
+
+If middleware does not call `next()` and also does not send response, the request will get stuck.
+
+Example:
+
+```txt
+Request keeps loading
+No response comes back
+API does not reach route/controller
+```
+
+## next()
+
+`next()` tells Express:
+
+```txt
+This middleware work is done.
+Move to the next middleware or route.
+```
+
+Without `next()`:
+
+```txt
+Request stops inside middleware.
+```
+
+## Middleware Flow
+
+```txt
+Client request
+   ↓
+cors()
+   ↓
+express.json()
+   ↓
+custom logger middleware
+   ↓
+routes
+   ↓
+controllers
+   ↓
+response
+```
+
+## Custom Logger Middleware
+
+Logger middleware is used to print request information in terminal.
+
+It helps during development to see which API is being called.
+
+Example output:
+
+```txt
+GET /api/users
+POST /api/users
+PUT /api/users/123
+DELETE /api/users/123
+```
+
+## Middleware Summary
+
+```txt
+Middleware runs before route/controller.
+Middleware can read or modify req/res.
+Middleware is useful for logging, auth, validation, JSON parsing, CORS, and error handling.
+Always call next() if middleware should continue the request.
+```
+
+## Middleware Folder
+
+Middleware files are kept inside the `middleware` folder.
+
+Purpose:
+
+```txt
+Keep server.js clean
+Separate middleware logic
+Reuse middleware in multiple routes
+Make project structure professional
