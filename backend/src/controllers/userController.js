@@ -1,10 +1,12 @@
+import { asyncHandler } from "../utils/asyncHandler.js";
+
 let users = [];
 
-export const getUsers = (req, res) => {
+export const getUsers = asyncHandler(async (req, res) => {
   res.status(200).json(users);
-};
+});
 
-export const createUser = (req, res) => {
+export const createUser = asyncHandler(async (req, res) => {
   const { name, role } = req.body;
 
   if (!name?.trim() || !role?.trim()) {
@@ -25,9 +27,9 @@ export const createUser = (req, res) => {
     message: "User created successfully",
     user: newUser,
   });
-};
+});
 
-export const getUserById = (req, res) => {
+export const getUserById = asyncHandler(async (req, res) => {
   const id = Number(req.params.id);
   const user = users.find((user) => user.id === id);
 
@@ -38,9 +40,9 @@ export const getUserById = (req, res) => {
   }
 
   res.json(user);
-};
+});
 
-export const updateUser = (req, res) => {
+export const updateUser = asyncHandler(async (req, res) => {
   const id = Number(req.params.id);
   const user = users.find((user) => user.id === id);
   const { name, role } = req.body;
@@ -64,9 +66,9 @@ export const updateUser = (req, res) => {
     message: "user updated successfully.",
     user: user,
   });
-};
+});
 
-export const deleteUser = (req, res) => {
+export const deleteUser = asyncHandler(async (req, res) => {
   const id = Number(req.params.id);
   const user = users.find((user) => user.id === id);
 
@@ -81,4 +83,4 @@ export const deleteUser = (req, res) => {
   res.json({
     message: "user deleted successfully.",
   });
-};
+});

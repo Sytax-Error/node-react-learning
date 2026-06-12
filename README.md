@@ -1439,3 +1439,120 @@ Use next(error) to send error to global error middleware.
 If no error status is set, use 500 as fallback.
 
 ```
+
+# Day 7: Async Error Handling
+
+## Topics Learned
+
+```txt
+async / await
+try...catch in controllers
+async controller errors
+asyncHandler utility
+clean controller pattern
+```
+
+## Why Async Handling?
+
+In Node.js, many backend operations are asynchronous.
+
+Examples:
+
+```txt
+Database queries
+API calls
+File operations
+Password hashing
+Token verification
+Email sending
+```
+
+## async / await
+
+`async / await` is used to handle asynchronous code in a clean way.
+
+```txt
+async → function may contain asynchronous code
+await → wait for async operation to complete
+```
+
+## try...catch
+
+`try...catch` is used to catch errors in async code.
+
+```txt
+try   → run async logic
+catch → handle error
+```
+
+## Problem Without Proper Async Error Handling
+
+If an async controller throws an error and it is not handled, backend may crash or response may not be sent properly.
+
+## asyncHandler
+
+`asyncHandler` is a helper function used to avoid writing try...catch again and again in every async controller.
+
+Benefit:
+
+```txt
+Cleaner controllers
+Less repeated code
+All async errors go to global error middleware
+```
+
+## Error Flow
+
+```txt
+Async controller
+   ↓
+Error occurs
+   ↓
+asyncHandler catches error
+   ↓
+next(error)
+   ↓
+Global error middleware
+   ↓
+JSON error response
+```
+
+## asyncHandler
+
+`asyncHandler` is a reusable helper for async controllers.
+
+It catches async errors and sends them to global error middleware.
+
+Flow:
+
+```txt
+Async controller
+   ↓
+asyncHandler
+   ↓
+If error occurs
+   ↓
+catch(next)
+   ↓
+errorMiddleware
+```
+
+## Async Controller Pattern
+
+All controllers can be wrapped with `asyncHandler`.
+
+Pattern:
+
+```txt
+export const controllerName = asyncHandler(async (req, res) => {
+  // controller logic
+});
+
+Why:
+
+Keeps controller clean
+Avoids repeated try...catch
+Automatically sends errors to global error middleware
+Ready for MongoDB/database operations
+
+```
