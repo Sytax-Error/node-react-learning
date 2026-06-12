@@ -3,20 +3,25 @@ import cors from "cors";
 import userRoutes from "./routes/userRoutes.js";
 import { loggerMiddleware } from "./middleware/loggerMiddleware.js";
 import dotenv from "dotenv";
+import { notFoundMiddleware } from "./middleware/notFoundMiddleware.js";
+import { errorMiddleware } from "./middleware/errorMiddleware.js";
 
-const app = express();
-dotenv.config();
-app.use(cors());
+const app = express(); // create app
+dotenv.config(); // env config
+app.use(cors()); // cors
 app.use(express.json()); //reads JSON body
 app.use(loggerMiddleware); //Custom Logger Middleware
 
-app.use("/api/users", userRoutes);
+app.use("/api/users", userRoutes); // link routes
 
 let users = [];
 let projects = [];
 
+app.use(notFoundMiddleware); // not found middleware
+app.use(errorMiddleware); // errorMiddleware
+
 const PORT = process.env.PORT || 5000;
 
 app.listen(PORT, () => {
-  console.log("Sever is running on port: 5000");
+  console.log(`Server is running on port ${PORT}`);
 });

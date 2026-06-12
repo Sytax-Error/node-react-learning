@@ -1184,3 +1184,258 @@ Example:
 PORT=5000
 MONGO_URI=real_database_url
 JWT_SECRET=real_secret_key
+```
+
+## What you learned in Day 5
+``` text
+Middleware runs before route/controller.
+next() moves request forward.
+If next() is not called and response is not sent, request gets stuck.
+Custom middleware can be moved into middleware folder.
+dotenv loads .env values into process.env.
+PORT should come from process.env.PORT.
+.env should not be pushed to GitHub.
+.env.example should be pushed as sample config.
+
+```
+
+# Day 6: Error Handling Middleware
+
+## Topics Learned
+
+```txt
+404 route not found
+Global error middleware
+Error handling flow
+next(error)
+Centralized error response
+```
+
+## Why Error Handling?
+
+Error handling is used to send proper response when something goes wrong in backend.
+
+Examples:
+
+```txt
+API route not found
+User not found
+Invalid request
+Database error
+Server crash
+```
+
+## 404 Route Not Found
+
+404 is used when API route does not exist.
+
+Example:
+
+```txt
+GET /api/unknown
+```
+
+Response:
+
+```txt
+404 Not Found
+```
+
+## Global Error Middleware
+
+Global error middleware handles errors from all routes/controllers in one place.
+
+Benefit:
+
+```txt
+No repeated error response code
+Cleaner controllers
+Consistent error format
+Easy debugging
+```
+
+## next(error)
+
+`next(error)` sends error to global error middleware.
+
+Normal middleware:
+
+```txt
+(req, res, next)
+```
+
+Error middleware:
+
+```txt
+(error, req, res, next)
+```
+
+## Error Handling Flow
+
+```txt
+Client request
+   ↓
+Route
+   ↓
+Controller
+   ↓
+Error occurs
+   ↓
+next(error)
+   ↓
+Global error middleware
+   ↓
+Error response
+```
+
+## Important Rule
+
+In Express, error middleware must have 4 parameters:
+
+```txt
+(error, req, res, next)
+If it does not have 4 parameters, Express will not treat it as error middleware.
+```
+
+## 404 Not Found Middleware
+
+404 middleware handles requests for routes that do not exist.
+
+Example:
+
+```txt
+GET /api/wrong-url
+
+Response:
+
+{
+  "message": "Route not found: /api/wrong-url"
+}
+
+Important:
+
+404 middleware should be placed after all valid routes.
+
+Reason:
+
+Express checks middleware/routes from top to bottom.
+If no route matches, 404 middleware runs.
+
+Flow:
+
+Request
+   ↓
+Valid routes
+   ↓
+No route matched
+   ↓
+404 middleware
+   ↓
+404 response
+
+```
+
+## Create global error middleware
+   ```txt
+   Now we will create one middleware that handles backend errors from controllers.
+
+   Create this file:
+
+   src/middleware/errorMiddleware.js
+
+   `Important concept`
+
+   Normal middleware has 3 parameters:
+
+   (req, res, next)
+
+   Error middleware has 4 parameters:
+
+   (error, req, res, next)
+   
+   ```
+
+## next() vs next(error)
+
+`next()` is used to continue normal request flow.
+
+`next(error)` is used to send an error to global error middleware.
+
+```txt
+next()       → next middleware/route
+next(error) → error middleware
+```
+
+## 404 Not Found Middleware
+
+404 middleware handles requests for routes that do not exist.
+
+Instead of sending response directly, it creates an error and passes it to global error middleware.
+
+Flow:
+
+```txt
+Wrong API request
+   ↓
+notFoundMiddleware
+   ↓
+Create Error object
+   ↓
+Set status 404
+   ↓
+next(error)
+   ↓
+errorMiddleware
+   ↓
+JSON error response
+
+Important:
+
+404 middleware should be placed after all valid routes.
+errorMiddleware should be placed after 404 middleware.
+```
+---
+
+## Error Middleware Status Code
+
+Default Express status code is `200`.
+
+If an error happens and no error status is set, we should not send `200`.
+
+So global error middleware uses fallback status:
+
+```txt
+If status is still 200 → use 500
+Otherwise → use existing status code
+```
+
+## Day 6 Summary
+
+Error handling middleware makes backend responses consistent.
+
+Final error flow:
+
+```txt
+Request
+   ↓
+Routes
+   ↓
+Controller
+   ↓
+If route not found → notFoundMiddleware
+   ↓
+If error occurs → next(error)
+   ↓
+errorMiddleware
+   ↓
+JSON error response
+```
+`Important rules:`
+```txt
+404 middleware should be after all routes.
+Error middleware should be after 404 middleware.
+Error middleware must have 4 parameters.
+Use next(error) to send error to global error middleware.
+If no error status is set, use 500 as fallback.
+
+```
