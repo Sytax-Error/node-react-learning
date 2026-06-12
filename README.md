@@ -14,6 +14,7 @@ Express.js → Framework to create backend APIs
 
 ## Learning Pattern
 
+
 This project covers **Node.js fundamentals** side by side with **Express.js practical backend development**.
 
 ```txt
@@ -37,6 +38,14 @@ Small rule/example
 ```
 
 ---
+
+## Practice Exercises
+
+Revision and self-check exercises are available here:
+
+[Node.js + Express.js Practice Exercises](./EXERCISES.md)
+
+
 
 ## Backend Basic Flow
 

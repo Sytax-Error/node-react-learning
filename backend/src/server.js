@@ -5,6 +5,7 @@ import { loggerMiddleware } from "./middleware/loggerMiddleware.js";
 import dotenv from "dotenv";
 import { notFoundMiddleware } from "./middleware/notFoundMiddleware.js";
 import { errorMiddleware } from "./middleware/errorMiddleware.js";
+import taskRoutes from "./routes/taskRoutes.js";
 
 const app = express(); // create app
 dotenv.config(); // env config
@@ -13,6 +14,7 @@ app.use(express.json()); //reads JSON body
 app.use(loggerMiddleware); //Custom Logger Middleware
 
 app.use("/api/users", userRoutes); // link routes
+app.use("/api/tasks", taskRoutes);
 
 let users = [];
 let projects = [];
