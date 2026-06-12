@@ -1129,3 +1129,58 @@ Keep server.js clean
 Separate middleware logic
 Reuse middleware in multiple routes
 Make project structure professional
+
+## dotenv
+
+`dotenv` is used to load environment variables from a `.env` file into Node.js.
+
+Environment variables are used for configuration values.
+
+Common examples:
+
+```txt
+PORT
+MONGO_URI
+JWT_SECRET
+API_KEY
+NODE_ENV
+```
+
+## Why use .env?
+
+```txt
+Avoid hardcoding config values
+Keep secrets outside main code
+Easy to change values for development/production
+Useful for deployment
+```
+
+## process.env
+
+`process.env` is used to access environment variables in Node.js.
+
+Example:
+
+```txt
+process.env.PORT
+process.env.MONGO_URI
+process.env.JWT_SECRET
+```
+
+## Important Rule
+
+`.env` file should not be pushed to GitHub if it contains secret values.
+
+Use `.env.example` to show required variable names.
+
+
+## .env vs .env.example
+
+`.env` contains real environment values.
+
+Example:
+
+```txt
+PORT=5000
+MONGO_URI=real_database_url
+JWT_SECRET=real_secret_key
