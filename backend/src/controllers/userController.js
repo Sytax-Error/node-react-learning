@@ -13,8 +13,9 @@ export const createUser = asyncHandler(async (req, res) => {
   const { name, role } = req.body;
 
   if (!name || !role || !name.trim() || !role.trim()) {
-    res.status(400);
-    throw new Error("Name and role are required");
+    return res.status(400).json({
+      message: "Name and role are required",
+    });
   }
 
   const user = await User.create({

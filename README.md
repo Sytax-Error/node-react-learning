@@ -1963,3 +1963,179 @@ Invalid id format              → 400 Bad Request
 Valid id format but not found  → 404 Not Found
 
 ```
+
+## MongoDB CRUD with Mongoose
+
+After creating a Mongoose model, we can use model methods to perform CRUD operations.
+
+Example model:
+
+```js
+import { User } from "../models/userModel.js";
+```
+
+---
+
+## Get All Documents
+
+```js
+const users = await User.find();
+```
+
+Meaning:
+
+```txt
+Find all users from MongoDB.
+```
+
+Used in:
+
+```txt
+GET /api/users
+```
+
+---
+
+## Create Document
+
+```js
+const user = await User.create({
+  name,
+  role,
+});
+```
+
+Meaning:
+
+```txt
+Create and save a new user document in MongoDB.
+```
+
+Used in:
+
+```txt
+POST /api/users
+```
+
+---
+
+## Get Single Document by ID
+
+```js
+const user = await User.findById(id);
+```
+
+Meaning:
+
+```txt
+Find one user by MongoDB _id.
+```
+
+Used in:
+
+```txt
+GET /api/users/:id
+```
+
+---
+
+## Update Document by ID
+
+```js
+const user = await User.findByIdAndUpdate(
+  id,
+  {
+    name,
+    role,
+  },
+  {
+    returnDocument: "after",
+    runValidators: true,
+  }
+);
+```
+
+Meaning:
+
+```txt
+Find user by _id and update it.
+```
+
+Options:
+
+```txt
+returnDocument: "after" → returns updated document
+runValidators: true     → runs schema validation during update
+```
+
+Used in:
+
+```txt
+PUT /api/users/:id
+```
+
+---
+
+## Delete Document by ID
+
+```js
+const user = await User.findByIdAndDelete(id);
+```
+
+Meaning:
+
+```txt
+Find user by _id and delete it.
+```
+
+Used in:
+
+```txt
+DELETE /api/users/:id
+```
+
+---
+
+## ObjectId Validation
+
+MongoDB `_id` has ObjectId format.
+
+Before using id-based methods, validate the id:
+
+```js
+if (!mongoose.Types.ObjectId.isValid(id)) {
+  res.status(400);
+  throw new Error("Invalid user id");
+}
+```
+
+Error handling:
+
+```txt
+Invalid id format             → 400 Bad Request
+Valid id format but not found → 404 Not Found
+```
+
+Example invalid id:
+
+```txt
+32423fdf
+```
+
+Example valid ObjectId format:
+
+```txt
+64b7f2c9e4b0f3a1c2d4e5f6
+```
+
+---
+
+## Mongoose CRUD Summary
+
+```txt
+User.find()              → get all users
+User.create()            → create user
+User.findById()          → get user by id
+User.findByIdAndUpdate() → update user by id
+User.findByIdAndDelete() → delete user by id
+```
