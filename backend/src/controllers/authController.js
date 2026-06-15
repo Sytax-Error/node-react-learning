@@ -1,0 +1,46 @@
+import bcrypt from "bcryptjs";
+import { User } from "../models/userModel.js";
+import { asyncHandler } from "../utils/asyncHandler.js";
+
+export const registerUser = asyncHandler(async (req, res) => {
+  const { name, email, password, role } = req.body;
+
+  if (
+    !name ||
+    !email ||
+    !password ||
+    !role ||
+    !name.trim() ||
+    !email.trim() ||
+    !role?.trim
+  ) {
+    res.status(400);
+    throw new Error("Name, email,role and password are required");
+  }
+
+  const existingUser = await User.findOne({ email });
+
+  if (existingUser) {
+    res.status(409);
+    throw new Error("User already exists with this email");
+  }
+
+  const hashedPassword = await bcrypt.hash(password, 10);
+
+  const user = await User.create({
+    name,
+    email,
+    password: hashedPassword,
+    role,
+  });
+
+  res.status(201).json({
+    message: "User registered successfully",
+    user: {
+      id: user._id,
+      name: user.name,
+      email: user.email,
+      role: user.role,
+    },
+  });
+});

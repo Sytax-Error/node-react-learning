@@ -2318,5 +2318,379 @@ Purpose:
 ValidationError → 400 Bad Request
 Technical Mongoose message → cleaner API message
 ```
+# Day 9: Registration and Authentication
+
+## Authentication
+
+Authentication means verifying the identity of a user.
+
+Example:
+
+```txt
+User enters email and password
+↓
+Backend verifies user
+↓
+Backend allows access
+```
+
+Authentication answers:
+
+```txt
+Who are you?
+```
+
+---
+
+## Authorization
+
+Authorization means checking what an authenticated user is allowed to access.
+
+Example:
+
+```txt
+Logged-in user can view profile
+Admin user can manage users
+Normal user cannot access admin APIs
+```
+
+Authorization answers:
+
+```txt
+What are you allowed to do?
+```
+
+---
+
+## Registration
+
+Registration means creating a new user account.
+
+API:
+
+```txt
+POST /api/auth/register
+```
+
+Request body:
+
+```json
+{
+  "name": "Lavesh",
+  "email": "lavesh@test.com",
+  "password": "123456"
+}
+```
+
+Registration flow:
+
+```txt
+Read data from req.body
+↓
+Validate required fields
+↓
+Check if email already exists
+↓
+Hash password
+↓
+Save user in MongoDB
+↓
+Send response without password
+```
+
+---
+
+## Packages Used for Authentication
+
+```bash
+npm install bcryptjs jsonwebtoken cookie-parser
+```
+
+Meaning:
+
+```txt
+bcryptjs      → hash password and compare password
+jsonwebtoken  → create and verify JWT tokens
+cookie-parser → read cookies in Express
+```
+
+---
+
+## cookie-parser
+
+`cookie-parser` is Express middleware used to read cookies from incoming requests.
+
+Usage in `server.js`:
+
+```js
+import cookieParser from "cookie-parser";
+
+app.use(cookieParser());
+```
+
+After this, cookies can be accessed using:
+
+```js
+req.cookies
+```
+
+---
+
+## User Model for Authentication
+
+For authentication, the user model contains:
+
+```txt
+name
+email
+password
+role
+```
+
+Example:
+
+```js
+const userSchema = new mongoose.Schema(
+  {
+    name: {
+      type: String,
+      required: true,
+      trim: true,
+    },
+
+    email: {
+      type: String,
+      required: true,
+      unique: true,
+      trim: true,
+      lowercase: true,
+    },
+
+    password: {
+      type: String,
+      required: true,
+      minlength: 6,
+    },
+
+    role: {
+      type: String,
+      required: true,
+      trim: true,
+      default: "user",
+    },
+  },
+  {
+    timestamps: true,
+  }
+);
+```
+
+Important points:
+
+```txt
+unique: true     → prevents duplicate email
+lowercase: true  → saves email in lowercase
+minlength: 6     → password must have minimum 6 characters
+default: "user"  → default role is user
+```
+
+---
+
+## Auth Route
+
+File:
+
+```txt
+src/routes/authRoutes.js
+```
+
+Route:
+
+```js
+router.post("/register", registerUser);
+```
+
+Mounted in `server.js`:
+
+```js
+app.use("/api/auth", authRoutes);
+```
+
+Final API:
+
+```txt
+POST /api/auth/register
+```
+
+---
+
+## Register Controller Flow
+
+File:
+
+```txt
+src/controllers/authController.js
+```
+
+### Read request body
+
+```js
+const { name, email, password } = req.body;
+```
+
+### Validate required fields
+
+```js
+if (!name || !email || !password || !name.trim() || !email.trim()) {
+  res.status(400);
+  throw new Error("Name, email and password are required");
+}
+```
+
+### Check duplicate email
+
+```js
+const existingUser = await User.findOne({ email });
+
+if (existingUser) {
+  res.status(409);
+  throw new Error("User already exists with this email");
+}
+```
+
+`409 Conflict` is used because the email already exists.
+
+### Hash password
+
+```js
+const hashedPassword = await bcrypt.hash(password, 10);
+```
+
+Meaning:
+
+```txt
+Plain password
+↓
+bcrypt hash
+↓
+Unreadable password string
+```
+
+`10` means salt rounds.
+
+### Save user
+
+```js
+const user = await User.create({
+  name,
+  email,
+  password: hashedPassword,
+});
+```
+
+### Send response without password
+
+```js
+res.status(201).json({
+  message: "User registered successfully",
+  user: {
+    id: user._id,
+    name: user.name,
+    email: user.email,
+    role: user.role,
+  },
+});
+```
+
+Password should not be sent in API response.
+
+---
+
+## Why Password Hashing is Required
+
+Password should never be stored directly in MongoDB.
+
+Wrong:
+
+```json
+{
+  "email": "lavesh@test.com",
+  "password": "123456"
+}
+```
+
+Correct:
+
+```json
+{
+  "email": "lavesh@test.com",
+  "password": "$2a$10$hashedPasswordValue"
+}
+```
+
+Reason:
+
+```txt
+If database is leaked, plain passwords are directly visible.
+Hashed passwords are not readable as original passwords.
+```
+
+---
+
+## Register API Responses
+
+### Success
+
+Status:
+
+```txt
+201 Created
+```
+
+Response:
+
+```json
+{
+  "message": "User registered successfully",
+  "user": {
+    "id": "...",
+    "name": "Lavesh",
+    "email": "lavesh@test.com",
+    "role": "user"
+  }
+}
+```
+
+### Missing required fields
+
+Status:
+
+```txt
+400 Bad Request
+```
+
+Response:
+
+```json
+{
+  "message": "Name, email and password are required"
+}
+```
+
+### Duplicate email
+
+Status:
+
+```txt
+409 Conflict
+```
+
+Response:
+
+```json
+{
+  "message": "User already exists with this email"
+}
+```
 
 
