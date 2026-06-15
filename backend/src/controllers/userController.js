@@ -1,6 +1,6 @@
 import { asyncHandler } from "../utils/asyncHandler.js";
 import { User } from "../models/userModel.js";
-import mongoose from "mongoose";
+import { validateObjectId } from "../utils/validators.js";
 
 // let users = [];
 
@@ -32,10 +32,7 @@ export const createUser = asyncHandler(async (req, res) => {
 export const getUserById = asyncHandler(async (req, res) => {
   const { id } = req.params;
 
-  if (!mongoose.Types.ObjectId.isValid(id)) {
-    res.status(400);
-    throw new Error("Invalid user id");
-  }
+  validateObjectId(id, "user");
 
   const user = await User.findById(id);
 
@@ -53,10 +50,7 @@ export const updateUser = asyncHandler(async (req, res) => {
   const { name, role } = req.body;
   const { id } = req.params;
 
-  if (!mongoose.Types.ObjectId.isValid(id)) {
-    res.status(400);
-    throw new Error("Invalid user id");
-  }
+  validateObjectId(id, "user");
 
   if (!name || !role || !name.trim() || !role.trim()) {
     res.status(400);
@@ -90,10 +84,7 @@ export const updateUser = asyncHandler(async (req, res) => {
 export const deleteUser = asyncHandler(async (req, res) => {
   const { id } = req.params;
 
-  if (!mongoose.Types.ObjectId.isValid(id)) {
-    res.status(400);
-    throw new Error("Invalid user id");
-  }
+  validateObjectId(id, "user");
 
   const user = await User.findByIdAndDelete(id);
 

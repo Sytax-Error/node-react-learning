@@ -1,6 +1,6 @@
 import { asyncHandler } from "../utils/asyncHandler.js";
 import { Task } from "../models/taskModel.js";
-import mongoose from "mongoose";
+import { validateObjectId } from "../utils/validators.js";
 
 export const getTasks = asyncHandler(async (req, res) => {
   const task = await Task.find();
@@ -30,13 +30,7 @@ export const getByTaskId = asyncHandler(async (req, res) => {
   const { id } = req.params;
   const { title, status } = req.body;
 
-  const isValidId = mongoose.Types.ObjectId.isValid(id);
-
-  if (!isValidId) {
-    return res.status(400).json({
-      message: "Invalid task id.",
-    });
-  }
+  validateObjectId(id, "task");
 
   if (!title?.trim() || !status?.trim()) {
     return res.status(400).json({
@@ -62,13 +56,7 @@ export const updateTask = asyncHandler(async (req, res) => {
   const { id } = req.params;
   const { title, status } = req.body;
 
-  const isValidId = mongoose.Types.ObjectId.isValid(id);
-
-  if (!isValidId) {
-    return res.status(400).json({
-      message: "Invalid task id.",
-    });
-  }
+  validateObjectId(id, "task");
 
   if (!title?.trim() || !status?.trim()) {
     return res.status(400).json({
@@ -103,13 +91,7 @@ export const updateTask = asyncHandler(async (req, res) => {
 export const deleteTask = asyncHandler(async (req, res) => {
   const { id } = req.params;
 
-  const isValidId = mongoose.Types.ObjectId.isValid(id);
-
-  if (!isValidId) {
-    return res.status(400).json({
-      message: "Invalid task id.",
-    });
-  }
+  validateObjectId(id, "task");
 
   const task = await Task.findByIdAndDelete(id);
 

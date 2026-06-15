@@ -2139,3 +2139,63 @@ User.findById()          → get user by id
 User.findByIdAndUpdate() → update user by id
 User.findByIdAndDelete() → delete user by id
 ```
+
+## Validators Utility
+
+Common validation logic can be moved into a utility file to avoid repeated code.
+
+File:
+
+```txt
+src/utils/validators.js
+```
+
+Code:
+
+```js
+import mongoose from "mongoose";
+
+export const validateObjectId = (id, resourceName) => {
+  if (!mongoose.Types.ObjectId.isValid(id)) {
+    const error = new Error(`Invalid ${resourceName} id`);
+    error.statusCode = 400;
+    throw error;
+  }
+};
+```
+
+Usage:
+
+```js
+validateObjectId(id, "user");
+validateObjectId(id, "task");
+```
+
+Reason:
+
+```txt
+ObjectId validation is used in many APIs.
+Moving it to a utility avoids repeated code.
+```
+
+Error flow:
+
+```txt
+validateObjectId()
+↓
+throws error with statusCode 400
+↓
+asyncHandler catches error
+↓
+errorMiddleware sends JSON response
+```
+
+Controller responsibility:
+
+```txt
+Validate request-specific fields
+Call model methods
+Check not found case
+Send success response
+```
+
