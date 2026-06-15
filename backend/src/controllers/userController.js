@@ -1,57 +1,78 @@
 import { asyncHandler } from "../utils/asyncHandler.js";
+import { User } from "../models/userModel.js";
+import mongoose from "mongoose";
 
-let users = [];
+// let users = [];
 
 export const getUsers = asyncHandler(async (req, res) => {
+  const users = await User.find();
   res.status(200).json(users);
 });
 
 export const createUser = asyncHandler(async (req, res) => {
   const { name, role } = req.body;
 
-  if (!name?.trim() || !role?.trim()) {
-    return res.status(400).json({
-      message: "Name and role are required",
-    });
+  if (!name || !role || !name.trim() || !role.trim()) {
+    res.status(400);
+    throw new Error("Name and role are required");
   }
 
-  const newUser = {
-    id: Date.now(),
-    name: name.trim(),
-    role: role.trim(),
-  };
-
-  users.push(newUser);
+  const user = await User.create({
+    name,
+    role,
+  });
 
   res.status(201).json({
     message: "User created successfully",
-    user: newUser,
+    user,
   });
 });
 
 export const getUserById = asyncHandler(async (req, res) => {
-  const id = Number(req.params.id);
-  const user = users.find((user) => user.id === id);
+  const { id } = req.params;
 
-  if (!user) {
-    res.status(404).json({
-      message: "User not found.",
-    });
+  if (!mongoose.Types.ObjectId.isValid(id)) {
+    res.status(400);
+    throw new Error("Invalid user id");
   }
 
-  res.json(user);
+  const user = await User.findById(id);
+
+  if (!user) {
+    res.status(404);
+    throw new Error("User not found");
+  }
+
+  res.status(200).json(user);
 });
 
 export const updateUser = asyncHandler(async (req, res) => {
-  const id = Number(req.params.id);
-  const user = users.find((user) => user.id === id);
+  // const id = Number(req.params.id);
+  // const user = users.find((user) => user.id === id);
   const { name, role } = req.body;
+  const { id } = req.params;
 
-  if (!name?.trim() || !role?.trim()) {
-    return res.status(401).json({
-      message: "Name and Role are required.",
-    });
+  if (!mongoose.Types.ObjectId.isValid(id)) {
+    res.status(400);
+    throw new Error("Invalid user id");
   }
+
+  if (!name || !role || !name.trim() || !role.trim()) {
+    res.status(400);
+    throw new Error("Name and role are required");
+  }
+
+  const user = await User.findByIdAndUpdate(
+    id,
+    {
+      name,
+      role,
+    },
+    {
+      returnDocument: "after", // After updating, return the updated user document.
+      runValidators: true, // Run schema validation during update
+    },
+  );
 
   if (!user) {
     return res.status(404).json({
@@ -59,28 +80,28 @@ export const updateUser = asyncHandler(async (req, res) => {
     });
   }
 
-  user.name = name?.trim();
-  user.role = role?.trim();
-
   res.json({
     message: "user updated successfully.",
-    user: user,
+    user,
   });
 });
 
 export const deleteUser = asyncHandler(async (req, res) => {
-  const id = Number(req.params.id);
-  const user = users.find((user) => user.id === id);
+  const { id } = req.params;
 
-  if (!user) {
-    return res.status(404).json({
-      message: "User not found.",
-    });
+  if (!mongoose.Types.ObjectId.isValid(id)) {
+    res.status(400);
+    throw new Error("Invalid user id");
   }
 
-  users = users.filter((item) => item.id !== id);
+  const user = await User.findByIdAndDelete(id);
 
-  res.json({
-    message: "user deleted successfully.",
+  if (!user) {
+    res.status(404);
+    throw new Error("User not found");
+  }
+
+  res.status(200).json({
+    message: "User deleted successfully",
   });
 });

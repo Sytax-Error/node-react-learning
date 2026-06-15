@@ -1565,3 +1565,401 @@ Automatically sends errors to global error middleware
 Ready for MongoDB/database operations
 
 ```
+# Day 8: MongoDB + Mongoose Basics
+
+## Why Database is Needed
+
+Until now, backend data was stored in arrays:
+
+```js
+let users = [];
+let tasks = [];
+```
+
+This data is temporary.
+
+Problem:
+
+```txt
+Server restart → data deleted
+```
+
+A database stores application data permanently.
+
+Examples:
+
+```txt
+Users
+Tasks
+Products
+Orders
+Login data
+```
+
+Backend flow with database:
+
+```txt
+Express API
+↓
+Mongoose
+↓
+MongoDB
+```
+
+---
+
+## What is MongoDB?
+
+MongoDB is a NoSQL database.
+
+It stores data in JSON-like documents.
+
+Example document:
+
+```json
+{
+  "_id": "mongodb_generated_id",
+  "name": "Lavesh",
+  "role": "React Developer"
+}
+```
+
+MongoDB terms:
+
+```txt
+Collection → group of documents
+Document   → single record
+Field      → property inside document
+```
+
+SQL comparison:
+
+```txt
+SQL Table  → MongoDB Collection
+SQL Row    → MongoDB Document
+SQL Column → MongoDB Field
+```
+
+---
+
+## What is Mongoose?
+
+Mongoose is a Node.js library used to work with MongoDB in a structured way.
+
+Flow:
+
+```txt
+Express
+↓
+Mongoose
+↓
+MongoDB
+```
+
+Mongoose helps with:
+
+```txt
+Database connection
+Schema
+Model
+Validation
+CRUD operations
+```
+
+Install command:
+
+```bash
+npm install mongoose
+```
+
+---
+
+## What is MONGO_URI?
+
+`MONGO_URI` is the MongoDB connection string.
+
+Example:
+
+```env
+MONGO_URI=mongodb://127.0.0.1:27017/node-react-learning
+```
+
+Meaning:
+
+```txt
+127.0.0.1             → local machine
+27017                 → MongoDB default port
+node-react-learning   → database name
+```
+
+---
+
+## Environment Variables
+
+`.env` contains real local configuration:
+
+```env
+PORT=5000
+MONGO_URI=mongodb://127.0.0.1:27017/node-react-learning
+```
+
+`.env` should not be pushed to GitHub.
+
+`.env.example` contains sample configuration:
+
+```env
+PORT=5000
+MONGO_URI=your_mongodb_connection_string
+```
+
+---
+
+## Local MongoDB Using Docker
+
+MongoDB can run locally inside Docker.
+
+Command:
+
+```bash
+docker run -d \
+  --name node-learning-mongo \
+  -p 27017:27017 \
+  -v node-learning-mongo-data:/data/db \
+  --restart unless-stopped \
+  mongo:8.0
+```
+
+Useful Docker commands:
+
+```bash
+docker ps
+docker start node-learning-mongo
+docker stop node-learning-mongo
+docker logs node-learning-mongo --tail 20
+```
+
+---
+
+## Database Connection File
+
+File:
+
+```txt
+src/config/db.js
+```
+
+Code:
+
+```js
+import mongoose from "mongoose";
+
+export const connectDB = async () => {
+  try {
+    const connection = await mongoose.connect(process.env.MONGO_URI);
+
+    console.log(`MongoDB Connected: ${connection.connection.host}`);
+  } catch (error) {
+    console.error(`MongoDB Connection Error: ${error.message}`);
+    process.exit(1);
+  }
+};
+```
+
+---
+
+## db.js Explanation
+
+### mongoose.connect()
+
+Connects Express backend with MongoDB.
+
+```js
+mongoose.connect(process.env.MONGO_URI);
+```
+
+### process.env.MONGO_URI
+
+Reads MongoDB connection string from `.env`.
+
+```js
+process.env.MONGO_URI
+```
+
+### process.exit(1)
+
+Stops the backend if database connection fails.
+
+Reason:
+
+```txt
+If database is not connected, backend should not continue running incorrectly.
+```
+
+---
+
+## Connect Database in server.js
+
+```js
+import dotenv from "dotenv";
+import { connectDB } from "./config/db.js";
+
+dotenv.config();
+
+connectDB();
+```
+
+Correct order:
+
+```txt
+dotenv.config()
+↓
+connectDB()
+```
+
+Reason:
+
+```txt
+connectDB() needs MONGO_URI from .env
+```
+
+---
+
+## Successful Connection Output
+
+```txt
+MongoDB Connected: 127.0.0.1
+Server is running on port 5000
+```
+
+This means:
+
+```txt
+MongoDB is running locally
+Mongoose connected successfully
+Express server is running
+```
+
+## Schema and Model
+
+A schema defines the structure of data.
+
+Example:
+
+```js
+const userSchema = new mongoose.Schema({
+  name: {
+    type: String,
+    required: true,
+    trim: true,
+  },
+  role: {
+    type: String,
+    required: true,
+    trim: true,
+  },
+});
+```
+
+Meaning:
+
+```txt
+name → string, required, removes extra spaces
+role → string, required, removes extra spaces
+```
+
+A model is created from a schema and is used for database operations.
+
+```js
+export const User = mongoose.model("User", userSchema);
+```
+
+Model methods:
+
+```txt
+User.find()
+User.create()
+User.findById()
+User.findByIdAndUpdate()
+User.findByIdAndDelete()
+```
+
+`timestamps: true` automatically adds:
+
+```txt
+createdAt
+updatedAt
+```
+
+Mongoose collection naming:
+
+```txt
+Model name: User
+MongoDB collection: users
+```
+
+## MongoDB Document Response
+
+When data is saved in MongoDB, MongoDB automatically adds `_id`.
+
+Example:
+
+```json
+{
+  "_id": "6a2f9e8b7e54f7fd2f4a81f7",
+  "name": "Lavesh",
+  "role": "React Developer",
+  "createdAt": "2026-06-15T06:41:15.361Z",
+  "updatedAt": "2026-06-15T06:41:15.361Z",
+  "__v": 0
+}
+```
+
+Meaning:
+
+```txt
+_id        → MongoDB generated unique id
+createdAt  → added by timestamps: true
+updatedAt  → added by timestamps: true
+__v        → Mongoose internal version key
+```
+
+In array-based CRUD, we used custom `id`.
+
+In MongoDB-based CRUD, we use `_id`.
+
+### trim in Schema vs Controller
+
+`trim: true` in Mongoose schema automatically removes extra spaces before saving string values.
+
+Example:
+
+```txt
+"  React Developer  " → "React Developer"
+```
+
+## MongoDB ObjectId Validation
+
+MongoDB `_id` uses ObjectId format.
+
+Example valid ObjectId:
+
+```txt
+6a2f9e8b7e54f7fd2f4a81f7
+
+Invalid id example:
+
+32423fdf
+
+Before using findById, findByIdAndUpdate, or findByIdAndDelete, validate the id.
+
+if (!mongoose.Types.ObjectId.isValid(id)) {
+  res.status(400);
+  throw new Error("Invalid user id");
+}
+
+Error cases:
+
+Invalid id format              → 400 Bad Request
+Valid id format but not found  → 404 Not Found
+
+```
