@@ -12,6 +12,18 @@ Express.js → Framework to create backend APIs
 
 ---
 
+## Usage
+
+This repository is public for learning and reference purposes.
+
+You are free to:
+- View the code
+- Use it for learning
+- Fork the repository
+- Use the code in your own project as per the license
+
+You cannot directly modify this original repository unless you are added as a collaborator.
+
 ## Learning Pattern
 
 
