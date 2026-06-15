@@ -2199,3 +2199,124 @@ Check not found case
 Send success response
 ```
 
+## Mongoose Validation Error
+
+Mongoose schema can validate data before saving it into MongoDB.
+
+Example schema field:
+
+```js
+name: {
+  type: String,
+  required: true,
+  trim: true,
+}
+```
+
+If `name` is missing and `User.create()` is called, Mongoose throws a validation error.
+
+Example response:
+
+```json
+{
+  "message": "User validation failed: name: Path `name` is required."
+}
+```
+
+Validation flow:
+
+```txt
+Controller
+↓
+Mongoose Model
+↓
+Schema Validation
+↓
+Validation Error
+↓
+asyncHandler
+↓
+errorMiddleware
+↓
+JSON Response
+```
+
+Controller validation gives clean custom API messages.
+
+Example:
+
+```js
+if (!name || !role || !name.trim() || !role.trim()) {
+  res.status(400);
+  throw new Error("Name and role are required");
+}
+```
+
+Final rule:
+
+```txt
+Controller validation → user-friendly API error
+Schema validation     → database safety
+```
+## Handling Mongoose ValidationError
+
+Mongoose can throw validation errors when schema rules fail.
+
+Example schema rule:
+
+```js
+name: {
+  type: String,
+  required: true,
+  trim: true,
+}
+```
+
+If `name` is missing, Mongoose throws a `ValidationError`.
+
+To return a cleaner API response, handle it inside `errorMiddleware.js`.
+
+```js
+export const errorMiddleware = (error, req, res, next) => {
+  let statusCode =
+    error.statusCode || (res.statusCode === 200 ? 500 : res.statusCode);
+
+  let message = error.message || "Internal Server Error";
+
+  if (error.name === "ValidationError") {
+    statusCode = 400;
+    message = Object.values(error.errors)
+      .map((err) => err.message)
+      .join(", ");
+  }
+
+  res.status(statusCode).json({
+    message,
+  });
+};
+```
+
+Example before handling:
+
+```json
+{
+  "message": "User validation failed: name: Path `name` is required."
+}
+```
+
+Example after handling:
+
+```json
+{
+  "message": "Path `name` is required."
+}
+```
+
+Purpose:
+
+```txt
+ValidationError → 400 Bad Request
+Technical Mongoose message → cleaner API message
+```
+
+
