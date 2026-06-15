@@ -6,9 +6,11 @@ import dotenv from "dotenv";
 import { notFoundMiddleware } from "./middleware/notFoundMiddleware.js";
 import { errorMiddleware } from "./middleware/errorMiddleware.js";
 import taskRoutes from "./routes/taskRoutes.js";
+import { connectDB } from "./config/db.js";
 
-const app = express(); // create app
 dotenv.config(); // env config
+connectDB();
+const app = express(); // create app
 app.use(cors()); // cors
 app.use(express.json()); //reads JSON body
 app.use(loggerMiddleware); //Custom Logger Middleware
