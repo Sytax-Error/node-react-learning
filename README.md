@@ -3805,6 +3805,153 @@ Redirect to login
 
 ```
 
+## Protecting Existing APIs
+
+Existing APIs can be protected using auth middleware.
+
+The `protect` middleware checks whether the request has a valid access token.
+
+Access token is sent in the request header:
+
+```txt
+Authorization: Bearer access_token
+```
+
+---
+
+## Protecting Task APIs
+
+File:
+
+```txt
+src/routes/taskRoutes.js
+```
+
+Import:
+
+```js
+import { protect } from "../middleware/authMiddleware.js";
+```
+
+Protected task routes:
+
+```js
+router.get("/", protect, getTasks);
+router.post("/", protect, createTask);
+router.get("/:id", protect, getTaskById);
+router.put("/:id", protect, updateTask);
+router.delete("/:id", protect, deleteTask);
+```
+
+Flow:
+
+```txt
+Request
+↓
+protect middleware
+↓
+verify access token
+↓
+attach logged-in user to req.user
+↓
+task controller
+```
+
+If token is missing or invalid, task controller will not run.
+
+---
+
+## Protecting User APIs
+
+File:
+
+```txt
+src/routes/userRoutes.js
+```
+
+Import:
+
+```js
+import { protect } from "../middleware/authMiddleware.js";
+```
+
+Protected user routes:
+
+```js
+router.get("/", protect, getUsers);
+router.post("/", protect, createUser);
+router.get("/:id", protect, getUserById);
+router.put("/:id", protect, updateUser);
+router.delete("/:id", protect, deleteUser);
+```
+
+This means only logged-in users with a valid access token can access user APIs.
+
+---
+
+## Protected API Test
+
+### Without token
+
+Request:
+
+```txt
+GET /api/tasks
+```
+
+Response:
+
+```json
+{
+  "message": "Not authorized, token missing"
+}
+```
+
+Status:
+
+```txt
+401 Unauthorized
+```
+
+### With valid token
+
+Request:
+
+```txt
+GET /api/tasks
+Authorization: Bearer access_token
+```
+
+Response:
+
+```txt
+200 OK
+```
+
+Task data is returned.
+
+---
+
+## Next Authorization Improvement
+
+Currently `protect` only checks if the user is logged in.
+
+Later, role-based authorization can be added.
+
+Example:
+
+```js
+router.get("/", protect, authorizeRoles("admin"), getUsers);
+```
+
+Meaning:
+
+```txt
+protect → checks login
+authorizeRoles("admin") → checks role permission
+```
+
+
 
 
 
