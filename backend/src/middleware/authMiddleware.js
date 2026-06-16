@@ -28,3 +28,14 @@ export const protect = asyncHandler(async (req, res, next) => {
   req.user = user; // Stores logged-in user data in request object.
   next(); // Sends request to next controller.
 });
+
+export const authorizeRoles = (...roles) => {
+  return (req, res, next) => {
+    // This line checks logged-in user role:
+    if (!roles.includes(req.user.role)) {
+      res.status(403);
+      throw new Error("You are not allow to access this resource.");
+    }
+    next();
+  };
+};

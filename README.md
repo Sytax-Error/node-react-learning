@@ -3950,6 +3950,195 @@ Meaning:
 protect → checks login
 authorizeRoles("admin") → checks role permission
 ```
+## Role-Based Authorization
+
+Authentication checks whether the user is logged in.
+
+Authorization checks whether the logged-in user has permission to access an API.
+
+```txt
+Authentication → Are you logged in?
+Authorization  → Are you allowed?
+```
+
+---
+
+## authorizeRoles Middleware
+
+File:
+
+```txt
+src/middleware/authMiddleware.js
+```
+
+```js
+export const authorizeRoles = (...roles) => {
+  return (req, res, next) => {
+    if (!roles.includes(req.user.role)) {
+      res.status(403);
+      throw new Error("You are not allowed to access this resource");
+    }
+
+    next();
+  };
+};
+```
+
+---
+
+## How authorizeRoles Works
+
+```js
+authorizeRoles("admin")
+```
+
+means only users with role `admin` can access the API.
+
+```js
+authorizeRoles("admin", "manager")
+```
+
+means users with role `admin` or `manager` can access the API.
+
+This middleware checks:
+
+```js
+req.user.role
+```
+
+`req.user` is created by the `protect` middleware.
+
+So `authorizeRoles` must be used after `protect`.
+
+Correct:
+
+```js
+router.get("/", protect, authorizeRoles("admin"), getUsers);
+```
+
+Wrong:
+
+```js
+router.get("/", authorizeRoles("admin"), protect, getUsers);
+```
+
+---
+
+## Status Codes
+
+```txt
+401 Unauthorized
+→ User is not logged in or token is missing/invalid
+
+403 Forbidden
+→ User is logged in but does not have permission
+```
+
+---
+
+## Admin-Only User Routes
+
+User management routes can be made admin-only.
+
+```js
+router.get("/", protect, authorizeRoles("admin"), getUsers);
+router.post("/", protect, authorizeRoles("admin"), createUser);
+router.get("/:id", protect, authorizeRoles("admin"), getUserById);
+router.put("/:id", protect, authorizeRoles("admin"), updateUser);
+router.delete("/:id", protect, authorizeRoles("admin"), deleteUser);
+```
+
+Flow:
+
+```txt
+Request
+↓
+protect
+↓
+verify access token
+↓
+attach logged-in user to req.user
+↓
+authorizeRoles("admin")
+↓
+check req.user.role
+↓
+user controller
+```
+
+---
+
+## Token Role Note
+
+Access token payload contains user role.
+
+Example:
+
+```js
+{
+  id: user._id,
+  role: user.role
+}
+```
+
+If user role is changed in MongoDB, the user must login again to get a new token with the updated role.
+
+Admin-only authorization is applied to user management routes.
+
+
+## Hiding Password Field from API Responses
+
+Even hashed passwords should not be returned in API responses.
+
+By default, Mongoose returns all fields from a document.
+
+To hide the password field by default, use `select: false` in the schema.
+
+```js
+password: {
+  type: String,
+  required: true,
+  minlength: 6,
+  select: false,
+}
+```
+
+This prevents password from being returned in normal queries like:
+
+```js
+User.find();
+User.findById(id);
+```
+
+---
+
+## Accessing Password Only During Login
+
+During login, password is required internally for bcrypt comparison.
+
+Because password is hidden by default, explicitly include it only in login query:
+
+```js
+const user = await User.findOne({ email }).select("+password");
+```
+
+Then compare password:
+
+```js
+const isPasswordMatch = await bcrypt.compare(password, user.password);
+```
+
+Password should still not be sent in the response.
+
+---
+
+## Why This is Important
+
+```txt
+Hashed password is sensitive data.
+API responses should not expose password field.
+Password should only be used internally during login.
+```
 
 
 

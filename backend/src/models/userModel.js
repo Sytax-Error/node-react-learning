@@ -20,6 +20,7 @@ const userSchema = new mongoose.Schema(
       type: String,
       required: true,
       minlength: 6,
+      select: false, // Do not return password field by default in queries.
     },
     role: {
       type: String,

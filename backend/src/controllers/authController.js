@@ -58,7 +58,7 @@ export const loginUser = asyncHandler(async (req, res) => {
     throw new Error("Email and Password is required");
   }
 
-  const user = await User.findOne({ email });
+  const user = await User.findOne({ email }).select("+password");
 
   if (!user) {
     res.status(401);
