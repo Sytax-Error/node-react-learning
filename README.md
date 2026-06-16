@@ -3426,6 +3426,248 @@ Success response:
 
 Password should not be returned in the response.
 
+## Refresh Token
+
+A refresh token is a longer-lived token used to generate a new access token.
+
+Access token expires quickly.
+
+Example:
+
+```txt
+JWT_ACCESS_EXPIRES_IN=15m
+```
+
+After access token expires, user should not login again every time.
+
+Refresh token solves this problem.
+
+Flow:
+
+```txt
+Access token expired
+↓
+Frontend calls refresh-token API
+↓
+Backend verifies refresh token
+↓
+Backend returns new access token
+```
+
+---
+
+## Access Token vs Refresh Token
+
+```txt
+Access Token
+↓
+Short life
+Used to access protected APIs
+Sent in Authorization header
+```
+
+```txt
+Refresh Token
+↓
+Longer life
+Used to generate new access token
+Stored in httpOnly cookie
+```
+
+---
+
+## Refresh Token Environment Variables
+
+```env
+JWT_REFRESH_SECRET=my_refresh_secret_key
+JWT_REFRESH_EXPIRES_IN=7d
+```
+
+`.env.example`:
+
+```env
+JWT_REFRESH_SECRET=your_refresh_secret_key
+JWT_REFRESH_EXPIRES_IN=7d
+```
+
+Meaning:
+
+```txt
+JWT_REFRESH_SECRET      → secret key used to sign and verify refresh token
+JWT_REFRESH_EXPIRES_IN  → refresh token expiry time
+```
+
+---
+
+## Generate Refresh Token
+
+File:
+
+```txt
+src/utils/generateTokens.js
+```
+
+```js
+export const generateRefreshToken = (user) => {
+  return jwt.sign(
+    {
+      id: user._id,
+    },
+    process.env.JWT_REFRESH_SECRET,
+    {
+      expiresIn: process.env.JWT_REFRESH_EXPIRES_IN,
+    }
+  );
+};
+```
+
+Refresh token payload contains only user id because it is only used to create a new access token.
+
+---
+
+## Store Refresh Token in httpOnly Cookie
+
+During login, refresh token is stored in an httpOnly cookie.
+
+```js
+res.cookie("refreshToken", refreshToken, {
+  httpOnly: true,
+  secure: false,
+  sameSite: "strict",
+  maxAge: 7 * 24 * 60 * 60 * 1000,
+});
+```
+
+Meaning:
+
+```txt
+httpOnly: true   → frontend JavaScript cannot directly read cookie
+secure: false    → allowed on local HTTP development
+sameSite: strict → restricts cross-site cookie sending
+maxAge           → cookie expiry time in milliseconds
+```
+
+In production with HTTPS:
+
+```js
+secure: true
+```
+
+Login response returns only access token in body.
+
+Refresh token is not returned in response body.
+
+---
+
+## Refresh Token API
+
+API:
+
+```txt
+POST /api/auth/refresh-token
+```
+
+Route:
+
+```js
+router.post("/refresh-token", refreshAccessToken);
+```
+
+Flow:
+
+```txt
+Read refreshToken from req.cookies
+↓
+If missing, return 401
+↓
+Verify refresh token using JWT_REFRESH_SECRET
+↓
+Find user from MongoDB
+↓
+Generate new access token
+↓
+Return new access token
+```
+
+Controller logic:
+
+```js
+const { refreshToken } = req.cookies;
+
+if (!refreshToken) {
+  res.status(401);
+  throw new Error("Refresh token missing");
+}
+
+const decoded = jwt.verify(refreshToken, process.env.JWT_REFRESH_SECRET);
+
+const user = await User.findById(decoded.id);
+
+if (!user) {
+  res.status(401);
+  throw new Error("Invalid refresh token");
+}
+
+const accessToken = generateAccessToken(user);
+
+res.status(200).json({
+  accessToken,
+});
+```
+
+---
+
+## Refresh Token API Responses
+
+### Success
+
+Status:
+
+```txt
+200 OK
+```
+
+Response:
+
+```json
+{
+  "accessToken": "new_access_token_here"
+}
+```
+
+### Missing refresh token
+
+Status:
+
+```txt
+401 Unauthorized
+```
+
+Response:
+
+```json
+{
+  "message": "Refresh token missing"
+}
+```
+
+### Invalid refresh token
+
+Status:
+
+```txt
+401 Unauthorized
+```
+
+Response:
+
+```json
+{
+  "message": "Invalid token"
+}
+```
+
+
 
 
 
