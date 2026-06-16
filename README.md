@@ -4139,6 +4139,136 @@ Hashed password is sensitive data.
 API responses should not expose password field.
 Password should only be used internally during login.
 ```
+## User-Specific Tasks
+
+Tasks should belong to the logged-in user.
+
+This prevents one user from seeing, updating, or deleting another user's tasks.
+
+---
+
+## Task Model User Reference
+
+Each task stores the user id of the owner.
+
+```js
+user: {
+  type: mongoose.Schema.Types.ObjectId,
+  required: true,
+  ref: "User",
+}
+```
+
+Example task document:
+
+```json
+{
+  "_id": "task_id",
+  "title": "Learn MongoDB",
+  "status": "pending",
+  "user": "logged_in_user_id"
+}
+```
+
+---
+
+## Create Task for Logged-In User
+
+When a user creates a task, save the logged-in user's id.
+
+```js
+const task = await Task.create({
+  title,
+  status,
+  user: req.user._id,
+});
+```
+
+---
+
+## Get Only Logged-In User's Tasks
+
+```js
+const tasks = await Task.find({
+  user: req.user._id,
+});
+```
+
+This means:
+
+```txt
+GET /api/tasks
+→ returns only current user's tasks
+```
+
+---
+
+## Protect Single Task Access
+
+For single task, update, and delete APIs, check both task id and user id.
+
+```js
+const task = await Task.findOne({
+  _id: req.params.id,
+  user: req.user._id,
+});
+```
+
+```js
+const task = await Task.findOneAndUpdate(
+  {
+    _id: req.params.id,
+    user: req.user._id,
+  },
+  {
+    title,
+    status,
+  },
+  {
+    returnDocument: "after",
+    runValidators: true,
+  }
+);
+```
+
+```js
+const task = await Task.findOneAndDelete({
+  _id: req.params.id,
+  user: req.user._id,
+});
+```
+
+---
+
+## Why Return 404 Instead of 403?
+
+If another user tries to access a task they do not own, return:
+
+```txt
+404 Task not found
+```
+
+This is safer because it does not reveal whether another user's task exists.
+
+---
+
+## Final Task Authorization Flow
+
+```txt
+Request
+↓
+protect middleware
+↓
+verify access token
+↓
+attach logged-in user to req.user
+↓
+task controller
+↓
+query task with user: req.user._id
+↓
+return only current user's task data
+```
 
 
 
