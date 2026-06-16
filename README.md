@@ -3262,6 +3262,58 @@ Response includes decoded payload:
 }
 ```
 
+## Handling JWT Errors
+
+JWT verification can fail when the token is invalid or expired.
+
+JWT verification happens in auth middleware:
+
+```js
+const decoded = jwt.verify(token, process.env.JWT_ACCESS_SECRET);
+```
+
+If the token is wrong, `jsonwebtoken` throws:
+
+```txt
+JsonWebTokenError
+```
+
+If the token is expired, it throws:
+
+```txt
+TokenExpiredError
+```
+
+These errors can be handled in `errorMiddleware.js`.
+
+```js
+if (error.name === "JsonWebTokenError") {
+  statusCode = 401;
+  message = "Invalid token";
+}
+
+if (error.name === "TokenExpiredError") {
+  statusCode = 401;
+  message = "Token expired";
+}
+```
+
+Reason:
+
+```txt
+Invalid token → 401 Unauthorized
+Expired token → 401 Unauthorized
+```
+
+Example invalid token response:
+
+```json
+{
+  "message": "Invalid token"
+}
+```
+
+
 
 
 
