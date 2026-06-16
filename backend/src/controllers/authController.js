@@ -1,6 +1,7 @@
 import bcrypt from "bcryptjs";
 import { User } from "../models/userModel.js";
 import { asyncHandler } from "../utils/asyncHandler.js";
+import { generateAccessToken } from "../utils/generateTokens.js";
 
 export const registerUser = asyncHandler(async (req, res) => {
   const { name, email, password, role } = req.body;
@@ -67,8 +68,11 @@ export const loginUser = asyncHandler(async (req, res) => {
     throw new Error("Invalid email or password");
   }
 
+  const accessToken = generateAccessToken(user);
+
   res.status(200).json({
     message: "User found",
+    accessToken,
     data: {
       id: user._id,
       name: user.name,
