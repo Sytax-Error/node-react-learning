@@ -4270,6 +4270,174 @@ query task with user: req.user._id
 return only current user's task data
 ```
 
+## Backend Support for Frontend Auth
+
+The backend provides authentication APIs for the React frontend.
+
+## Auth APIs
+
+```txt
+POST /api/auth/register
+POST /api/auth/login
+GET  /api/auth/profile
+POST /api/auth/refresh-token
+POST /api/auth/logout
+```
+
+---
+
+## CORS Setup for Frontend
+
+Frontend runs on:
+
+```txt
+http://localhost:5173
+```
+
+Backend runs on:
+
+```txt
+http://localhost:5000
+```
+
+To allow frontend requests and cookies, CORS is configured with credentials.
+
+```js
+app.use(
+  cors({
+    origin: "http://localhost:5173",
+    credentials: true,
+  })
+);
+```
+
+`credentials: true` is required because the backend stores the refresh token in an httpOnly cookie.
+
+---
+
+## Register API
+
+Public registration creates a normal user.
+
+Frontend sends:
+
+```json
+{
+  "name": "User Name",
+  "email": "user@test.com",
+  "password": "123456"
+}
+```
+
+Frontend does not send `role`.
+
+Role is handled by backend using the schema default:
+
+```js
+role: {
+  type: String,
+  required: true,
+  trim: true,
+  default: "user",
+}
+```
+
+This prevents users from registering themselves as admin.
+
+---
+
+## Login API Response
+
+After successful login, backend returns user data and access token.
+
+```js
+res.status(200).json({
+  message: "Login successful",
+  accessToken,
+  user: {
+    id: user._id,
+    name: user.name,
+    email: user.email,
+    role: user.role,
+  },
+});
+```
+
+Frontend stores this response in localStorage.
+
+Expected frontend auth structure:
+
+```json
+{
+  "user": {
+    "id": "user_id",
+    "name": "User Name",
+    "email": "user@test.com",
+    "role": "user"
+  },
+  "accessToken": "jwt_access_token"
+}
+```
+
+---
+
+## Protected Profile API
+
+Profile route is protected using `protect` middleware.
+
+```js
+router.get("/profile", protect, getProfile);
+```
+
+Frontend must send access token in the Authorization header.
+
+```txt
+Authorization: Bearer accessToken
+```
+
+Backend flow:
+
+```txt
+Request
+↓
+protect middleware
+↓
+verify access token
+↓
+find logged-in user
+↓
+attach user to req.user
+↓
+return profile data
+```
+
+---
+
+## Logout API
+
+Logout clears the refresh token cookie.
+
+```js
+res.clearCookie("refreshToken", {
+  httpOnly: true,
+  secure: false,
+  sameSite: "strict",
+});
+```
+
+Frontend also removes auth data from localStorage.
+
+---
+
+## Important Security Notes
+
+```txt
+Register API should not accept admin role from frontend.
+Refresh token is stored in httpOnly cookie.
+Access token is sent in Authorization header.
+Password is hidden from API responses using select: false.
+Login uses .select("+password") only for bcrypt comparison.
+```
 
 
 

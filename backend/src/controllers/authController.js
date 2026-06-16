@@ -10,17 +10,9 @@ import jwt from "jsonwebtoken";
 export const registerUser = asyncHandler(async (req, res) => {
   const { name, email, password, role } = req.body;
 
-  if (
-    !name ||
-    !email ||
-    !password ||
-    !role ||
-    !name.trim() ||
-    !email.trim() ||
-    !role?.trim
-  ) {
+  if (!name || !email || !password || !name.trim() || !email.trim()) {
     res.status(400);
-    throw new Error("Name, email,role and password are required");
+    throw new Error("Name, email and password are required");
   }
 
   const existingUser = await User.findOne({ email });
@@ -36,7 +28,6 @@ export const registerUser = asyncHandler(async (req, res) => {
     name,
     email,
     password: hashedPassword,
-    role,
   });
 
   res.status(201).json({
@@ -83,9 +74,9 @@ export const loginUser = asyncHandler(async (req, res) => {
   });
 
   res.status(200).json({
-    message: "User found",
+    message: "Login successful",
     accessToken,
-    data: {
+    user: {
       id: user._id,
       name: user.name,
       email: user.email,

@@ -10,7 +10,10 @@
     "cors": "^2.8.6",
     "dotenv": "^16.0.0",
     "express": "^5.0.0",
-    "mongoose": "^9.7.0"
+    "mongoose": "^9.7.0",
+    "bcryptjs": "^3.0.3",
+    "cookie-parser": "^1.4.7",
+    "jsonwebtoken": "^9.0.3"
   },
   "devDependencies": {
     "nodemon": "^3.0.0"
