@@ -1,14 +1,13 @@
 # Node.js + Express.js + React Learning Notes
 
-## Purpose
+## License
 
-This repo is for learning backend development with **Node.js + Express.js** and connecting it with **React.js** frontend.
+This project is licensed under the MIT License.
 
-```txt
-React.js   → Frontend/UI
-Node.js    → Runs JavaScript outside browser
-Express.js → Framework to create backend APIs
-```
+You are free to use this project for learning and reference purposes.
+You cannot directly modify this original repository unless you are added as a collaborator.
+
+See the LICENSE file for details.
 
 ---
 
