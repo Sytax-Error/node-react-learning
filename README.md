@@ -2704,4 +2704,208 @@ Response:
 }
 ```
 
+## Login API
+
+Login means verifying an existing user using email and password.
+
+API:
+
+```txt
+POST /api/auth/login
+```
+
+Request body:
+
+```json
+{
+  "email": "lavesh@test.com",
+  "password": "123456"
+}
+```
+
+Login flow:
+
+```txt
+Read email and password from req.body
+↓
+Validate required fields
+↓
+Find user by email
+↓
+Compare plain password with hashed password
+↓
+Send login response
+```
+
+---
+
+## Login Route
+
+File:
+
+```txt
+src/routes/authRoutes.js
+```
+
+Route:
+
+```js
+router.post("/login", loginUser);
+```
+
+Final API:
+
+```txt
+POST /api/auth/login
+```
+
+---
+
+## Finding User by Email
+
+During login, user is searched by email.
+
+```js
+const user = await User.findOne({ email });
+```
+
+If user is not found:
+
+```js
+res.status(401);
+throw new Error("Invalid email or password");
+```
+
+`401 Unauthorized` is used because login credentials are invalid.
+
+A common message is used:
+
+```txt
+Invalid email or password
+```
+
+Reason:
+
+```txt
+Do not reveal whether email is registered or password is wrong.
+```
+
+---
+
+## Password Comparison
+
+Password stored in MongoDB is hashed.
+
+Example:
+
+```txt
+$2a$10$hashedPasswordValue
+```
+
+User enters plain password during login:
+
+```txt
+123456
+```
+
+Do not compare directly:
+
+```js
+password === user.password
+```
+
+This is wrong because one value is plain text and the other is hashed.
+
+Use bcrypt comparison:
+
+```js
+const isPasswordMatch = await bcrypt.compare(password, user.password);
+```
+
+If password does not match:
+
+```js
+res.status(401);
+throw new Error("Invalid email or password");
+```
+
+---
+
+## Login Success Response
+
+After successful login:
+
+```js
+res.status(200).json({
+  message: "Login successful",
+  user: {
+    id: user._id,
+    name: user.name,
+    email: user.email,
+    role: user.role,
+  },
+});
+```
+
+Password should not be sent in the API response.
+
+---
+
+## Login API Responses
+
+### Success
+
+Status:
+
+```txt
+200 OK
+```
+
+Response:
+
+```json
+{
+  "message": "Login successful",
+  "user": {
+    "id": "...",
+    "name": "Lavesh",
+    "email": "lavesh@test.com",
+    "role": "user"
+  }
+}
+```
+
+### Missing email or password
+
+Status:
+
+```txt
+400 Bad Request
+```
+
+Response:
+
+```json
+{
+  "message": "Email and password are required"
+}
+```
+
+### Invalid email or password
+
+Status:
+
+```txt
+401 Unauthorized
+```
+
+Response:
+
+```json
+{
+  "message": "Invalid email or password"
+}
+```
+
+
 

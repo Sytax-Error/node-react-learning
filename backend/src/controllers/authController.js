@@ -44,3 +44,36 @@ export const registerUser = asyncHandler(async (req, res) => {
     },
   });
 });
+
+export const loginUser = asyncHandler(async (req, res) => {
+  const { email, password } = req.body;
+
+  if (!email || !password || !email?.trim()) {
+    res.status(400);
+    throw new Error("Email and Password is required");
+  }
+
+  const user = await User.findOne({ email });
+
+  if (!user) {
+    res.status(401);
+    throw new Error("Invalid email or password");
+  }
+
+  const isPasswordMatch = await bcrypt.compare(password, user.password);
+
+  if (!isPasswordMatch) {
+    res.status(401);
+    throw new Error("Invalid email or password");
+  }
+
+  res.status(200).json({
+    message: "User found",
+    data: {
+      id: user._id,
+      name: user.name,
+      email: user.email,
+      role: user.role,
+    },
+  });
+});
