@@ -13,7 +13,12 @@ import authRoutes from "./routes/authRoutes.js";
 dotenv.config(); // env config
 connectDB();
 const app = express(); // create app
-app.use(cors()); // cors
+app.use(
+  cors({
+    origin: "http://localhost:5173",
+    credentials: true,
+  }),
+); // cors
 app.use(express.json()); //reads JSON body
 app.use(loggerMiddleware); //Custom Logger Middleware
 app.use(cookieParser());

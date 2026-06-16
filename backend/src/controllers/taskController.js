@@ -3,7 +3,7 @@ import { Task } from "../models/taskModel.js";
 import { validateObjectId } from "../utils/validators.js";
 
 export const getTasks = asyncHandler(async (req, res) => {
-  const task = await Task.find();
+  const task = await Task.find({ user: req.user._id }); //Get only tasks where user id matches logged-in user id
   return res.status(200).json(task);
 });
 
@@ -19,6 +19,7 @@ export const createTasks = asyncHandler(async (req, res) => {
   const task = await Task.create({
     title,
     status,
+    user: req.user._id, // current logged-in user's MongoDB id
   });
 
   res.status(201).json({
@@ -38,7 +39,10 @@ export const getByTaskId = asyncHandler(async (req, res) => {
     });
   }
 
-  const task = await Task.findById(id);
+  const task = await Task.findOne({
+    _id: id, // task id from URL
+    user: req.user._id, // logged-in user id
+  });
 
   if (!task) {
     return res.status(404).json({
@@ -65,7 +69,10 @@ export const updateTask = asyncHandler(async (req, res) => {
   }
 
   const task = await Task.findByIdAndUpdate(
-    id,
+    {
+      _id: id,
+      user: req.user._id,
+    },
     {
       title,
       status,
@@ -93,7 +100,10 @@ export const deleteTask = asyncHandler(async (req, res) => {
 
   validateObjectId(id, "task");
 
-  const task = await Task.findByIdAndDelete(id);
+  const task = await Task.findOneAndDelete({
+    _id: id,
+    user: req.user._id,
+  });
 
   if (!task) {
     return res.status(400).json({

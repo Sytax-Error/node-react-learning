@@ -11,6 +11,16 @@ export const errorMiddleware = (error, req, res, next) => {
       .join(", ");
   }
 
+  if (error.name === "JsonWebTokenError") {
+    statusCode = 401;
+    message = "Invalid token";
+  }
+
+  if (error.name === "TokenExpiredError") {
+    statusCode = 401;
+    message = "Token expired";
+  }
+
   res.status(statusCode).json({
     message,
   });

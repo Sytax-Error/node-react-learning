@@ -3072,7 +3072,1373 @@ Access token is sent in request headers for protected APIs.
 Authorization: Bearer access_token
 ```
 
-Backend will later verify this token using auth middleware.
+## Protected Route and Auth Middleware
+
+A protected route is an API that only logged-in users can access.
+
+Example:
+
+```txt
+GET /api/auth/profile
+```
+
+The frontend sends access token in the request header:
+
+```txt
+Authorization: Bearer access_token
+```
+
+---
+
+## Auth Middleware
+
+Auth middleware runs before the protected controller.
+
+Route example:
+
+```js
+router.get("/profile", protect, getProfile);
+```
+
+Flow:
+
+```txt
+Request
+↓
+protect middleware
+↓
+getProfile controller
+```
+
+If token is valid, request can continue.
+
+If token is missing or invalid, request is rejected.
+
+---
+
+## Reading Authorization Header
+
+Token is received from request headers:
+
+```js
+const authHeader = req.headers.authorization;
+```
+
+Expected format:
+
+```txt
+Bearer access_token
+```
+
+---
+
+## Checking Bearer Token Format
+
+```js
+if (!authHeader || !authHeader.startsWith("Bearer ")) {
+  res.status(401);
+  throw new Error("Not authorized, token missing");
+}
+```
+
+Meaning:
+
+```txt
+No Authorization header → 401 Unauthorized
+Wrong token format      → 401 Unauthorized
+```
+
+Correct format:
+
+```txt
+Authorization: Bearer eyJhbGciOiJIUzI1NiIs...
+```
+
+---
+
+## Extracting Token
+
+```js
+const token = authHeader.split(" ")[1];
+```
+
+Example:
+
+```txt
+Bearer abc123
+```
+
+After split:
+
+```js
+["Bearer", "abc123"]
+```
+
+Extracted token:
+
+```txt
+abc123
+```
+
+---
+
+## Verifying JWT Token
+
+```js
+const decoded = jwt.verify(token, process.env.JWT_ACCESS_SECRET);
+```
+
+This verifies:
+
+```txt
+Token is valid
+Token is not expired
+Token was signed with correct secret
+```
+
+Decoded payload example:
+
+```json
+{
+  "id": "user_id",
+  "role": "user",
+  "iat": 1781160000,
+  "exp": 1781160900
+}
+```
+
+Meaning:
+
+```txt
+id   → user id from token
+role → user role from token
+iat  → issued at time
+exp  → expiry time
+```
+
+---
+
+## Protected Route Test Cases
+
+### Missing token
+
+Response:
+
+```json
+{
+  "message": "Not authorized, token missing"
+}
+```
+
+Status:
+
+```txt
+401 Unauthorized
+```
+
+### Wrong token
+
+Response example:
+
+```json
+{
+  "message": "invalid token"
+}
+```
+
+### Valid token
+
+Response includes decoded payload:
+
+```json
+{
+  "message": "Token verified successfully",
+  "decoded": {
+    "id": "...",
+    "role": "user",
+    "iat": "...",
+    "exp": "..."
+  }
+}
+```
+
+## Handling JWT Errors
+
+JWT verification can fail when the token is invalid or expired.
+
+JWT verification happens in auth middleware:
+
+```js
+const decoded = jwt.verify(token, process.env.JWT_ACCESS_SECRET);
+```
+
+If the token is wrong, `jsonwebtoken` throws:
+
+```txt
+JsonWebTokenError
+```
+
+If the token is expired, it throws:
+
+```txt
+TokenExpiredError
+```
+
+These errors can be handled in `errorMiddleware.js`.
+
+```js
+if (error.name === "JsonWebTokenError") {
+  statusCode = 401;
+  message = "Invalid token";
+}
+
+if (error.name === "TokenExpiredError") {
+  statusCode = 401;
+  message = "Token expired";
+}
+```
+
+Reason:
+
+```txt
+Invalid token → 401 Unauthorized
+Expired token → 401 Unauthorized
+```
+
+Example invalid token response:
+
+```json
+{
+  "message": "Invalid token"
+}
+```
+
+## Attaching Logged-in User to req.user
+
+After JWT token verification, the auth middleware can find the logged-in user from MongoDB.
+
+```js
+const decoded = jwt.verify(token, process.env.JWT_ACCESS_SECRET);
+```
+
+`decoded` contains data from the access token payload.
+
+Example:
+
+```json
+{
+  "id": "user_id",
+  "role": "user",
+  "iat": 1781160000,
+  "exp": 1781160900
+}
+```
+
+The user is then fetched from MongoDB:
+
+```js
+const user = await User.findById(decoded.id).select("-password");
+```
+
+`select("-password")` means:
+
+```txt
+Return user data without password field.
+```
+
+Then the user is attached to the request object:
+
+```js
+req.user = user;
+```
+
+After this, any protected controller can access the logged-in user using:
+
+```js
+req.user
+```
+
+---
+
+## Protected Profile API
+
+API:
+
+```txt
+GET /api/auth/profile
+```
+
+Route:
+
+```js
+router.get("/profile", protect, getProfile);
+```
+
+Flow:
+
+```txt
+Request
+↓
+protect middleware
+↓
+verify access token
+↓
+find user from MongoDB
+↓
+attach user to req.user
+↓
+getProfile controller
+↓
+return profile
+```
+
+Controller:
+
+```js
+export const getProfile = asyncHandler(async (req, res) => {
+  res.status(200).json({
+    user: req.user,
+  });
+});
+```
+
+Request header:
+
+```txt
+Authorization: Bearer access_token
+```
+
+Success response:
+
+```json
+{
+  "user": {
+    "_id": "...",
+    "name": "Lavesh",
+    "email": "lavesh@test.com",
+    "role": "user",
+    "createdAt": "...",
+    "updatedAt": "...",
+    "__v": 0
+  }
+}
+```
+
+Password should not be returned in the response.
+
+## Refresh Token
+
+A refresh token is a longer-lived token used to generate a new access token.
+
+Access token expires quickly.
+
+Example:
+
+```txt
+JWT_ACCESS_EXPIRES_IN=15m
+```
+
+After access token expires, user should not login again every time.
+
+Refresh token solves this problem.
+
+Flow:
+
+```txt
+Access token expired
+↓
+Frontend calls refresh-token API
+↓
+Backend verifies refresh token
+↓
+Backend returns new access token
+```
+
+---
+
+## Access Token vs Refresh Token
+
+```txt
+Access Token
+↓
+Short life
+Used to access protected APIs
+Sent in Authorization header
+```
+
+```txt
+Refresh Token
+↓
+Longer life
+Used to generate new access token
+Stored in httpOnly cookie
+```
+
+---
+
+## Refresh Token Environment Variables
+
+```env
+JWT_REFRESH_SECRET=my_refresh_secret_key
+JWT_REFRESH_EXPIRES_IN=7d
+```
+
+`.env.example`:
+
+```env
+JWT_REFRESH_SECRET=your_refresh_secret_key
+JWT_REFRESH_EXPIRES_IN=7d
+```
+
+Meaning:
+
+```txt
+JWT_REFRESH_SECRET      → secret key used to sign and verify refresh token
+JWT_REFRESH_EXPIRES_IN  → refresh token expiry time
+```
+
+---
+
+## Generate Refresh Token
+
+File:
+
+```txt
+src/utils/generateTokens.js
+```
+
+```js
+export const generateRefreshToken = (user) => {
+  return jwt.sign(
+    {
+      id: user._id,
+    },
+    process.env.JWT_REFRESH_SECRET,
+    {
+      expiresIn: process.env.JWT_REFRESH_EXPIRES_IN,
+    }
+  );
+};
+```
+
+Refresh token payload contains only user id because it is only used to create a new access token.
+
+---
+
+## Store Refresh Token in httpOnly Cookie
+
+During login, refresh token is stored in an httpOnly cookie.
+
+```js
+res.cookie("refreshToken", refreshToken, {
+  httpOnly: true,
+  secure: false,
+  sameSite: "strict",
+  maxAge: 7 * 24 * 60 * 60 * 1000,
+});
+```
+
+Meaning:
+
+```txt
+httpOnly: true   → frontend JavaScript cannot directly read cookie
+secure: false    → allowed on local HTTP development
+sameSite: strict → restricts cross-site cookie sending
+maxAge           → cookie expiry time in milliseconds
+```
+
+In production with HTTPS:
+
+```js
+secure: true
+```
+
+Login response returns only access token in body.
+
+Refresh token is not returned in response body.
+
+---
+
+## Refresh Token API
+
+API:
+
+```txt
+POST /api/auth/refresh-token
+```
+
+Route:
+
+```js
+router.post("/refresh-token", refreshAccessToken);
+```
+
+Flow:
+
+```txt
+Read refreshToken from req.cookies
+↓
+If missing, return 401
+↓
+Verify refresh token using JWT_REFRESH_SECRET
+↓
+Find user from MongoDB
+↓
+Generate new access token
+↓
+Return new access token
+```
+
+Controller logic:
+
+```js
+const { refreshToken } = req.cookies;
+
+if (!refreshToken) {
+  res.status(401);
+  throw new Error("Refresh token missing");
+}
+
+const decoded = jwt.verify(refreshToken, process.env.JWT_REFRESH_SECRET);
+
+const user = await User.findById(decoded.id);
+
+if (!user) {
+  res.status(401);
+  throw new Error("Invalid refresh token");
+}
+
+const accessToken = generateAccessToken(user);
+
+res.status(200).json({
+  accessToken,
+});
+```
+
+---
+
+## Refresh Token API Responses
+
+### Success
+
+Status:
+
+```txt
+200 OK
+```
+
+Response:
+
+```json
+{
+  "accessToken": "new_access_token_here"
+}
+```
+
+### Missing refresh token
+
+Status:
+
+```txt
+401 Unauthorized
+```
+
+Response:
+
+```json
+{
+  "message": "Refresh token missing"
+}
+```
+
+### Invalid refresh token
+
+Status:
+
+```txt
+401 Unauthorized
+```
+
+Response:
+
+```json
+{
+  "message": "Invalid token"
+}
+```
+## Logout API
+
+Logout is used to remove the refresh token cookie.
+
+During login, refresh token is stored in an httpOnly cookie.
+
+During logout, that cookie is cleared.
+
+Flow:
+
+```txt
+User logs out
+↓
+Backend clears refreshToken cookie
+↓
+User cannot refresh access token anymore
+```
+
+---
+
+## Logout Route
+
+API:
+
+```txt
+POST /api/auth/logout
+```
+
+Route:
+
+```js
+router.post("/logout", logoutUser);
+```
+
+---
+
+## Logout Controller
+
+```js
+export const logoutUser = asyncHandler(async (req, res) => {
+  res.clearCookie("refreshToken", {
+    httpOnly: true,
+    secure: false,
+    sameSite: "strict",
+  });
+
+  res.status(200).json({
+    message: "Logout successful",
+  });
+});
+```
+
+---
+
+## clearCookie()
+
+```js
+res.clearCookie("refreshToken");
+```
+
+This clears the refresh token cookie from the client.
+
+Cookie options should match the cookie options used while setting the cookie.
+
+```js
+{
+  httpOnly: true,
+  secure: false,
+  sameSite: "strict",
+}
+```
+
+For local development:
+
+```txt
+secure: false
+```
+
+For production with HTTPS:
+
+```txt
+secure: true
+```
+
+---
+
+## Logout Test Flow
+
+```txt
+POST /api/auth/login
+↓
+refreshToken cookie is created
+```
+
+```txt
+POST /api/auth/logout
+↓
+refreshToken cookie is cleared
+```
+
+```txt
+POST /api/auth/refresh-token
+↓
+Refresh token missing
+```
+
+Expected logout response:
+
+```json
+{
+  "message": "Logout successful"
+}
+```
+
+Expected refresh-token response after logout:
+
+```json
+{
+  "message": "Refresh token missing"
+}
+```
+
+### Final logout understanding:
+
+```txt
+
+Backend responsibility
+↓
+Clear refreshToken cookie
+
+
+Frontend responsibility
+↓
+Remove accessToken
+Clear user state
+Redirect to login
+
+```
+
+## Protecting Existing APIs
+
+Existing APIs can be protected using auth middleware.
+
+The `protect` middleware checks whether the request has a valid access token.
+
+Access token is sent in the request header:
+
+```txt
+Authorization: Bearer access_token
+```
+
+---
+
+## Protecting Task APIs
+
+File:
+
+```txt
+src/routes/taskRoutes.js
+```
+
+Import:
+
+```js
+import { protect } from "../middleware/authMiddleware.js";
+```
+
+Protected task routes:
+
+```js
+router.get("/", protect, getTasks);
+router.post("/", protect, createTask);
+router.get("/:id", protect, getTaskById);
+router.put("/:id", protect, updateTask);
+router.delete("/:id", protect, deleteTask);
+```
+
+Flow:
+
+```txt
+Request
+↓
+protect middleware
+↓
+verify access token
+↓
+attach logged-in user to req.user
+↓
+task controller
+```
+
+If token is missing or invalid, task controller will not run.
+
+---
+
+## Protecting User APIs
+
+File:
+
+```txt
+src/routes/userRoutes.js
+```
+
+Import:
+
+```js
+import { protect } from "../middleware/authMiddleware.js";
+```
+
+Protected user routes:
+
+```js
+router.get("/", protect, getUsers);
+router.post("/", protect, createUser);
+router.get("/:id", protect, getUserById);
+router.put("/:id", protect, updateUser);
+router.delete("/:id", protect, deleteUser);
+```
+
+This means only logged-in users with a valid access token can access user APIs.
+
+---
+
+## Protected API Test
+
+### Without token
+
+Request:
+
+```txt
+GET /api/tasks
+```
+
+Response:
+
+```json
+{
+  "message": "Not authorized, token missing"
+}
+```
+
+Status:
+
+```txt
+401 Unauthorized
+```
+
+### With valid token
+
+Request:
+
+```txt
+GET /api/tasks
+Authorization: Bearer access_token
+```
+
+Response:
+
+```txt
+200 OK
+```
+
+Task data is returned.
+
+---
+
+## Next Authorization Improvement
+
+Currently `protect` only checks if the user is logged in.
+
+Later, role-based authorization can be added.
+
+Example:
+
+```js
+router.get("/", protect, authorizeRoles("admin"), getUsers);
+```
+
+Meaning:
+
+```txt
+protect → checks login
+authorizeRoles("admin") → checks role permission
+```
+## Role-Based Authorization
+
+Authentication checks whether the user is logged in.
+
+Authorization checks whether the logged-in user has permission to access an API.
+
+```txt
+Authentication → Are you logged in?
+Authorization  → Are you allowed?
+```
+
+---
+
+## authorizeRoles Middleware
+
+File:
+
+```txt
+src/middleware/authMiddleware.js
+```
+
+```js
+export const authorizeRoles = (...roles) => {
+  return (req, res, next) => {
+    if (!roles.includes(req.user.role)) {
+      res.status(403);
+      throw new Error("You are not allowed to access this resource");
+    }
+
+    next();
+  };
+};
+```
+
+---
+
+## How authorizeRoles Works
+
+```js
+authorizeRoles("admin")
+```
+
+means only users with role `admin` can access the API.
+
+```js
+authorizeRoles("admin", "manager")
+```
+
+means users with role `admin` or `manager` can access the API.
+
+This middleware checks:
+
+```js
+req.user.role
+```
+
+`req.user` is created by the `protect` middleware.
+
+So `authorizeRoles` must be used after `protect`.
+
+Correct:
+
+```js
+router.get("/", protect, authorizeRoles("admin"), getUsers);
+```
+
+Wrong:
+
+```js
+router.get("/", authorizeRoles("admin"), protect, getUsers);
+```
+
+---
+
+## Status Codes
+
+```txt
+401 Unauthorized
+→ User is not logged in or token is missing/invalid
+
+403 Forbidden
+→ User is logged in but does not have permission
+```
+
+---
+
+## Admin-Only User Routes
+
+User management routes can be made admin-only.
+
+```js
+router.get("/", protect, authorizeRoles("admin"), getUsers);
+router.post("/", protect, authorizeRoles("admin"), createUser);
+router.get("/:id", protect, authorizeRoles("admin"), getUserById);
+router.put("/:id", protect, authorizeRoles("admin"), updateUser);
+router.delete("/:id", protect, authorizeRoles("admin"), deleteUser);
+```
+
+Flow:
+
+```txt
+Request
+↓
+protect
+↓
+verify access token
+↓
+attach logged-in user to req.user
+↓
+authorizeRoles("admin")
+↓
+check req.user.role
+↓
+user controller
+```
+
+---
+
+## Token Role Note
+
+Access token payload contains user role.
+
+Example:
+
+```js
+{
+  id: user._id,
+  role: user.role
+}
+```
+
+If user role is changed in MongoDB, the user must login again to get a new token with the updated role.
+
+Admin-only authorization is applied to user management routes.
+
+
+## Hiding Password Field from API Responses
+
+Even hashed passwords should not be returned in API responses.
+
+By default, Mongoose returns all fields from a document.
+
+To hide the password field by default, use `select: false` in the schema.
+
+```js
+password: {
+  type: String,
+  required: true,
+  minlength: 6,
+  select: false,
+}
+```
+
+This prevents password from being returned in normal queries like:
+
+```js
+User.find();
+User.findById(id);
+```
+
+---
+
+## Accessing Password Only During Login
+
+During login, password is required internally for bcrypt comparison.
+
+Because password is hidden by default, explicitly include it only in login query:
+
+```js
+const user = await User.findOne({ email }).select("+password");
+```
+
+Then compare password:
+
+```js
+const isPasswordMatch = await bcrypt.compare(password, user.password);
+```
+
+Password should still not be sent in the response.
+
+---
+
+## Why This is Important
+
+```txt
+Hashed password is sensitive data.
+API responses should not expose password field.
+Password should only be used internally during login.
+```
+## User-Specific Tasks
+
+Tasks should belong to the logged-in user.
+
+This prevents one user from seeing, updating, or deleting another user's tasks.
+
+---
+
+## Task Model User Reference
+
+Each task stores the user id of the owner.
+
+```js
+user: {
+  type: mongoose.Schema.Types.ObjectId,
+  required: true,
+  ref: "User",
+}
+```
+
+Example task document:
+
+```json
+{
+  "_id": "task_id",
+  "title": "Learn MongoDB",
+  "status": "pending",
+  "user": "logged_in_user_id"
+}
+```
+
+---
+
+## Create Task for Logged-In User
+
+When a user creates a task, save the logged-in user's id.
+
+```js
+const task = await Task.create({
+  title,
+  status,
+  user: req.user._id,
+});
+```
+
+---
+
+## Get Only Logged-In User's Tasks
+
+```js
+const tasks = await Task.find({
+  user: req.user._id,
+});
+```
+
+This means:
+
+```txt
+GET /api/tasks
+→ returns only current user's tasks
+```
+
+---
+
+## Protect Single Task Access
+
+For single task, update, and delete APIs, check both task id and user id.
+
+```js
+const task = await Task.findOne({
+  _id: req.params.id,
+  user: req.user._id,
+});
+```
+
+```js
+const task = await Task.findOneAndUpdate(
+  {
+    _id: req.params.id,
+    user: req.user._id,
+  },
+  {
+    title,
+    status,
+  },
+  {
+    returnDocument: "after",
+    runValidators: true,
+  }
+);
+```
+
+```js
+const task = await Task.findOneAndDelete({
+  _id: req.params.id,
+  user: req.user._id,
+});
+```
+
+---
+
+## Why Return 404 Instead of 403?
+
+If another user tries to access a task they do not own, return:
+
+```txt
+404 Task not found
+```
+
+This is safer because it does not reveal whether another user's task exists.
+
+---
+
+## Final Task Authorization Flow
+
+```txt
+Request
+↓
+protect middleware
+↓
+verify access token
+↓
+attach logged-in user to req.user
+↓
+task controller
+↓
+query task with user: req.user._id
+↓
+return only current user's task data
+```
+
+## Backend Support for Frontend Auth
+
+The backend provides authentication APIs for the React frontend.
+
+## Auth APIs
+
+```txt
+POST /api/auth/register
+POST /api/auth/login
+GET  /api/auth/profile
+POST /api/auth/refresh-token
+POST /api/auth/logout
+```
+
+---
+
+## CORS Setup for Frontend
+
+Frontend runs on:
+
+```txt
+http://localhost:5173
+```
+
+Backend runs on:
+
+```txt
+http://localhost:5000
+```
+
+To allow frontend requests and cookies, CORS is configured with credentials.
+
+```js
+app.use(
+  cors({
+    origin: "http://localhost:5173",
+    credentials: true,
+  })
+);
+```
+
+`credentials: true` is required because the backend stores the refresh token in an httpOnly cookie.
+
+---
+
+## Register API
+
+Public registration creates a normal user.
+
+Frontend sends:
+
+```json
+{
+  "name": "User Name",
+  "email": "user@test.com",
+  "password": "123456"
+}
+```
+
+Frontend does not send `role`.
+
+Role is handled by backend using the schema default:
+
+```js
+role: {
+  type: String,
+  required: true,
+  trim: true,
+  default: "user",
+}
+```
+
+This prevents users from registering themselves as admin.
+
+---
+
+## Login API Response
+
+After successful login, backend returns user data and access token.
+
+```js
+res.status(200).json({
+  message: "Login successful",
+  accessToken,
+  user: {
+    id: user._id,
+    name: user.name,
+    email: user.email,
+    role: user.role,
+  },
+});
+```
+
+Frontend stores this response in localStorage.
+
+Expected frontend auth structure:
+
+```json
+{
+  "user": {
+    "id": "user_id",
+    "name": "User Name",
+    "email": "user@test.com",
+    "role": "user"
+  },
+  "accessToken": "jwt_access_token"
+}
+```
+
+---
+
+## Protected Profile API
+
+Profile route is protected using `protect` middleware.
+
+```js
+router.get("/profile", protect, getProfile);
+```
+
+Frontend must send access token in the Authorization header.
+
+```txt
+Authorization: Bearer accessToken
+```
+
+Backend flow:
+
+```txt
+Request
+↓
+protect middleware
+↓
+verify access token
+↓
+find logged-in user
+↓
+attach user to req.user
+↓
+return profile data
+```
+
+---
+
+## Logout API
+
+Logout clears the refresh token cookie.
+
+```js
+res.clearCookie("refreshToken", {
+  httpOnly: true,
+  secure: false,
+  sameSite: "strict",
+});
+```
+
+Frontend also removes auth data from localStorage.
+
+---
+
+## Important Security Notes
+
+```txt
+Register API should not accept admin role from frontend.
+Refresh token is stored in httpOnly cookie.
+Access token is sent in Authorization header.
+Password is hidden from API responses using select: false.
+Login uses .select("+password") only for bcrypt comparison.
+```
+
 
 
 
