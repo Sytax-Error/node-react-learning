@@ -3666,8 +3666,144 @@ Response:
   "message": "Invalid token"
 }
 ```
+## Logout API
+
+Logout is used to remove the refresh token cookie.
+
+During login, refresh token is stored in an httpOnly cookie.
+
+During logout, that cookie is cleared.
+
+Flow:
+
+```txt
+User logs out
+↓
+Backend clears refreshToken cookie
+↓
+User cannot refresh access token anymore
+```
+
+---
+
+## Logout Route
+
+API:
+
+```txt
+POST /api/auth/logout
+```
+
+Route:
+
+```js
+router.post("/logout", logoutUser);
+```
+
+---
+
+## Logout Controller
+
+```js
+export const logoutUser = asyncHandler(async (req, res) => {
+  res.clearCookie("refreshToken", {
+    httpOnly: true,
+    secure: false,
+    sameSite: "strict",
+  });
+
+  res.status(200).json({
+    message: "Logout successful",
+  });
+});
+```
+
+---
+
+## clearCookie()
+
+```js
+res.clearCookie("refreshToken");
+```
+
+This clears the refresh token cookie from the client.
+
+Cookie options should match the cookie options used while setting the cookie.
+
+```js
+{
+  httpOnly: true,
+  secure: false,
+  sameSite: "strict",
+}
+```
+
+For local development:
+
+```txt
+secure: false
+```
+
+For production with HTTPS:
+
+```txt
+secure: true
+```
+
+---
+
+## Logout Test Flow
+
+```txt
+POST /api/auth/login
+↓
+refreshToken cookie is created
+```
+
+```txt
+POST /api/auth/logout
+↓
+refreshToken cookie is cleared
+```
+
+```txt
+POST /api/auth/refresh-token
+↓
+Refresh token missing
+```
+
+Expected logout response:
+
+```json
+{
+  "message": "Logout successful"
+}
+```
+
+Expected refresh-token response after logout:
+
+```json
+{
+  "message": "Refresh token missing"
+}
+```
+
+### Final logout understanding:
+
+```txt
+
+Backend responsibility
+↓
+Clear refreshToken cookie
 
 
+Frontend responsibility
+↓
+Remove accessToken
+Clear user state
+Redirect to login
+
+```
 
 
 

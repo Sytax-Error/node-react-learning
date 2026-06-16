@@ -123,3 +123,16 @@ export const refreshAccessToken = asyncHandler(async (req, res) => {
     accessToken,
   });
 });
+
+export const logoutUser = asyncHandler(async (req, res) => {
+  res.clearCookie("refreshToken", {
+    // clears the refresh token cookie from client.
+    httpOnly: true,
+    secure: false,
+    sameSite: "strict",
+  });
+
+  res.status(200).json({
+    message: "Logout successful",
+  });
+});
