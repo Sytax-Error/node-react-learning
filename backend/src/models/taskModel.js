@@ -12,6 +12,12 @@ const taskSchema = new mongoose.Schema(
       required: true,
       trim: true,
     },
+    // Each task belongs to one user
+    user: {
+      type: mongoose.Schema.Types.ObjectId,
+      required: true,
+      ref: "User",
+    },
   },
   {
     timestamps: true,
