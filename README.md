@@ -2906,6 +2906,173 @@ Response:
   "message": "Invalid email or password"
 }
 ```
+## JWT Access Token
+
+JWT stands for JSON Web Token.
+
+After login is successful, the backend generates an access token.
+
+The frontend uses this token to call protected APIs.
+
+Example protected API request:
+
+```txt
+GET /api/auth/profile
+Authorization: Bearer access_token
+```
+
+---
+
+## JWT Environment Variables
+
+JWT secret and expiry time are stored in `.env`.
+
+```env
+JWT_ACCESS_SECRET=my_access_secret_key
+JWT_ACCESS_EXPIRES_IN=15m
+```
+
+`.env.example` should contain sample values:
+
+```env
+JWT_ACCESS_SECRET=your_access_secret_key
+JWT_ACCESS_EXPIRES_IN=15m
+```
+
+Meaning:
+
+```txt
+JWT_ACCESS_SECRET      → secret key used to sign and verify token
+JWT_ACCESS_EXPIRES_IN  → token expiry time
+```
+
+---
+
+## Token Utility
+
+File:
+
+```txt
+src/utils/generateTokens.js
+```
+
+Code:
+
+```js
+import jwt from "jsonwebtoken";
+
+export const generateAccessToken = (user) => {
+  return jwt.sign(
+    {
+      id: user._id,
+      role: user.role,
+    },
+    process.env.JWT_ACCESS_SECRET,
+    {
+      expiresIn: process.env.JWT_ACCESS_EXPIRES_IN,
+    }
+  );
+};
+```
+
+---
+
+## jwt.sign()
+
+`jwt.sign()` creates a signed JWT token.
+
+It uses three main parts:
+
+```txt
+payload
+secret
+options
+```
+
+### Payload
+
+```js
+{
+  id: user._id,
+  role: user.role,
+}
+```
+
+Payload contains small user identity data.
+
+Do not store sensitive data like password inside JWT payload.
+
+### Secret
+
+```js
+process.env.JWT_ACCESS_SECRET
+```
+
+Secret is used to sign the token.
+
+The same secret is used later to verify the token.
+
+### Options
+
+```js
+{
+  expiresIn: process.env.JWT_ACCESS_EXPIRES_IN,
+}
+```
+
+Options define token settings like expiry time.
+
+---
+
+## Login Response with Access Token
+
+After password comparison succeeds, generate access token:
+
+```js
+const accessToken = generateAccessToken(user);
+```
+
+Return token in login response:
+
+```js
+res.status(200).json({
+  message: "Login successful",
+  accessToken,
+  user: {
+    id: user._id,
+    name: user.name,
+    email: user.email,
+    role: user.role,
+  },
+});
+```
+
+Example response:
+
+```json
+{
+  "message": "Login successful",
+  "accessToken": "eyJhbGciOiJIUzI1NiIs...",
+  "user": {
+    "id": "...",
+    "name": "Lavesh",
+    "email": "lavesh@test.com",
+    "role": "user"
+  }
+}
+```
+
+---
+
+## Access Token Usage
+
+Access token is sent in request headers for protected APIs.
+
+```txt
+Authorization: Bearer access_token
+```
+
+Backend will later verify this token using auth middleware.
 
 
 
