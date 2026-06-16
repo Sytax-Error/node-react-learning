@@ -3072,7 +3072,196 @@ Access token is sent in request headers for protected APIs.
 Authorization: Bearer access_token
 ```
 
-Backend will later verify this token using auth middleware.
+## Protected Route and Auth Middleware
+
+A protected route is an API that only logged-in users can access.
+
+Example:
+
+```txt
+GET /api/auth/profile
+```
+
+The frontend sends access token in the request header:
+
+```txt
+Authorization: Bearer access_token
+```
+
+---
+
+## Auth Middleware
+
+Auth middleware runs before the protected controller.
+
+Route example:
+
+```js
+router.get("/profile", protect, getProfile);
+```
+
+Flow:
+
+```txt
+Request
+↓
+protect middleware
+↓
+getProfile controller
+```
+
+If token is valid, request can continue.
+
+If token is missing or invalid, request is rejected.
+
+---
+
+## Reading Authorization Header
+
+Token is received from request headers:
+
+```js
+const authHeader = req.headers.authorization;
+```
+
+Expected format:
+
+```txt
+Bearer access_token
+```
+
+---
+
+## Checking Bearer Token Format
+
+```js
+if (!authHeader || !authHeader.startsWith("Bearer ")) {
+  res.status(401);
+  throw new Error("Not authorized, token missing");
+}
+```
+
+Meaning:
+
+```txt
+No Authorization header → 401 Unauthorized
+Wrong token format      → 401 Unauthorized
+```
+
+Correct format:
+
+```txt
+Authorization: Bearer eyJhbGciOiJIUzI1NiIs...
+```
+
+---
+
+## Extracting Token
+
+```js
+const token = authHeader.split(" ")[1];
+```
+
+Example:
+
+```txt
+Bearer abc123
+```
+
+After split:
+
+```js
+["Bearer", "abc123"]
+```
+
+Extracted token:
+
+```txt
+abc123
+```
+
+---
+
+## Verifying JWT Token
+
+```js
+const decoded = jwt.verify(token, process.env.JWT_ACCESS_SECRET);
+```
+
+This verifies:
+
+```txt
+Token is valid
+Token is not expired
+Token was signed with correct secret
+```
+
+Decoded payload example:
+
+```json
+{
+  "id": "user_id",
+  "role": "user",
+  "iat": 1781160000,
+  "exp": 1781160900
+}
+```
+
+Meaning:
+
+```txt
+id   → user id from token
+role → user role from token
+iat  → issued at time
+exp  → expiry time
+```
+
+---
+
+## Protected Route Test Cases
+
+### Missing token
+
+Response:
+
+```json
+{
+  "message": "Not authorized, token missing"
+}
+```
+
+Status:
+
+```txt
+401 Unauthorized
+```
+
+### Wrong token
+
+Response example:
+
+```json
+{
+  "message": "invalid token"
+}
+```
+
+### Valid token
+
+Response includes decoded payload:
+
+```json
+{
+  "message": "Token verified successfully",
+  "decoded": {
+    "id": "...",
+    "role": "user",
+    "iat": "...",
+    "exp": "..."
+  }
+}
+```
+
 
 
 

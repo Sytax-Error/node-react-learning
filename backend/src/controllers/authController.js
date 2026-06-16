@@ -81,3 +81,9 @@ export const loginUser = asyncHandler(async (req, res) => {
     },
   });
 });
+
+export const getProfile = asyncHandler(async (req, res) => {
+  res.status(200).json({
+    message: "Profile api working",
+  });
+});
