@@ -3313,6 +3313,119 @@ Example invalid token response:
 }
 ```
 
+## Attaching Logged-in User to req.user
+
+After JWT token verification, the auth middleware can find the logged-in user from MongoDB.
+
+```js
+const decoded = jwt.verify(token, process.env.JWT_ACCESS_SECRET);
+```
+
+`decoded` contains data from the access token payload.
+
+Example:
+
+```json
+{
+  "id": "user_id",
+  "role": "user",
+  "iat": 1781160000,
+  "exp": 1781160900
+}
+```
+
+The user is then fetched from MongoDB:
+
+```js
+const user = await User.findById(decoded.id).select("-password");
+```
+
+`select("-password")` means:
+
+```txt
+Return user data without password field.
+```
+
+Then the user is attached to the request object:
+
+```js
+req.user = user;
+```
+
+After this, any protected controller can access the logged-in user using:
+
+```js
+req.user
+```
+
+---
+
+## Protected Profile API
+
+API:
+
+```txt
+GET /api/auth/profile
+```
+
+Route:
+
+```js
+router.get("/profile", protect, getProfile);
+```
+
+Flow:
+
+```txt
+Request
+↓
+protect middleware
+↓
+verify access token
+↓
+find user from MongoDB
+↓
+attach user to req.user
+↓
+getProfile controller
+↓
+return profile
+```
+
+Controller:
+
+```js
+export const getProfile = asyncHandler(async (req, res) => {
+  res.status(200).json({
+    user: req.user,
+  });
+});
+```
+
+Request header:
+
+```txt
+Authorization: Bearer access_token
+```
+
+Success response:
+
+```json
+{
+  "user": {
+    "_id": "...",
+    "name": "Lavesh",
+    "email": "lavesh@test.com",
+    "role": "user",
+    "createdAt": "...",
+    "updatedAt": "...",
+    "__v": 0
+  }
+}
+```
+
+Password should not be returned in the response.
+
 
 
 

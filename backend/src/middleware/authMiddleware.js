@@ -16,9 +16,15 @@ export const protect = asyncHandler(async (req, res, next) => {
   // Token is not expired
   // Token was created using our secret
   const decoded = jwt.verify(token, process.env.JWT_ACCESS_SECRET);
+  // Finds logged-in user from MongoDB.
+  const user = await User.findById(decoded.id).select("-password");
+  //.select("-password")       Return user data but exclude password
 
-  res.status(200).json({
-    message: "Token verified successfully",
-    decoded,
-  });
+  if (!user) {
+    res.status(404);
+    throw new Error("Not authorized, user not found");
+  }
+
+  req.user = user; // Stores logged-in user data in request object.
+  next(); // Sends request to next controller.
 });
