@@ -325,3 +325,175 @@ POST /api/tasks
 PUT /api/tasks/:id
 DELETE /api/tasks/:id
 ```
+## Frontend Tasks Integration
+
+The frontend now connects with protected task APIs from the backend.
+
+Task APIs are user-specific, so logged-in users can only see and manage their own tasks.
+
+## Task APIs Used
+
+```txt
+GET    /api/tasks
+POST   /api/tasks
+DELETE /api/tasks/:id
+```
+
+These APIs are protected and require an access token.
+
+The frontend uses `authFetch()` to automatically send the token.
+
+---
+
+## Folder Structure
+
+```txt
+src/
+  features/
+    tasks/
+      taskService.js
+      TaskForm.jsx
+      TaskList.jsx
+      TasksPage.jsx
+```
+
+---
+
+## Task Service
+
+File:
+
+```txt
+src/features/tasks/taskService.js
+```
+
+```js
+import { API_BASE_URL } from "../../config/api";
+import { authFetch } from "../../utils/authFetch";
+
+export const getTasks = async () => {
+  return authFetch(`${API_BASE_URL}/tasks`);
+};
+
+export const createTask = async (taskData) => {
+  return authFetch(`${API_BASE_URL}/tasks`, {
+    method: "POST",
+    body: JSON.stringify(taskData),
+  });
+};
+
+export const deleteTask = async (taskId) => {
+  return authFetch(`${API_BASE_URL}/tasks/${taskId}`, {
+    method: "DELETE",
+  });
+};
+```
+
+---
+
+## Fetch Logged-In User's Tasks
+
+```js
+const data = await getTasks();
+setTasks(data);
+```
+
+Backend returns only the logged-in user's tasks.
+
+```txt
+GET /api/tasks
+↓
+authFetch adds Authorization header
+↓
+Backend verifies token
+↓
+Backend returns current user's tasks
+```
+
+---
+
+## Create Task
+
+Frontend sends only task data.
+
+```json
+{
+  "title": "Learn frontend tasks",
+  "status": "pending"
+}
+```
+
+Frontend does not send user id.
+
+Backend adds the logged-in user's id using `req.user._id`.
+
+Backend response format:
+
+```json
+{
+  "message": "Task created.",
+  "task": {
+    "_id": "task_id",
+    "title": "Learn frontend tasks",
+    "status": "pending",
+    "user": "logged_in_user_id"
+  }
+}
+```
+
+Because the actual task is inside `task`, frontend adds `newTask.task` to state.
+
+```js
+const newTask = await createTask(taskData);
+
+setTasks((prevTasks) => [...prevTasks, newTask.task]);
+```
+
+This shows the task immediately without page refresh.
+
+---
+
+## Delete Task
+
+```js
+await deleteTask(taskId);
+
+setTasks((prevTasks) =>
+  prevTasks.filter((task) => task._id !== taskId)
+);
+```
+
+After successful delete, the task is removed from frontend state.
+
+On page refresh, deleted task does not come back because it is also removed from database.
+
+---
+
+## Component Responsibility
+
+```txt
+TaskForm
+→ handles create task form UI
+
+TaskList
+→ displays tasks and delete button
+
+TasksPage
+→ manages API calls, task state, loading state, and errors
+
+taskService
+→ contains task API functions
+```
+
+---
+
+## Current Task Features
+
+```txt
+Fetch logged-in user's tasks
+Create task
+Show newly created task without refresh
+Delete task
+Remove deleted task from UI
+Use authFetch for protected APIs
+```
