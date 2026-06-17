@@ -1,8 +1,10 @@
 import { useState } from "react";
 import { useAuth } from "./AuthContext";
+import { useNavigate } from "react-router-dom";
 
 function Login() {
   const { login, loading, error } = useAuth();
+  const navigate = useNavigate();
 
   const [formData, setFormData] = useState({
     email: "",
@@ -31,6 +33,7 @@ function Login() {
         email: "",
         password: "",
       });
+      navigate("/tasks");
     } catch (error) {
       console.log(error.message);
     }

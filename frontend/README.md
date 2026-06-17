@@ -609,3 +609,174 @@ Read logged-in user's tasks
 Update task
 Delete task
 ```
+## Frontend Routing and Navbar
+
+The frontend uses React Router for page navigation and route protection.
+
+## Routes
+
+```txt
+/          → redirects based on login status
+/login     → public route
+/register  → public route
+/tasks     → protected route
+/profile   → protected route
+```
+
+---
+
+## ProtectedRoute
+
+File:
+
+```txt
+src/routes/ProtectedRoute.jsx
+```
+
+`ProtectedRoute` allows only logged-in users to access protected pages.
+
+```jsx
+function ProtectedRoute({ children }) {
+  const { isAuthenticated } = useAuth();
+
+  if (!isAuthenticated) {
+    return <Navigate to="/login" replace />;
+  }
+
+  return children;
+}
+```
+
+Used for pages like:
+
+```txt
+/tasks
+/profile
+```
+
+If the user is not logged in, they are redirected to `/login`.
+
+---
+
+## PublicRoute
+
+File:
+
+```txt
+src/routes/PublicRoute.jsx
+```
+
+`PublicRoute` prevents logged-in users from opening login/register pages again.
+
+```jsx
+function PublicRoute({ children }) {
+  const { isAuthenticated } = useAuth();
+
+  if (isAuthenticated) {
+    return <Navigate to="/tasks" replace />;
+  }
+
+  return children;
+}
+```
+
+Used for:
+
+```txt
+/login
+/register
+```
+
+If the user is already logged in, they are redirected to `/tasks`.
+
+---
+
+## Login Redirect
+
+After successful login, the user is redirected to the tasks page.
+
+```jsx
+await login(formData);
+navigate("/tasks");
+```
+
+Flow:
+
+```txt
+Login successful
+↓
+AuthContext saves user and accessToken
+↓
+navigate("/tasks")
+↓
+ProtectedRoute allows access
+↓
+Tasks page opens
+```
+
+---
+
+## Navbar
+
+File:
+
+```txt
+src/components/layout/Navbar.jsx
+```
+
+The navbar changes based on authentication state.
+
+Logged out user sees:
+
+```txt
+Login | Register
+```
+
+Logged in user sees:
+
+```txt
+Tasks | Profile | Username | Logout
+```
+
+Logout flow:
+
+```txt
+Click Logout
+↓
+Backend logout API clears refresh token cookie
+↓
+Frontend clears localStorage
+↓
+User is redirected to /login
+```
+
+---
+
+## Layout Styling
+
+File:
+
+```txt
+src/styles/layout.css
+```
+
+The layout stylesheet contains base page styles and navbar styles.
+
+It includes:
+
+```txt
+body layout
+link reset
+navbar container
+navbar links
+user badge
+logout button
+```
+
+Current styling approach:
+
+```txt
+Create CSS files only when they are needed.
+Avoid unused styling files.
+Keep styles grouped by feature/layout purpose.
+```
