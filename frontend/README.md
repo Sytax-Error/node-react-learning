@@ -228,3 +228,100 @@ Profile from local auth state
 Protected server profile API call
 Logout with backend API
 ```
+## Common Protected API Helper
+
+Protected APIs need an access token in the request header.
+
+Instead of writing the Authorization header in every API call, a reusable helper is used.
+
+File:
+
+```txt
+src/utils/authFetch.js
+```
+
+```js
+export const authFetch = async (url, options = {}) => {
+  const savedAuth = localStorage.getItem("auth");
+  const auth = savedAuth ? JSON.parse(savedAuth) : null;
+
+  const accessToken = auth?.accessToken;
+
+  const response = await fetch(url, {
+    ...options,
+    headers: {
+      "Content-Type": "application/json",
+      ...options.headers,
+      Authorization: `Bearer ${accessToken}`,
+    },
+  });
+
+  const data = await response.json();
+
+  if (!response.ok) {
+    throw new Error(data.message || "Something went wrong");
+  }
+
+  return data;
+};
+```
+
+## Why authFetch is Useful
+
+```txt
+authFetch
+↓
+reads accessToken from localStorage
+↓
+adds Authorization header automatically
+↓
+handles API error response
+↓
+returns response data
+```
+
+Before:
+
+```js
+const response = await fetch(`${API_BASE_URL}/auth/profile`, {
+  method: "GET",
+  headers: {
+    Authorization: `Bearer ${accessToken}`,
+  },
+});
+```
+
+After:
+
+```js
+const data = await authFetch(`${API_BASE_URL}/auth/profile`);
+```
+
+## Profile API Using authFetch
+
+File:
+
+```txt
+src/features/auth/authService.js
+```
+
+```js
+export const getProfile = async () => {
+  return authFetch(`${API_BASE_URL}/auth/profile`);
+};
+```
+
+Now the component does not need to pass the access token manually.
+
+```js
+const data = await getProfile();
+```
+
+This same helper can be reused for protected APIs like:
+
+```txt
+GET /api/tasks
+POST /api/tasks
+PUT /api/tasks/:id
+DELETE /api/tasks/:id
+```

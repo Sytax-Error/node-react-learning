@@ -3,7 +3,7 @@ import { useAuth } from "./AuthContext";
 import { getProfile } from "./authService";
 
 function Profile() {
-  const { user, accessToken, isAuthenticated, logout } = useAuth();
+  const { user, isAuthenticated, logout } = useAuth();
 
   const [serverUser, setServerUser] = useState(null);
   const [profileError, setProfileError] = useState("");
@@ -15,7 +15,7 @@ function Profile() {
       setProfileError("");
 
       try {
-        const data = await getProfile(accessToken);
+        const data = await getProfile();
         setServerUser(data.user);
       } catch (error) {
         setProfileError(error.message);
@@ -24,10 +24,10 @@ function Profile() {
       }
     };
 
-    if (isAuthenticated && accessToken) {
+    if (isAuthenticated) {
       fetchProfile();
     }
-  }, [isAuthenticated, accessToken]);
+  }, [isAuthenticated]);
 
   if (!isAuthenticated) {
     return <p>No user logged in</p>;
