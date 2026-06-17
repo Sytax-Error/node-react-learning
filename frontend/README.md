@@ -497,3 +497,115 @@ Delete task
 Remove deleted task from UI
 Use authFetch for protected APIs
 ```
+## Update Task from Frontend
+
+The frontend supports updating an existing task using the protected task update API.
+
+API used:
+
+```txt
+PUT /api/tasks/:id
+```
+
+---
+
+## Update API Function
+
+File:
+
+```txt
+src/features/tasks/taskService.js
+```
+
+```js
+export const updateTask = async (taskId, taskData) => {
+  return authFetch(`${API_BASE_URL}/tasks/${taskId}`, {
+    method: "PUT",
+    body: JSON.stringify(taskData),
+  });
+};
+```
+
+`authFetch()` automatically sends the access token in the Authorization header.
+
+---
+
+## Edit Mode in Task Form
+
+The same form is used for both create and update.
+
+```txt
+No editingTask  → Create Task mode
+Has editingTask → Update Task mode
+```
+
+When the user clicks Edit, the selected task is stored in parent state.
+
+```js
+const [editingTask, setEditingTask] = useState(null);
+```
+
+The form receives `editingTask` and fills the selected task data.
+
+```js
+useEffect(() => {
+  if (editingTask) {
+    setFormData({
+      title: editingTask.title,
+      status: editingTask.status,
+    });
+  } else {
+    setFormData({
+      title: "",
+      status: "pending",
+    });
+  }
+}, [editingTask]);
+```
+
+When cancel is clicked, `editingTask` becomes `null` and the form is cleared.
+
+---
+
+## Updating Task State
+
+After successful update, the backend returns:
+
+```json
+{
+  "message": "Task updated successfully.",
+  "task": {
+    "_id": "task_id",
+    "title": "Updated title",
+    "status": "completed",
+    "user": "logged_in_user_id"
+  }
+}
+```
+
+The frontend replaces the old task in state with the updated task.
+
+```js
+const updatedTask = await updateTask(taskId, taskData);
+
+setTasks((prevTasks) =>
+  prevTasks.map((task) =>
+    task._id === taskId ? updatedTask.task : task
+  )
+);
+
+setEditingTask(null);
+```
+
+This updates the task immediately without page refresh.
+
+---
+
+## Task CRUD Completed
+
+```txt
+Create task
+Read logged-in user's tasks
+Update task
+Delete task
+```

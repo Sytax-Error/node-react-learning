@@ -1,4 +1,4 @@
-function TaskList({ tasks, onDeleteTask, loading }) {
+function TaskList({ tasks, onEditTask, onDeleteTask, loading }) {
   if (loading) {
     return <p>Loading tasks...</p>;
   }
@@ -15,6 +15,9 @@ function TaskList({ tasks, onDeleteTask, loading }) {
         {tasks.map((task) => (
           <li key={task._id}>
             <strong>{task.title}</strong> - {task.status}
+            <button type="button" onClick={() => onEditTask(task)}>
+              Edit
+            </button>
             <button type="button" onClick={() => onDeleteTask(task._id)}>
               Delete
             </button>

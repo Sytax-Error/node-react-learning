@@ -1,10 +1,30 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
-function TaskForm({ onCreateTask, loading }) {
+function TaskForm({
+  onCreateTask,
+  onUpdateTask,
+  editingTask,
+  onCancelEdit,
+  loading,
+}) {
   const [formData, setFormData] = useState({
     title: "",
     status: "pending",
   });
+
+  useEffect(() => {
+    if (editingTask) {
+      setFormData({
+        title: editingTask.title,
+        status: editingTask.status,
+      });
+    } else {
+      setFormData({
+        title: "",
+        status: "pending",
+      });
+    }
+  }, [editingTask]);
 
   const handleChange = (event) => {
     const { name, value } = event.target;
@@ -18,7 +38,11 @@ function TaskForm({ onCreateTask, loading }) {
   const handleSubmit = async (event) => {
     event.preventDefault();
 
-    await onCreateTask(formData);
+    if (editingTask) {
+      await onUpdateTask(editingTask._id, formData);
+    } else {
+      await onCreateTask(formData);
+    }
 
     setFormData({
       title: "",
@@ -28,7 +52,7 @@ function TaskForm({ onCreateTask, loading }) {
 
   return (
     <div>
-      <h3>Create Task</h3>
+      <h3>{editingTask ? "Update Task" : "Create Task"}</h3>
 
       <form onSubmit={handleSubmit}>
         <div>
@@ -51,8 +75,20 @@ function TaskForm({ onCreateTask, loading }) {
         </div>
 
         <button type="submit" disabled={loading}>
-          {loading ? "Creating..." : "Create Task"}
+          {loading
+            ? editingTask
+              ? "Updating..."
+              : "Creating..."
+            : editingTask
+              ? "Update Task"
+              : "Create Task"}
         </button>
+
+        {editingTask && (
+          <button type="button" onClick={onCancelEdit}>
+            Cancel
+          </button>
+        )}
       </form>
     </div>
   );

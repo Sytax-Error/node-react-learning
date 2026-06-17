@@ -17,3 +17,10 @@ export const deleteTask = async (taskId) => {
     method: "DELETE",
   });
 };
+
+export const updateTask = async (taskId, taskData) => {
+  return authFetch(`${API_BASE_URL}/tasks/${taskId}`, {
+    method: "PUT",
+    body: JSON.stringify(taskData),
+  });
+};
