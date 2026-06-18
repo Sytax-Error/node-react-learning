@@ -1075,3 +1075,41 @@ Cleaner feature components
 Easy global design updates
 More industry-style frontend structure
 ```
+
+## Reusable Card Component
+
+The frontend uses a shared `Card` component for common card layouts.
+
+File:
+
+```txt id="bujwej"
+src/components/ui/Card.jsx
+```
+
+```jsx id="0jp6x9"
+function Card({ children, className = "" }) {
+  return <div className={`ui-card ${className}`}>{children}</div>;
+}
+```
+
+The `Card` component provides a reusable wrapper for sections that need card-style UI.
+
+It is used in:
+
+```txt id="lk6f7e"
+Login page
+Register page
+Task form
+Task list
+Profile cards
+```
+
+Example:
+
+```jsx id="pwilpf"
+<Card className="profile-card">
+  ...
+</Card>
+```
+
+This keeps the UI structure consistent and avoids repeated raw card wrapper markup.

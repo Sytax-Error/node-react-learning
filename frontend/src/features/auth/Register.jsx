@@ -4,6 +4,7 @@ import { Link } from "react-router-dom";
 import Button from "../../components/ui/Button";
 import Input from "../../components/ui/Input";
 import Message from "../../components/ui/Message";
+import Card from "../../components/ui/Card";
 
 function Register() {
   const { register, loading, error } = useAuth();
@@ -46,7 +47,7 @@ function Register() {
 
   return (
     <div className="auth-page">
-      <div className="auth-card">
+      <Card className="auth-card">
         <h2>Create account</h2>
         <p className="auth-subtitle">
           Register to start managing your own tasks.
@@ -90,7 +91,7 @@ function Register() {
         <p className="auth-switch">
           Already have an account? <Link to="/login">Login</Link>
         </p>
-      </div>
+      </Card>
     </div>
   );
 }

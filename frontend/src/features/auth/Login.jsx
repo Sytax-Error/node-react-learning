@@ -4,6 +4,7 @@ import { Link, useNavigate } from "react-router-dom";
 import Button from "../../components/ui/Button";
 import Input from "../../components/ui/Input";
 import Message from "../../components/ui/Message";
+import Card from "../../components/ui/Card";
 
 function Login() {
   const { login, loading, error } = useAuth();
@@ -44,7 +45,7 @@ function Login() {
 
   return (
     <div className="auth-page">
-      <div className="auth-card">
+      <Card className="auth-card">
         <h2>Welcome back</h2>
         <p className="auth-subtitle">Login to manage your tasks securely.</p>
 
@@ -78,7 +79,7 @@ function Login() {
         <p className="auth-switch">
           Don&apos;t have an account? <Link to="/register">Create account</Link>
         </p>
-      </div>
+      </Card>
     </div>
   );
 }

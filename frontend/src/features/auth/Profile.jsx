@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { useAuth } from "./AuthContext";
 import { getProfile } from "./authService";
 import Button from "../../components/ui/Button";
+import Card from "../../components/ui/Card";
 
 function Profile() {
   const { user, isAuthenticated, logout } = useAuth();
@@ -45,7 +46,7 @@ function Profile() {
       </section>
 
       <section className="profile-grid">
-        <div className="profile-card">
+        <Card className="profile-card">
           <h3>Local User</h3>
           <p className="profile-card-subtitle">
             This data comes from AuthContext and localStorage.
@@ -67,9 +68,9 @@ function Profile() {
               <strong>{user?.role}</strong>
             </div>
           </div>
-        </div>
+        </Card>
 
-        <div className="profile-card">
+        <Card className="profile-card">
           <h3>Server Profile</h3>
           <p className="profile-card-subtitle">
             This data comes from protected backend API.
@@ -99,7 +100,7 @@ function Profile() {
               </div>
             </div>
           )}
-        </div>
+        </Card>
       </section>
 
       <Button variant="solid-danger" onClick={logout}>

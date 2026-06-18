@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import Button from "../../components/ui/Button";
 import Input from "../../components/ui/Input";
 import Select from "../../components/ui/Select";
+import Card from "../../components/ui/Card";
 
 function TaskForm({
   onCreateTask,
@@ -54,7 +55,7 @@ function TaskForm({
   };
 
   return (
-    <div className="task-card task-form-card">
+    <Card className="task-card task-form-card">
       <h3>{editingTask ? "Update Task" : "Create Task"}</h3>
       <p className="task-card-subtitle">
         {editingTask
@@ -100,7 +101,7 @@ function TaskForm({
           )}
         </div>
       </form>
-    </div>
+    </Card>
   );
 }
 

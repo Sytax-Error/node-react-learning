@@ -1,28 +1,29 @@
 import Button from "../../components/ui/Button";
+import Card from "../../components/ui/Card";
 
 function TaskList({ tasks, onEditTask, onDeleteTask, loading }) {
   if (loading) {
     return (
-      <div className="task-card task-list-card">
+      <Card className="task-card task-list-card">
         <p className="tasks-loading">Loading tasks...</p>
-      </div>
+      </Card>
     );
   }
 
   if (tasks.length === 0) {
     return (
-      <div className="task-card task-list-card">
+      <Card className="task-card task-list-card">
         <h3>My Tasks</h3>
         <p className="task-card-subtitle">
           Your created tasks will appear here.
         </p>
         <p className="tasks-empty">No tasks found.</p>
-      </div>
+      </Card>
     );
   }
 
   return (
-    <div className="task-card task-list-card">
+    <Card className="task-card task-list-card">
       <div className="task-list-header">
         <div>
           <h3>My Tasks</h3>
@@ -62,7 +63,7 @@ function TaskList({ tasks, onEditTask, onDeleteTask, loading }) {
           </div>
         ))}
       </div>
-    </div>
+    </Card>
   );
 }
 
