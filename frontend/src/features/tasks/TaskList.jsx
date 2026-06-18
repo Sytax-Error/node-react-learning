@@ -1,11 +1,19 @@
 import Button from "../../components/ui/Button";
 import Card from "../../components/ui/Card";
+import Skeleton from "../../components/ui/Skeleton";
 
 function TaskList({ tasks, onEditTask, onDeleteTask, loading }) {
   if (loading) {
     return (
       <Card className="task-card task-list-card">
-        <p className="tasks-loading">Loading tasks...</p>
+        <div className="task-list-header">
+          <div>
+            <h3>My Tasks</h3>
+            <p className="task-card-subtitle">Fetching your latest tasks...</p>
+          </div>
+        </div>
+
+        <Skeleton variant="task-list" count={3} />
       </Card>
     );
   }

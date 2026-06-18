@@ -1113,3 +1113,75 @@ Example:
 ```
 
 This keeps the UI structure consistent and avoids repeated raw card wrapper markup.
+
+## Skeleton Loading UI
+
+The frontend uses skeleton loading for page and card data loading states.
+
+Skeleton loading is better than a spinner when the page structure is already known.
+
+Used in:
+
+```txt
+Tasks page
+Profile page
+```
+
+---
+
+## Skeleton Component
+
+File:
+
+```txt
+src/components/ui/Skeleton.jsx
+```
+
+The component supports different variants:
+
+```txt
+line
+card
+task-list
+```
+
+Example:
+
+```jsx
+<Skeleton variant="task-list" count={3} />
+<Skeleton variant="card" />
+```
+
+---
+
+## Where Skeleton is Used
+
+### Task List Loading
+
+When tasks are loading, the task list shows task-shaped placeholder rows.
+
+```jsx
+<Skeleton variant="task-list" count={3} />
+```
+
+### Profile Loading
+
+When server profile data is loading, the profile card shows card-style placeholders.
+
+```jsx
+<Skeleton variant="card" />
+```
+
+---
+
+## Loading Strategy
+
+```txt
+Small action loading
+→ Button text like "Creating..." or "Updating..."
+
+Page/card content loading
+→ Skeleton placeholder UI
+```
+
+This gives a better user experience and keeps the UI feeling modern.

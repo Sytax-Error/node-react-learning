@@ -3,6 +3,7 @@ import { useAuth } from "./AuthContext";
 import { getProfile } from "./authService";
 import Button from "../../components/ui/Button";
 import Card from "../../components/ui/Card";
+import Skeleton from "../../components/ui/Skeleton";
 
 function Profile() {
   const { user, isAuthenticated, logout } = useAuth();
@@ -76,9 +77,7 @@ function Profile() {
             This data comes from protected backend API.
           </p>
 
-          {profileLoading && (
-            <p className="profile-muted">Loading profile...</p>
-          )}
+          {profileLoading && <Skeleton variant="card" />}
 
           {profileError && <p className="profile-error">{profileError}</p>}
 
