@@ -1,8 +1,14 @@
 import { useState } from "react";
 import { useAuth } from "./AuthContext";
+import { Link, useNavigate } from "react-router-dom";
+import Button from "../../components/ui/Button";
+import Input from "../../components/ui/Input";
+import Message from "../../components/ui/Message";
+import Card from "../../components/ui/Card";
 
 function Login() {
   const { login, loading, error } = useAuth();
+  const navigate = useNavigate();
 
   const [formData, setFormData] = useState({
     email: "",
@@ -31,45 +37,49 @@ function Login() {
         email: "",
         password: "",
       });
+      navigate("/tasks");
     } catch (error) {
       console.log(error.message);
     }
   };
 
   return (
-    <div>
-      <h2>Login</h2>
+    <div className="auth-page">
+      <Card className="auth-card">
+        <h2>Welcome back</h2>
+        <p className="auth-subtitle">Login to manage your tasks securely.</p>
 
-      <form onSubmit={handleSubmit}>
-        <div>
-          <label>Email</label>
-          <input
+        <form onSubmit={handleSubmit}>
+          <Input
+            label="Email"
             type="email"
             name="email"
             value={formData.email}
             onChange={handleChange}
             placeholder="Enter email"
           />
-        </div>
 
-        <div>
-          <label>Password</label>
-          <input
+          <Input
+            label="Password"
             type="password"
             name="password"
             value={formData.password}
             onChange={handleChange}
             placeholder="Enter password"
           />
-        </div>
 
-        <button type="submit" disabled={loading}>
-          {loading ? "Logging in..." : "Login"}
-        </button>
-      </form>
+          <Button type="submit" fullWidth disabled={loading}>
+            {loading ? "Logging in..." : "Login"}
+          </Button>
+        </form>
 
-      {successMessage && <p>{successMessage}</p>}
-      {error && <p>{error}</p>}
+        <Message type="success">{successMessage}</Message>
+        <Message type="error">{error}</Message>
+
+        <p className="auth-switch">
+          Don&apos;t have an account? <Link to="/register">Create account</Link>
+        </p>
+      </Card>
     </div>
   );
 }

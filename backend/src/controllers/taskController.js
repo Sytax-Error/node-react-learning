@@ -24,6 +24,7 @@ export const createTasks = asyncHandler(async (req, res) => {
 
   res.status(201).json({
     message: "Task created.",
+    task,
   });
 });
 
@@ -68,7 +69,7 @@ export const updateTask = asyncHandler(async (req, res) => {
     });
   }
 
-  const task = await Task.findByIdAndUpdate(
+  const task = await Task.findOneAndUpdate(
     {
       _id: id,
       user: req.user._id,
@@ -78,8 +79,8 @@ export const updateTask = asyncHandler(async (req, res) => {
       status,
     },
     {
-      returnDocument: true,
-      runvalidators: true,
+      returnDocument: "after",
+      runValidators: true,
     },
   );
 
