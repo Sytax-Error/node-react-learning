@@ -7,6 +7,7 @@ import "./styles/layout.css";
 import "./styles/forms.css";
 import "./styles/tasks.css";
 import "./styles/profile.css";
+import "./styles/ui.css";
 
 createRoot(document.getElementById("root")).render(
   <StrictMode>

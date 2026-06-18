@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import Button from "../../components/layout/Button";
 
 function TaskForm({
   onCreateTask,
@@ -80,7 +81,7 @@ function TaskForm({
         </div>
 
         <div className="task-actions">
-          <button type="submit" className="task-primary-btn" disabled={loading}>
+          <Button type="submit" fullWidth disabled={loading}>
             {loading
               ? editingTask
                 ? "Updating..."
@@ -88,16 +89,12 @@ function TaskForm({
               : editingTask
                 ? "Update Task"
                 : "Create Task"}
-          </button>
+          </Button>
 
           {editingTask && (
-            <button
-              type="button"
-              className="task-secondary-btn"
-              onClick={onCancelEdit}
-            >
+            <Button type="button" variant="secondary" onClick={onCancelEdit}>
               Cancel
-            </button>
+            </Button>
           )}
         </div>
       </form>

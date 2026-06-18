@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { useAuth } from "./AuthContext";
 import { getProfile } from "./authService";
+import Button from "../../components/layout/Button";
 
 function Profile() {
   const { user, isAuthenticated, logout } = useAuth();
@@ -101,9 +102,9 @@ function Profile() {
         </div>
       </section>
 
-      <button type="button" className="profile-logout-btn" onClick={logout}>
+      <Button variant="solid-danger" onClick={logout}>
         Logout
-      </button>
+      </Button>
     </main>
   );
 }

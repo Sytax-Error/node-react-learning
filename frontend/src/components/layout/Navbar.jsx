@@ -1,5 +1,6 @@
 import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "../../features/auth/AuthContext";
+import Button from "./Button";
 
 function Navbar() {
   const { isAuthenticated, user, logout } = useAuth();
@@ -24,13 +25,9 @@ function Navbar() {
 
             <span className="navbar-user">{user?.name}</span>
 
-            <button
-              type="button"
-              className="navbar-logout"
-              onClick={handleLogout}
-            >
+            <Button size="sm" variant="solid-danger" onClick={handleLogout}>
               Logout
-            </button>
+            </Button>
           </>
         ) : (
           <>

@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { useAuth } from "./AuthContext";
 import { Link, useNavigate } from "react-router-dom";
+import Button from "../../components/layout/Button";
 
 function Login() {
   const { login, loading, error } = useAuth();
@@ -70,9 +71,9 @@ function Login() {
             />
           </div>
 
-          <button type="submit" className="btn-primary" disabled={loading}>
+          <Button type="submit" fullWidth disabled={loading}>
             {loading ? "Logging in..." : "Login"}
-          </button>
+          </Button>
         </form>
 
         {successMessage && (

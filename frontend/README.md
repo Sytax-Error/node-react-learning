@@ -837,3 +837,122 @@ Current behavior:
 Valid access token → API works
 Expired access token → token refresh + retry
 Expired/missing refresh token → logout fallback
+
+```
+
+## Reusable Button Component
+
+The frontend uses a shared `Button` component to keep button UI consistent across the app.
+
+File:
+
+```txt
+src/components/ui/Button.jsx
+```
+
+The button supports different variants, sizes, disabled state, and full-width layout.
+
+```jsx
+<Button type="submit" fullWidth>
+  Login
+</Button>
+
+<Button variant="secondary">
+  Cancel
+</Button>
+
+<Button size="sm" variant="danger">
+  Delete
+</Button>
+
+<Button variant="solid-danger">
+  Logout
+</Button>
+```
+
+---
+
+## Button Props
+
+```txt
+variant
+→ primary, secondary, danger, solid-danger, ghost
+
+size
+→ sm, md
+
+fullWidth
+→ makes the button take full width
+
+disabled
+→ disables the button
+
+type
+→ button, submit, reset
+```
+
+---
+
+## Button Styling
+
+File:
+
+```txt
+src/styles/ui.css
+```
+
+The shared button styles include:
+
+```txt
+primary button
+secondary button
+danger button
+solid danger button
+ghost button
+small and medium sizes
+disabled state
+hover effects
+```
+
+---
+
+## Where Button is Used
+
+The reusable button is used in:
+
+```txt
+Login page
+Register page
+Task form
+Task list
+Profile page
+Navbar logout
+```
+
+This avoids repeated button CSS classes across the project.
+
+Old page-specific button classes were removed or replaced with the shared button component.
+
+Examples of replaced classes:
+
+```txt
+btn-primary
+task-primary-btn
+task-secondary-btn
+task-edit-btn
+task-delete-btn
+profile-logout-btn
+navbar-logout
+```
+
+---
+
+## Why This is Better
+
+```txt
+Consistent UI
+Less repeated CSS
+Cleaner components
+Easy to change button design globally
+Better industry-style frontend structure
+```

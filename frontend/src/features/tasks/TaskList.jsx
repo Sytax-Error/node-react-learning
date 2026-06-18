@@ -1,3 +1,5 @@
+import Button from "../../components/layout/Button";
+
 function TaskList({ tasks, onEditTask, onDeleteTask, loading }) {
   if (loading) {
     return (
@@ -41,21 +43,21 @@ function TaskList({ tasks, onEditTask, onDeleteTask, loading }) {
             </div>
 
             <div className="task-item-actions">
-              <button
-                type="button"
-                className="task-edit-btn"
+              <Button
+                size="sm"
+                variant="ghost"
                 onClick={() => onEditTask(task)}
               >
                 Edit
-              </button>
+              </Button>
 
-              <button
-                type="button"
-                className="task-delete-btn"
+              <Button
+                size="sm"
+                variant="danger"
                 onClick={() => onDeleteTask(task._id)}
               >
                 Delete
-              </button>
+              </Button>
             </div>
           </div>
         ))}

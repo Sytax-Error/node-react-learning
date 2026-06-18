@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { useAuth } from "./AuthContext";
 import { Link } from "react-router-dom";
+import Button from "../../components/layout/Button";
 
 function Register() {
   const { register, loading, error } = useAuth();
@@ -86,9 +87,9 @@ function Register() {
             />
           </div>
 
-          <button type="submit" className="btn-primary" disabled={loading}>
+          <Button type="submit" fullWidth disabled={loading}>
             {loading ? "Registering..." : "Register"}
-          </button>
+          </Button>
         </form>
 
         {successMessage && (

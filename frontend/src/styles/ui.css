@@ -1,0 +1,89 @@
+.ui-button {
+  border: none;
+  border-radius: 10px;
+  font-weight: 800;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  transition:
+    background-color 0.2s ease,
+    color 0.2s ease,
+    transform 0.15s ease,
+    box-shadow 0.2s ease;
+}
+
+.ui-button:disabled {
+  cursor: not-allowed;
+  transform: none;
+  box-shadow: none;
+}
+
+.ui-button-sm {
+  height: 36px;
+  padding: 0 14px;
+  font-size: 13px;
+}
+
+.ui-button-md {
+  height: 46px;
+  padding: 0 18px;
+  font-size: 14px;
+}
+
+.ui-button-full {
+  width: 100%;
+}
+
+.ui-button-primary {
+  background: #2563eb;
+  color: #ffffff;
+}
+
+.ui-button-primary:hover:not(:disabled) {
+  background: #1d4ed8;
+  box-shadow: 0 12px 22px rgba(37, 99, 235, 0.22);
+  transform: translateY(-1px);
+}
+
+.ui-button-primary:disabled {
+  background: #93c5fd;
+}
+
+.ui-button-secondary {
+  background: #f1f5f9;
+  color: #334155;
+}
+
+.ui-button-secondary:hover:not(:disabled) {
+  background: #e2e8f0;
+}
+
+.ui-button-danger {
+  background: #fef2f2;
+  color: #b91c1c;
+}
+
+.ui-button-danger:hover:not(:disabled) {
+  background: #fee2e2;
+}
+
+.ui-button-solid-danger {
+  background: #ef4444;
+  color: #ffffff;
+}
+
+.ui-button-solid-danger:hover:not(:disabled) {
+  background: #dc2626;
+  box-shadow: 0 12px 22px rgba(239, 68, 68, 0.22);
+  transform: translateY(-1px);
+}
+
+.ui-button-ghost {
+  background: transparent;
+  color: #2563eb;
+}
+
+.ui-button-ghost:hover:not(:disabled) {
+  background: #eff6ff;
+}
