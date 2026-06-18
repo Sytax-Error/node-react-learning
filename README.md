@@ -4694,3 +4694,111 @@ Middleware validation protects the API request.
 Mongoose schema validation protects the database model.
 
 ```
+
+## Backend Service Layer
+
+A service layer was added to separate database logic from controllers.
+
+Before service layer:
+
+```txt
+Route
+↓
+Middleware
+↓
+Controller
+↓
+Mongoose Model
+```
+
+After service layer:
+
+```txt
+Route
+↓
+Middleware
+↓
+Controller
+↓
+Service
+↓
+Mongoose Model
+↓
+MongoDB
+```
+
+---
+
+## Why Service Layer?
+
+Controllers should mainly handle:
+
+```txt
+Request data
+Response
+Status code
+```
+
+Services should handle:
+
+```txt
+Database logic
+Business logic
+Reusable operations
+```
+
+This keeps controllers cleaner and makes backend code easier to maintain.
+
+---
+
+## Task Service
+
+Task database logic was moved to:
+
+```txt
+backend/src/services/taskService.js
+```
+
+The task service contains reusable functions:
+
+```js
+findTasksByUser(userId)
+createTaskForUser(taskData, userId)
+findTaskByIdAndUser(taskId, userId)
+updateTaskByIdAndUser(taskId, userId, taskData)
+deleteTaskByIdAndUser(taskId, userId)
+```
+
+---
+
+## Task Controller After Service Layer
+
+The task controller now calls service functions instead of directly using the Mongoose model.
+
+Example:
+
+```js
+const tasks = await findTasksByUser(req.user._id);
+```
+
+Instead of:
+
+```js
+const tasks = await Task.find({ user: req.user._id });
+```
+
+---
+
+## Benefit
+
+Service layer improves the backend by:
+
+```txt
+Keeping controllers clean
+Moving database logic to one place
+Making logic reusable
+Improving project structure
+Following industry-style backend architecture
+```
+
+The API behavior remains the same, but the code structure is cleaner.
