@@ -4802,3 +4802,116 @@ Following industry-style backend architecture
 ```
 
 The API behavior remains the same, but the code structure is cleaner.
+
+## Auth Service Layer
+
+An auth service layer was added to separate auth-related database logic from the auth controller.
+
+Before auth service layer:
+
+```txt
+Route
+↓
+Middleware
+↓
+Auth Controller
+↓
+User Model
+```
+
+After auth service layer:
+
+```txt
+Route
+↓
+Middleware
+↓
+Auth Controller
+↓
+Auth Service
+↓
+User Model
+↓
+MongoDB
+```
+
+---
+
+## Auth Service File
+
+Auth service logic is created inside:
+
+```txt
+backend/src/services/authService.js
+```
+
+This file contains reusable auth-related database functions.
+
+---
+
+## Auth Service Functions
+
+```js
+findUserByEmail(email)
+findUserByEmailWithPassword(email)
+createAuthUser(userData)
+findUserById(userId)
+```
+
+---
+
+## Why `findUserByEmailWithPassword`?
+
+In the user model, password is hidden by default using:
+
+```js
+select: false
+```
+
+So during login, password must be selected manually:
+
+```js
+User.findOne({ email }).select("+password")
+```
+
+This logic is now moved into the auth service:
+
+```js
+findUserByEmailWithPassword(email)
+```
+
+This keeps the controller cleaner and makes the purpose clear.
+
+---
+
+## Auth Controller After Service Layer
+
+The auth controller now calls service functions instead of directly using the User model.
+
+Example:
+
+```js
+const user = await findUserByEmailWithPassword(email);
+```
+
+Instead of:
+
+```js
+const user = await User.findOne({ email }).select("+password");
+```
+
+---
+
+## Benefit
+
+Auth service layer improves the backend by:
+
+```txt
+Keeping auth controller clean
+Moving database logic to one place
+Making auth logic reusable
+Improving project structure
+Following industry-style backend architecture
+```
+
+The API behavior remains the same, but the code structure is cleaner.
