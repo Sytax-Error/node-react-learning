@@ -4619,4 +4619,41 @@ Following better backend structure
 ```
 
 
+## Request Sanitization and Allowed Values
 
+The task validation middleware now validates and sanitizes task data before it reaches the controller.
+
+Allowed task status values:
+
+```txt
+pending
+in-progress
+completed
+
+Invalid values like abc, done123, or testing are rejected with:
+
+{
+  "message": "Invalid task status"
+}
+
+The middleware also trims extra spaces before saving data.
+
+Example request:
+
+{
+  "title": "  Learn backend sanitization  ",
+  "status": " pending "
+}
+
+Saved result:
+
+{
+  "title": "Learn backend sanitization",
+  "status": "pending"
+}
+
+Validation checks whether data is correct.
+
+Sanitization cleans the data before saving.
+
+```
