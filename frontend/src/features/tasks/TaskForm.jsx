@@ -3,6 +3,7 @@ import Button from "../../components/ui/Button";
 import Input from "../../components/ui/Input";
 import Select from "../../components/ui/Select";
 import Card from "../../components/ui/Card";
+import Message from "../../components/ui/Message";
 
 function TaskForm({
   onCreateTask,
@@ -15,6 +16,7 @@ function TaskForm({
     title: "",
     status: "pending",
   });
+  const [formError, setFormError] = useState("");
 
   useEffect(() => {
     if (editingTask) {
@@ -41,6 +43,17 @@ function TaskForm({
 
   const handleSubmit = async (event) => {
     event.preventDefault();
+    setFormError("");
+
+    if (!formData.title.trim()) {
+      setFormError("Task title is required.");
+      return;
+    }
+
+    if (!formData.status.trim()) {
+      setFormError("Task status is required.");
+      return;
+    }
 
     if (editingTask) {
       await onUpdateTask(editingTask._id, formData);
@@ -82,7 +95,7 @@ function TaskForm({
             { value: "completed", label: "Completed" },
           ]}
         />
-
+        <Message type="error">{formError}</Message>
         <div className="task-actions">
           <Button type="submit" fullWidth disabled={loading}>
             {loading

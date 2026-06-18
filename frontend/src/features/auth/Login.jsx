@@ -14,7 +14,7 @@ function Login() {
     email: "",
     password: "",
   });
-
+  const [formError, setFormError] = useState("");
   const [successMessage, setSuccessMessage] = useState("");
 
   const handleChange = (event) => {
@@ -29,14 +29,28 @@ function Login() {
   const handleSubmit = async (event) => {
     event.preventDefault();
     setSuccessMessage("");
+    setFormError("");
+
+    if (!formData.email.trim()) {
+      setFormError("Email is required.");
+      return;
+    }
+
+    if (!formData.password.trim()) {
+      setFormError("Password is required.");
+      return;
+    }
 
     try {
       await login(formData);
+
       setSuccessMessage("Login successful");
+
       setFormData({
         email: "",
         password: "",
       });
+
       navigate("/tasks");
     } catch (error) {
       console.log(error.message);
@@ -72,7 +86,7 @@ function Login() {
             {loading ? "Logging in..." : "Login"}
           </Button>
         </form>
-
+        <Message type="error">{formError}</Message>
         <Message type="success">{successMessage}</Message>
         <Message type="error">{error}</Message>
 

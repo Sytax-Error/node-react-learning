@@ -1215,3 +1215,81 @@ When the logged-in user has no tasks, the UI shows a friendly empty state instea
 
 This improves the user experience and makes the page look more polished.
 ```
+
+## Frontend Form Validation
+
+The frontend validates forms before calling backend APIs.
+
+This improves user experience and avoids unnecessary API requests.
+
+---
+
+## Login Validation
+
+Login form validates:
+
+```txt
+Email is required
+Password is required
+```
+
+If validation fails, the API is not called and an error message is shown.
+
+---
+
+## Register Validation
+
+Register form validates:
+
+```txt
+Name is required
+Email is required
+Password is required
+Password must be at least 6 characters
+```
+
+---
+
+## Task Form Validation
+
+Task form validates:
+
+```txt
+Task title is required
+Task status is required
+```
+
+Spaces-only task titles are also blocked using `trim()`.
+
+Example:
+
+```js
+if (!formData.title.trim()) {
+  setFormError("Task title is required.");
+  return;
+}
+```
+
+---
+
+## Validation Flow
+
+```txt
+User submits form
+↓
+Frontend checks required fields
+↓
+If invalid, show Message component
+↓
+Stop API call
+↓
+If valid, call backend API
+```
+
+Reusable component used for validation messages:
+
+```jsx
+<Message type="error">{formError}</Message>
+```
+
+This keeps validation messages consistent across auth and task forms.

@@ -16,7 +16,7 @@ function Register() {
   });
 
   const [successMessage, setSuccessMessage] = useState("");
-
+  const [formError, setFormError] = useState("");
   const handleChange = (event) => {
     const { name, value } = event.target;
 
@@ -29,6 +29,27 @@ function Register() {
   const handleSubmit = async (event) => {
     event.preventDefault();
     setSuccessMessage("");
+    setFormError("");
+
+    if (!formData.name.trim()) {
+      setFormError("Name is required.");
+      return;
+    }
+
+    if (!formData.email.trim()) {
+      setFormError("Email is required.");
+      return;
+    }
+
+    if (!formData.password.trim()) {
+      setFormError("Password is required.");
+      return;
+    }
+
+    if (formData.password.length < 6) {
+      setFormError("Password must be at least 6 characters.");
+      return;
+    }
 
     try {
       await register(formData);
@@ -85,6 +106,7 @@ function Register() {
           </Button>
         </form>
 
+        <Message type="error">{formError}</Message>
         <Message type="success">{successMessage}</Message>
         <Message type="error">{error}</Message>
 
