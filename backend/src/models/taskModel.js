@@ -11,6 +11,7 @@ const taskSchema = new mongoose.Schema(
       type: String,
       required: true,
       trim: true,
+      enum: ["pending", "in-progress", "completed"],
     },
     // Each task belongs to one user
     user: {

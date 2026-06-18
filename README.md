@@ -4657,3 +4657,40 @@ Validation checks whether data is correct.
 Sanitization cleans the data before saving.
 
 ```
+## Mongoose Schema Validation
+
+Mongoose schema validation protects the database model.
+
+Task status now uses an enum:
+
+```js
+status: {
+  type: String,
+  required: true,
+  enum: ["pending", "in-progress", "completed"],
+  trim: true,
+}
+
+This means only these task statuses are allowed:
+
+pending
+in-progress
+completed
+
+The task model also uses trim: true for title and status.
+
+This gives an extra safety layer:
+
+Frontend validation
+↓
+Backend middleware validation
+↓
+Mongoose schema validation
+↓
+MongoDB
+
+Middleware validation protects the API request.
+
+Mongoose schema validation protects the database model.
+
+```
