@@ -51,11 +51,16 @@ function TaskForm({
   };
 
   return (
-    <div>
+    <div className="task-card task-form-card">
       <h3>{editingTask ? "Update Task" : "Create Task"}</h3>
+      <p className="task-card-subtitle">
+        {editingTask
+          ? "Update your selected task details."
+          : "Add a new task to your personal list."}
+      </p>
 
-      <form onSubmit={handleSubmit}>
-        <div>
+      <form onSubmit={handleSubmit} className="task-form">
+        <div className="task-form-group">
           <label>Title</label>
           <input
             type="text"
@@ -66,7 +71,7 @@ function TaskForm({
           />
         </div>
 
-        <div>
+        <div className="task-form-group">
           <label>Status</label>
           <select name="status" value={formData.status} onChange={handleChange}>
             <option value="pending">Pending</option>
@@ -74,21 +79,27 @@ function TaskForm({
           </select>
         </div>
 
-        <button type="submit" disabled={loading}>
-          {loading
-            ? editingTask
-              ? "Updating..."
-              : "Creating..."
-            : editingTask
-              ? "Update Task"
-              : "Create Task"}
-        </button>
-
-        {editingTask && (
-          <button type="button" onClick={onCancelEdit}>
-            Cancel
+        <div className="task-actions">
+          <button type="submit" className="task-primary-btn" disabled={loading}>
+            {loading
+              ? editingTask
+                ? "Updating..."
+                : "Creating..."
+              : editingTask
+                ? "Update Task"
+                : "Create Task"}
           </button>
-        )}
+
+          {editingTask && (
+            <button
+              type="button"
+              className="task-secondary-btn"
+              onClick={onCancelEdit}
+            >
+              Cancel
+            </button>
+          )}
+        </div>
       </form>
     </div>
   );

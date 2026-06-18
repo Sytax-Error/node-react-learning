@@ -8,6 +8,11 @@ body {
     Inter, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
   background: #f4f7fb;
   color: #111827;
+  text-align: center;
+}
+
+input {
+  background: #333;
 }
 
 a {

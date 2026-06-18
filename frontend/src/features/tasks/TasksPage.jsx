@@ -90,28 +90,36 @@ function TasksPage() {
   }, []);
 
   return (
-    <div>
-      <h2>Tasks</h2>
+    <main className="tasks-page">
+      <section className="tasks-header">
+        <div>
+          <p className="section-label">Task Management</p>
+          <h1>My Tasks</h1>
+          <p className="section-description">
+            Create, update, and manage your personal tasks securely.
+          </p>
+        </div>
+      </section>
 
-      {error && <p>{error}</p>}
+      {error && <p className="tasks-error">{error}</p>}
 
-      <TaskForm
-        onCreateTask={handleCreateTask}
-        onUpdateTask={handleUpdateTask}
-        editingTask={editingTask}
-        onCancelEdit={handleCancelEdit}
-        loading={creating}
-      />
+      <section className="tasks-grid">
+        <TaskForm
+          onCreateTask={handleCreateTask}
+          onUpdateTask={handleUpdateTask}
+          editingTask={editingTask}
+          onCancelEdit={handleCancelEdit}
+          loading={creating}
+        />
 
-      <hr />
-
-      <TaskList
-        tasks={tasks}
-        onEditTask={handleEditTask}
-        onDeleteTask={handleDeleteTask}
-        loading={loading}
-      />
-    </div>
+        <TaskList
+          tasks={tasks}
+          onEditTask={handleEditTask}
+          onDeleteTask={handleDeleteTask}
+          loading={loading}
+        />
+      </section>
+    </main>
   );
 }
 

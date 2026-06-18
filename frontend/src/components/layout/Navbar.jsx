@@ -13,7 +13,7 @@ function Navbar() {
   return (
     <nav className="app-navbar">
       <div className="navbar-brand">
-        <Link to="/">MERN Learning</Link>
+        <Link to="/">MERN</Link>
       </div>
 
       <div className="navbar-links">

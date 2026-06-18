@@ -1,29 +1,65 @@
 function TaskList({ tasks, onEditTask, onDeleteTask, loading }) {
   if (loading) {
-    return <p>Loading tasks...</p>;
+    return (
+      <div className="task-card task-list-card">
+        <p className="tasks-loading">Loading tasks...</p>
+      </div>
+    );
   }
 
   if (tasks.length === 0) {
-    return <p>No tasks found.</p>;
+    return (
+      <div className="task-card task-list-card">
+        <h3>My Tasks</h3>
+        <p className="task-card-subtitle">
+          Your created tasks will appear here.
+        </p>
+        <p className="tasks-empty">No tasks found.</p>
+      </div>
+    );
   }
 
   return (
-    <div>
-      <h3>My Tasks</h3>
+    <div className="task-card task-list-card">
+      <div className="task-list-header">
+        <div>
+          <h3>My Tasks</h3>
+          <p className="task-card-subtitle">
+            You have {tasks.length} task{tasks.length > 1 ? "s" : ""}.
+          </p>
+        </div>
+      </div>
 
-      <ul>
+      <div className="task-list">
         {tasks.map((task) => (
-          <li key={task._id}>
-            <strong>{task.title}</strong> - {task.status}
-            <button type="button" onClick={() => onEditTask(task)}>
-              Edit
-            </button>
-            <button type="button" onClick={() => onDeleteTask(task._id)}>
-              Delete
-            </button>
-          </li>
+          <div className="task-item" key={task._id}>
+            <div className="task-content">
+              <h4>{task.title}</h4>
+              <span className={`task-status ${task.status}`}>
+                {task.status}
+              </span>
+            </div>
+
+            <div className="task-item-actions">
+              <button
+                type="button"
+                className="task-edit-btn"
+                onClick={() => onEditTask(task)}
+              >
+                Edit
+              </button>
+
+              <button
+                type="button"
+                className="task-delete-btn"
+                onClick={() => onDeleteTask(task._id)}
+              >
+                Delete
+              </button>
+            </div>
+          </div>
         ))}
-      </ul>
+      </div>
     </div>
   );
 }

@@ -34,50 +34,77 @@ function Profile() {
   }
 
   return (
-    <div>
-      <h2>Profile</h2>
+    <main className="profile-page">
+      <section className="profile-header">
+        <p className="section-label">Account</p>
+        <h1>My Profile</h1>
+        <p className="section-description">
+          View your local auth state and verified server profile.
+        </p>
+      </section>
 
-      <h3>Local User</h3>
-      <p>
-        <strong>Name:</strong> {user?.name}
-      </p>
-
-      <p>
-        <strong>Email:</strong> {user?.email}
-      </p>
-
-      <p>
-        <strong>Role:</strong> {user?.role}
-      </p>
-
-      <hr />
-
-      <h3>Server Profile</h3>
-
-      {profileLoading && <p>Loading profile...</p>}
-
-      {profileError && <p>{profileError}</p>}
-
-      {serverUser && (
-        <>
-          <p>
-            <strong>Name:</strong> {serverUser.name}
+      <section className="profile-grid">
+        <div className="profile-card">
+          <h3>Local User</h3>
+          <p className="profile-card-subtitle">
+            This data comes from AuthContext and localStorage.
           </p>
 
-          <p>
-            <strong>Email:</strong> {serverUser.email}
+          <div className="profile-info">
+            <div>
+              <span>Name</span>
+              <strong>{user?.name}</strong>
+            </div>
+
+            <div>
+              <span>Email</span>
+              <strong>{user?.email}</strong>
+            </div>
+
+            <div>
+              <span>Role</span>
+              <strong>{user?.role}</strong>
+            </div>
+          </div>
+        </div>
+
+        <div className="profile-card">
+          <h3>Server Profile</h3>
+          <p className="profile-card-subtitle">
+            This data comes from protected backend API.
           </p>
 
-          <p>
-            <strong>Role:</strong> {serverUser.role}
-          </p>
-        </>
-      )}
+          {profileLoading && (
+            <p className="profile-muted">Loading profile...</p>
+          )}
 
-      <button type="button" onClick={logout}>
+          {profileError && <p className="profile-error">{profileError}</p>}
+
+          {serverUser && (
+            <div className="profile-info">
+              <div>
+                <span>Name</span>
+                <strong>{serverUser.name}</strong>
+              </div>
+
+              <div>
+                <span>Email</span>
+                <strong>{serverUser.email}</strong>
+              </div>
+
+              <div>
+                <span>Role</span>
+                <strong>{serverUser.role}</strong>
+              </div>
+            </div>
+          )}
+        </div>
+      </section>
+
+      <button type="button" className="profile-logout-btn" onClick={logout}>
         Logout
       </button>
-    </div>
+    </main>
   );
 }
 

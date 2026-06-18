@@ -780,3 +780,10 @@ Create CSS files only when they are needed.
 Avoid unused styling files.
 Keep styles grouped by feature/layout purpose.
 ```
+React Router pages
+PublicRoute / ProtectedRoute
+Navbar
+CSS files
+Auth pages styling
+Tasks page styling
+Profile page styling
