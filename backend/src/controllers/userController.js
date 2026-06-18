@@ -1,40 +1,81 @@
 import { asyncHandler } from "../utils/asyncHandler.js";
 import { User } from "../models/userModel.js";
+import {
+  findAllUsers,
+  createNewUser,
+  findUserById,
+  updateUserById,
+  deleteUserById,
+  findUserByEmail,
+} from "../services/userService.js";
 import { validateObjectId } from "../utils/validators.js";
+import bcrypt from "bcryptjs";
 
 // let users = [];
 
 export const getUsers = asyncHandler(async (req, res) => {
-  const users = await User.find();
+  const users = await findAllUsers();
   res.status(200).json(users);
 });
 
 export const createUser = asyncHandler(async (req, res) => {
-  const { name, role } = req.body;
+  const { name, email, password, role } = req.body;
 
-  if (!name || !role || !name.trim() || !role.trim()) {
-    return res.status(400).json({
-      message: "Name and role are required",
-    });
+  if (!name || !name.trim()) {
+    res.status(400);
+    throw new Error("Name is required");
   }
 
-  const user = await User.create({
-    name,
-    role,
+  if (!email || !email.trim()) {
+    res.status(400);
+    throw new Error("Email is required");
+  }
+
+  if (!password || !password.trim()) {
+    res.status(400);
+    throw new Error("Password is required");
+  }
+
+  if (password.length < 6) {
+    res.status(400);
+    throw new Error("Password must be at least 6 characters");
+  }
+
+  if (!role || !role.trim()) {
+    res.status(400);
+    throw new Error("Role is required");
+  }
+
+  const existingUser = await findUserByEmail(email);
+
+  if (existingUser) {
+    res.status(409);
+    throw new Error("User already exists");
+  }
+
+  const hashedPassword = await bcrypt.hash(password, 10);
+
+  const user = await createNewUser({
+    name: name.trim(),
+    email: email.trim(),
+    password: hashedPassword,
+    role: role.trim(),
   });
+
+  const userResponse = user.toObject();
+  delete userResponse.password;
 
   res.status(201).json({
     message: "User created successfully",
-    user,
+    user: userResponse,
   });
 });
-
 export const getUserById = asyncHandler(async (req, res) => {
   const { id } = req.params;
 
   validateObjectId(id, "user");
 
-  const user = await User.findById(id);
+  const user = await findUserById(id);
 
   if (!user) {
     res.status(404);
@@ -57,17 +98,10 @@ export const updateUser = asyncHandler(async (req, res) => {
     throw new Error("Name and role are required");
   }
 
-  const user = await User.findByIdAndUpdate(
-    id,
-    {
-      name,
-      role,
-    },
-    {
-      returnDocument: "after", // After updating, return the updated user document.
-      runValidators: true, // Run schema validation during update
-    },
-  );
+  const user = await updateUserById(id, {
+    name,
+    role,
+  });
 
   if (!user) {
     return res.status(404).json({
@@ -86,7 +120,7 @@ export const deleteUser = asyncHandler(async (req, res) => {
 
   validateObjectId(id, "user");
 
-  const user = await User.findByIdAndDelete(id);
+  const user = await deleteUserById(id);
 
   if (!user) {
     res.status(404);

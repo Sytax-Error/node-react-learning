@@ -4915,3 +4915,184 @@ Following industry-style backend architecture
 ```
 
 The API behavior remains the same, but the code structure is cleaner.
+## User Service Layer
+
+A user service layer was added to separate user-related database logic from the user controller.
+
+Before user service layer:
+
+```txt
+Route
+↓
+Middleware
+↓
+User Controller
+↓
+User Model
+↓
+MongoDB
+```
+
+After user service layer:
+
+```txt
+Route
+↓
+Middleware
+↓
+User Controller
+↓
+User Service
+↓
+User Model
+↓
+MongoDB
+```
+
+---
+
+## User Service File
+
+User service logic is created inside:
+
+```txt
+backend/src/services/userService.js
+```
+
+This file contains reusable user-related database functions.
+
+---
+
+## User Service Functions
+
+```js
+findAllUsers()
+createNewUser(userData)
+findUserById(userId)
+updateUserById(userId, userData)
+deleteUserById(userId)
+findUserByEmail(email)
+```
+
+---
+
+## Why User Service Layer?
+
+The user controller should focus on:
+
+```txt
+Reading request data
+Sending response
+Setting status codes
+```
+
+The user service should focus on:
+
+```txt
+Database queries
+User create logic
+User update logic
+User delete logic
+Reusable database operations
+```
+
+This keeps the controller clean and makes the backend easier to maintain.
+
+---
+
+## Password Safety in User Create API
+
+The admin user creation API accepts:
+
+```json
+{
+  "name": "Test User",
+  "email": "testuser@example.com",
+  "password": "123456",
+  "role": "user"
+}
+```
+
+Before saving the user, the password is hashed using bcrypt:
+
+```js
+const hashedPassword = await bcrypt.hash(password, 10);
+```
+
+So MongoDB stores a hashed password, not the plain password.
+
+Example stored password:
+
+```txt
+$2b$10$....
+```
+
+Plain password like this should never be stored:
+
+```txt
+123456
+```
+
+---
+
+## Password Removed From Response
+
+After creating a user, the password is removed before sending the response.
+
+```js
+const userResponse = user.toObject();
+delete userResponse.password;
+```
+
+So the API response does not expose the password.
+
+Example safe response:
+
+```json
+{
+  "message": "User created successfully",
+  "user": {
+    "_id": "user_id",
+    "name": "Test User",
+    "email": "testuser@example.com",
+    "role": "user"
+  }
+}
+```
+
+---
+
+## Final User API Flow
+
+```txt
+Request
+↓
+Admin route protection
+↓
+User controller
+↓
+User service
+↓
+User model
+↓
+MongoDB
+↓
+Safe response without password
+```
+
+---
+
+## Benefit
+
+User service layer improves the backend by:
+
+```txt
+Keeping user controller clean
+Moving database logic to one place
+Making user logic reusable
+Improving project structure
+Protecting password data
+Following industry-style backend architecture
+```
+
+The API behavior remains the same, but the code structure is cleaner and safer.
