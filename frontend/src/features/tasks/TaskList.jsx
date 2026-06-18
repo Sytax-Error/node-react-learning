@@ -1,4 +1,4 @@
-import Button from "../../components/layout/Button";
+import Button from "../../components/ui/Button";
 
 function TaskList({ tasks, onEditTask, onDeleteTask, loading }) {
   if (loading) {

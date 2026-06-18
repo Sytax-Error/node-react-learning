@@ -1,7 +1,9 @@
 import { useState } from "react";
 import { useAuth } from "./AuthContext";
 import { Link } from "react-router-dom";
-import Button from "../../components/layout/Button";
+import Button from "../../components/ui/Button";
+import Input from "../../components/ui/Input";
+import Message from "../../components/ui/Message";
 
 function Register() {
   const { register, loading, error } = useAuth();
@@ -51,52 +53,39 @@ function Register() {
         </p>
 
         <form onSubmit={handleSubmit}>
-          <div className="form-group">
-            <label>Name</label>
-            <input
-              className="form-control"
-              type="text"
-              name="name"
-              value={formData.name}
-              onChange={handleChange}
-              placeholder="Enter name"
-            />
-          </div>
+          <Input
+            label="Name"
+            name="name"
+            value={formData.name}
+            onChange={handleChange}
+            placeholder="Enter name"
+          />
 
-          <div className="form-group">
-            <label>Email</label>
-            <input
-              className="form-control"
-              type="email"
-              name="email"
-              value={formData.email}
-              onChange={handleChange}
-              placeholder="Enter email"
-            />
-          </div>
+          <Input
+            label="Email"
+            type="email"
+            name="email"
+            value={formData.email}
+            onChange={handleChange}
+            placeholder="Enter email"
+          />
 
-          <div className="form-group">
-            <label>Password</label>
-            <input
-              className="form-control"
-              type="password"
-              name="password"
-              value={formData.password}
-              onChange={handleChange}
-              placeholder="Enter password"
-            />
-          </div>
+          <Input
+            label="Password"
+            type="password"
+            name="password"
+            value={formData.password}
+            onChange={handleChange}
+            placeholder="Enter password"
+          />
 
           <Button type="submit" fullWidth disabled={loading}>
             {loading ? "Registering..." : "Register"}
           </Button>
         </form>
 
-        {successMessage && (
-          <p className="form-message success">{successMessage}</p>
-        )}
-
-        {error && <p className="form-message error">{error}</p>}
+        <Message type="success">{successMessage}</Message>
+        <Message type="error">{error}</Message>
 
         <p className="auth-switch">
           Already have an account? <Link to="/login">Login</Link>

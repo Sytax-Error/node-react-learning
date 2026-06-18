@@ -1,7 +1,9 @@
 import { useState } from "react";
 import { useAuth } from "./AuthContext";
 import { Link, useNavigate } from "react-router-dom";
-import Button from "../../components/layout/Button";
+import Button from "../../components/ui/Button";
+import Input from "../../components/ui/Input";
+import Message from "../../components/ui/Message";
 
 function Login() {
   const { login, loading, error } = useAuth();
@@ -47,40 +49,31 @@ function Login() {
         <p className="auth-subtitle">Login to manage your tasks securely.</p>
 
         <form onSubmit={handleSubmit}>
-          <div className="form-group">
-            <label>Email</label>
-            <input
-              className="form-control"
-              type="email"
-              name="email"
-              value={formData.email}
-              onChange={handleChange}
-              placeholder="Enter email"
-            />
-          </div>
+          <Input
+            label="Email"
+            type="email"
+            name="email"
+            value={formData.email}
+            onChange={handleChange}
+            placeholder="Enter email"
+          />
 
-          <div className="form-group">
-            <label>Password</label>
-            <input
-              className="form-control"
-              type="password"
-              name="password"
-              value={formData.password}
-              onChange={handleChange}
-              placeholder="Enter password"
-            />
-          </div>
+          <Input
+            label="Password"
+            type="password"
+            name="password"
+            value={formData.password}
+            onChange={handleChange}
+            placeholder="Enter password"
+          />
 
           <Button type="submit" fullWidth disabled={loading}>
             {loading ? "Logging in..." : "Login"}
           </Button>
         </form>
 
-        {successMessage && (
-          <p className="form-message success">{successMessage}</p>
-        )}
-
-        {error && <p className="form-message error">{error}</p>}
+        <Message type="success">{successMessage}</Message>
+        <Message type="error">{error}</Message>
 
         <p className="auth-switch">
           Don&apos;t have an account? <Link to="/register">Create account</Link>

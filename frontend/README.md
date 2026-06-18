@@ -956,3 +956,122 @@ Cleaner components
 Easy to change button design globally
 Better industry-style frontend structure
 ```
+## Reusable UI Components
+
+The frontend uses reusable UI components to keep the design consistent and reduce repeated JSX/CSS.
+
+Reusable components are stored in:
+
+```txt
+src/components/ui/
+```
+
+Current reusable components:
+
+```txt
+Button.jsx
+Input.jsx
+Select.jsx
+Card.jsx
+Message.jsx
+```
+
+---
+
+## Button Component
+
+Used for common actions like login, register, create task, update task, delete, cancel, and logout.
+
+```jsx
+<Button type="submit" fullWidth>
+  Login
+</Button>
+
+<Button variant="secondary">
+  Cancel
+</Button>
+
+<Button size="sm" variant="danger">
+  Delete
+</Button>
+```
+
+---
+
+## Input Component
+
+Used for text, email, and password fields.
+
+```jsx
+<Input
+  label="Email"
+  type="email"
+  name="email"
+  value={formData.email}
+  onChange={handleChange}
+  placeholder="Enter email"
+/>
+```
+
+---
+
+## Select Component
+
+Used for dropdown fields like task status.
+
+```jsx
+<Select
+  label="Status"
+  name="status"
+  value={formData.status}
+  onChange={handleChange}
+  options={[
+    { value: "pending", label: "Pending" },
+    { value: "completed", label: "Completed" },
+  ]}
+/>
+```
+
+---
+
+## Message Component
+
+Used for success and error messages.
+
+```jsx
+<Message type="success">{successMessage}</Message>
+<Message type="error">{error}</Message>
+```
+
+---
+
+## Shared UI Styles
+
+Reusable component styles are managed in:
+
+```txt
+src/styles/ui.css
+```
+
+This includes:
+
+```txt
+button variants
+input styling
+select styling
+card styling
+message styling
+```
+
+---
+
+## Why This Approach
+
+```txt
+Consistent UI across pages
+Less repeated JSX
+Less repeated CSS
+Cleaner feature components
+Easy global design updates
+More industry-style frontend structure
+```

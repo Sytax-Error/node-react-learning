@@ -1,5 +1,7 @@
 import { useEffect, useState } from "react";
-import Button from "../../components/layout/Button";
+import Button from "../../components/ui/Button";
+import Input from "../../components/ui/Input";
+import Select from "../../components/ui/Select";
 
 function TaskForm({
   onCreateTask,
@@ -61,24 +63,24 @@ function TaskForm({
       </p>
 
       <form onSubmit={handleSubmit} className="task-form">
-        <div className="task-form-group">
-          <label>Title</label>
-          <input
-            type="text"
-            name="title"
-            value={formData.title}
-            onChange={handleChange}
-            placeholder="Enter task title"
-          />
-        </div>
+        <Input
+          label="Title"
+          name="title"
+          value={formData.title}
+          onChange={handleChange}
+          placeholder="Enter task title"
+        />
 
-        <div className="task-form-group">
-          <label>Status</label>
-          <select name="status" value={formData.status} onChange={handleChange}>
-            <option value="pending">Pending</option>
-            <option value="completed">Completed</option>
-          </select>
-        </div>
+        <Select
+          label="Status"
+          name="status"
+          value={formData.status}
+          onChange={handleChange}
+          options={[
+            { value: "pending", label: "Pending" },
+            { value: "completed", label: "Completed" },
+          ]}
+        />
 
         <div className="task-actions">
           <Button type="submit" fullWidth disabled={loading}>

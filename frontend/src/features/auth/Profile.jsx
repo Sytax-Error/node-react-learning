@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { useAuth } from "./AuthContext";
 import { getProfile } from "./authService";
-import Button from "../../components/layout/Button";
+import Button from "../../components/ui/Button";
 
 function Profile() {
   const { user, isAuthenticated, logout } = useAuth();
