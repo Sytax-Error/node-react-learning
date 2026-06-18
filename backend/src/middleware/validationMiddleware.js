@@ -1,13 +1,21 @@
 export const validateTaskBody = (req, res, next) => {
   const { title, status } = req.body;
 
+  const allowedStatuses = ["pending", "in-progress", "completed"];
+
   if (!title || !title?.trim()) {
     res.status(400);
     throw new Error("Task title is required");
   }
+
   if (!status || !status?.trim()) {
     res.status(400);
     throw new Error("Task status is required");
+  }
+
+  if (!allowedStatuses.includes(status.trim())) {
+    res.status(400);
+    throw new Error("Invalid task status");
   }
 
   next();
