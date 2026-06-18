@@ -21,31 +21,6 @@ export const getUsers = asyncHandler(async (req, res) => {
 export const createUser = asyncHandler(async (req, res) => {
   const { name, email, password, role } = req.body;
 
-  if (!name || !name.trim()) {
-    res.status(400);
-    throw new Error("Name is required");
-  }
-
-  if (!email || !email.trim()) {
-    res.status(400);
-    throw new Error("Email is required");
-  }
-
-  if (!password || !password.trim()) {
-    res.status(400);
-    throw new Error("Password is required");
-  }
-
-  if (password.length < 6) {
-    res.status(400);
-    throw new Error("Password must be at least 6 characters");
-  }
-
-  if (!role || !role.trim()) {
-    res.status(400);
-    throw new Error("Role is required");
-  }
-
   const existingUser = await findUserByEmail(email);
 
   if (existingUser) {
@@ -92,11 +67,6 @@ export const updateUser = asyncHandler(async (req, res) => {
   const { id } = req.params;
 
   validateObjectId(id, "user");
-
-  if (!name || !role || !name.trim() || !role.trim()) {
-    res.status(400);
-    throw new Error("Name and role are required");
-  }
 
   const user = await updateUserById(id, {
     name,

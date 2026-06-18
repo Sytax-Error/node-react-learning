@@ -5096,3 +5096,50 @@ Following industry-style backend architecture
 ```
 
 The API behavior remains the same, but the code structure is cleaner and safer.
+
+## User Validation Middleware
+
+User create and update validation was moved from `userController.js` to validation middleware.
+
+Used in:
+
+```js
+router.post(
+  "/",
+  protect,
+  authorizeRoles("admin"),
+  validateCreateUserBody,
+  createUser
+);
+
+router.put(
+  "/:id",
+  protect,
+  authorizeRoles("admin"),
+  validateUpdateUserBody,
+  updateUser
+);
+```
+## User Validation Middleware
+
+User create and update validation was moved from `userController.js` to validation middleware.
+
+Used in:
+
+```js
+router.post(
+  "/",
+  protect,
+  authorizeRoles("admin"),
+  validateCreateUserBody,
+  createUser
+);
+
+router.put(
+  "/:id",
+  protect,
+  authorizeRoles("admin"),
+  validateUpdateUserBody,
+  updateUser
+);
+```
