@@ -1182,6 +1182,36 @@ Small action loading
 
 Page/card content loading
 → Skeleton placeholder UI
+This gives a better user experience and keeps the UI feeling modern.
+
 ```
 
-This gives a better user experience and keeps the UI feeling modern.
+
+## Empty State UI
+
+The frontend uses a reusable empty state component when a list has no data.
+
+File:
+
+```txt
+src/components/ui/EmptyState.jsx
+```
+
+Example:
+
+```jsx
+<EmptyState
+  title="No tasks yet"
+  description="Create your first task using the form on the left."
+/>
+```
+
+Used in:
+
+```txt
+Task list
+
+When the logged-in user has no tasks, the UI shows a friendly empty state instead of plain text.
+
+This improves the user experience and makes the page look more polished.
+```

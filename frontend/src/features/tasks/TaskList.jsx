@@ -1,6 +1,7 @@
 import Button from "../../components/ui/Button";
 import Card from "../../components/ui/Card";
 import Skeleton from "../../components/ui/Skeleton";
+import EmptyState from "../../components/ui/EmptyState";
 
 function TaskList({ tasks, onEditTask, onDeleteTask, loading }) {
   if (loading) {
@@ -25,7 +26,10 @@ function TaskList({ tasks, onEditTask, onDeleteTask, loading }) {
         <p className="task-card-subtitle">
           Your created tasks will appear here.
         </p>
-        <p className="tasks-empty">No tasks found.</p>
+        <EmptyState
+          title="No tasks yet"
+          description="Create your first task using the form on the left."
+        />
       </Card>
     );
   }
