@@ -10,12 +10,6 @@ export const getTasks = asyncHandler(async (req, res) => {
 export const createTasks = asyncHandler(async (req, res) => {
   const { title, status } = req.body;
 
-  if (!title?.trim() || !status?.trim()) {
-    return res.status(400).json({
-      message: "Title and Status required.",
-    });
-  }
-
   const task = await Task.create({
     title,
     status,
@@ -62,12 +56,6 @@ export const updateTask = asyncHandler(async (req, res) => {
   const { title, status } = req.body;
 
   validateObjectId(id, "task");
-
-  if (!title?.trim() || !status?.trim()) {
-    return res.status(400).json({
-      message: "Title and Status is required.",
-    });
-  }
 
   const task = await Task.findOneAndUpdate(
     {
