@@ -58,3 +58,18 @@ export const logoutUser = async () => {
 export const getProfile = async () => {
   return authFetch(`${API_BASE_URL}/auth/profile`);
 };
+
+export const refreshAccessToken = async () => {
+  const response = await fetch(`${API_BASE_URL}/auth/refresh-token`, {
+    method: "POST",
+    credentials: "include",
+  });
+
+  const data = await response.json();
+
+  if (!response.ok) {
+    throw new Error(data.message || "Faild to fetch refresh token");
+  }
+
+  return data;
+};

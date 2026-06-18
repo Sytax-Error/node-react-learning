@@ -779,7 +779,6 @@ Current styling approach:
 Create CSS files only when they are needed.
 Avoid unused styling files.
 Keep styles grouped by feature/layout purpose.
-```
 React Router pages
 PublicRoute / ProtectedRoute
 Navbar
@@ -787,3 +786,54 @@ CSS files
 Auth pages styling
 Tasks page styling
 Profile page styling
+```
+
+
+## Auto Refresh Token Handling
+
+The frontend supports automatic access token refresh for protected APIs.
+
+Access tokens are short-lived. When an access token expires, protected APIs return:
+
+```txt
+401 Token expired
+
+The authFetch() helper handles this automatically.
+
+Flow:
+
+Protected API request
+↓
+Access token expired
+↓
+Backend returns 401 Token expired
+↓
+authFetch calls POST /api/auth/refresh-token
+↓
+Browser sends refresh token cookie using credentials: "include"
+↓
+Backend returns new accessToken
+↓
+authFetch saves new accessToken in localStorage
+↓
+authFetch retries original API
+
+Refresh token is stored in an httpOnly cookie, so frontend JavaScript cannot read it directly.
+
+credentials: "include"
+
+is used so the browser sends the cookie automatically.
+
+If refresh token is missing or expired:
+
+Refresh API fails
+↓
+Frontend removes auth from localStorage
+↓
+User is redirected to /login
+
+Current behavior:
+
+Valid access token → API works
+Expired access token → token refresh + retry
+Expired/missing refresh token → logout fallback
