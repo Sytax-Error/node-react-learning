@@ -5143,3 +5143,15 @@ router.put(
   updateUser
 );
 ```
+
+## Centralized Error Response Format
+
+The backend uses centralized error middleware to send consistent error responses.
+
+All errors now return this format:
+
+```json
+{
+  "success": false,
+  "message": "Error message here"
+}
