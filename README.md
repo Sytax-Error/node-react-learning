@@ -5272,3 +5272,26 @@ Making frontend handling easier
 Improving controller readability
 Following cleaner backend API structure
 ```
+## Task Pagination & Filtering
+
+Tasks API now supports filtering and pagination.
+
+### Query Parameters
+
+- `status` → filter tasks by status
+  - pending
+  - in-progress
+  - completed
+
+- `page` → page number (default: 1)
+- `limit` → number of records per page (default: 10)
+
+---
+
+### Example Requests
+
+```txt
+GET /api/tasks
+GET /api/tasks?status=completed
+GET /api/tasks?page=1&limit=2
+GET /api/tasks?status=pending&page=2&limit=5
