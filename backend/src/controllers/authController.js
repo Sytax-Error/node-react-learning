@@ -1,21 +1,22 @@
 import bcrypt from "bcryptjs";
-import { User } from "../models/userModel.js";
 import { asyncHandler } from "../utils/asyncHandler.js";
 import {
   generateAccessToken,
   generateRefreshToken,
 } from "../utils/generateTokens.js";
 import jwt from "jsonwebtoken";
+import {
+  findUserByEmail,
+  findUserByEmailWithPassword,
+  createAuthUser,
+  findUserById,
+} from "../services/authService.js";
+import { sendResponse } from "../utils/sendResponse.js";
 
 export const registerUser = asyncHandler(async (req, res) => {
   const { name, email, password, role } = req.body;
 
-  if (!name || !email || !password || !name.trim() || !email.trim()) {
-    res.status(400);
-    throw new Error("Name, email and password are required");
-  }
-
-  const existingUser = await User.findOne({ email });
+  const existingUser = await findUserByEmail(email);
 
   if (existingUser) {
     res.status(409);
@@ -24,14 +25,13 @@ export const registerUser = asyncHandler(async (req, res) => {
 
   const hashedPassword = await bcrypt.hash(password, 10);
 
-  const user = await User.create({
+  const user = await createAuthUser({
     name,
     email,
     password: hashedPassword,
   });
 
-  res.status(201).json({
-    message: "User registered successfully",
+  sendResponse(res, 201, "User registered successfully", {
     user: {
       id: user._id,
       name: user.name,
@@ -44,12 +44,7 @@ export const registerUser = asyncHandler(async (req, res) => {
 export const loginUser = asyncHandler(async (req, res) => {
   const { email, password } = req.body;
 
-  if (!email || !password || !email?.trim()) {
-    res.status(400);
-    throw new Error("Email and Password is required");
-  }
-
-  const user = await User.findOne({ email }).select("+password");
+  const user = await findUserByEmailWithPassword(email);
 
   if (!user) {
     res.status(401);
@@ -73,8 +68,7 @@ export const loginUser = asyncHandler(async (req, res) => {
     maxAge: 7 * 24 * 60 * 60 * 1000, // Cookie expiry is 7 days in milliseconds.
   });
 
-  res.status(200).json({
-    message: "Login successful",
+  sendResponse(res, 200, "Login successful", {
     accessToken,
     user: {
       id: user._id,
@@ -86,9 +80,7 @@ export const loginUser = asyncHandler(async (req, res) => {
 });
 
 export const getProfile = asyncHandler(async (req, res) => {
-  res.status(200).json({
-    user: req.user,
-  });
+  sendResponse(res, 200, "Profile fetched successfully", req.user);
 });
 
 export const refreshAccessToken = asyncHandler(async (req, res) => {
@@ -101,7 +93,7 @@ export const refreshAccessToken = asyncHandler(async (req, res) => {
 
   const decoded = jwt.verify(refreshToken, process.env.JWT_REFRESH_SECRET);
 
-  const user = await User.findById(decoded.id);
+  const user = await User.findUserById(decoded.id);
 
   if (!user) {
     res.status(401);
@@ -110,7 +102,7 @@ export const refreshAccessToken = asyncHandler(async (req, res) => {
 
   const accessToken = generateAccessToken(user);
 
-  res.status(200).json({
+  sendResponse(res, 200, "Access token refreshed successfully", {
     accessToken,
   });
 });
@@ -123,7 +115,5 @@ export const logoutUser = asyncHandler(async (req, res) => {
     sameSite: "strict",
   });
 
-  res.status(200).json({
-    message: "Logout successful",
-  });
+  sendResponse(res, 200, "Logout successful");
 });

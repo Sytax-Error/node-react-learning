@@ -54,7 +54,7 @@ export const authFetch = async (url, options = {}) => {
     return data;
   }
 
-  if (response.status === 401 && data.message === "Token expired") {
+  if (response.status === 401 && !data.success) {
     try {
       const newAccessToken = await refreshAccessToken();
 

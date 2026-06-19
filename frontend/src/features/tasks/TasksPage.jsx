@@ -16,7 +16,7 @@ function TasksPage() {
 
     try {
       const data = await getTasks();
-      setTasks(data);
+      setTasks(data.data);
     } catch (error) {
       setError(error.message);
     } finally {
@@ -31,7 +31,7 @@ function TasksPage() {
     try {
       const newTask = await createTask(taskData);
 
-      setTasks((prevTasks) => [...prevTasks, newTask.task]);
+      setTasks((prevTasks) => [...prevTasks, newTask.data]);
     } catch (error) {
       setError(error.message);
     } finally {
@@ -60,7 +60,7 @@ function TasksPage() {
 
       setTasks((prevTasks) =>
         prevTasks.map((task) =>
-          String(task._id) === String(taskId) ? updatedTask.task : task,
+          String(task._id) === String(taskId) ? updatedTask.data : task,
         ),
       );
       setEditingTask(null);

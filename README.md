@@ -4439,6 +4439,836 @@ Password is hidden from API responses using select: false.
 Login uses .select("+password") only for bcrypt comparison.
 ```
 
+## Backend Validation Middleware
+
+Validation middleware is used to validate incoming request data before it reaches the controller.
+
+This keeps controllers clean and focused on business logic.
+
+---
+
+## Why Validation Middleware?
+
+Before validation middleware, controllers were handling multiple responsibilities:
+
+```txt
+Validate request data
+Handle database logic
+Send response
+```
+
+Now validation is handled separately:
+
+```txt
+Request
+↓
+Validation Middleware
+↓
+Controller
+↓
+Database
+↓
+Response
+```
+
+This is a cleaner and more maintainable backend structure.
+
+---
+
+## Validation Middleware File
+
+Validation middleware is created inside:
+
+```txt
+backend/src/middleware/validationMiddleware.js
+```
+
+This file contains reusable validation functions for different APIs.
+
+---
+
+## Task Validation
+
+Task APIs use `validateTaskBody`.
+
+Used in:
+
+```js
+router.post("/", protect, validateTaskBody, createTask);
+router.put("/:id", protect, validateTaskBody, updateTask);
+```
+
+Validation checks:
+
+```txt
+Task title is required
+Task status is required
+Spaces-only title is not allowed
+Spaces-only status is not allowed
+```
+
+Example:
+
+```js
+export const validateTaskBody = (req, res, next) => {
+  const { title, status } = req.body;
+
+  if (!title || !title.trim()) {
+    res.status(400);
+    throw new Error("Task title is required");
+  }
+
+  if (!status || !status.trim()) {
+    res.status(400);
+    throw new Error("Task status is required");
+  }
+
+  next();
+};
+```
+
+---
+
+## Auth Validation
+
+Auth APIs use separate validation middleware for register and login.
+
+Used in:
+
+```js
+router.post("/register", validateRegisterBody, registerUser);
+router.post("/login", validateLoginBody, loginUser);
+```
+
+Register validation checks:
+
+```txt
+Name is required
+Email is required
+Password is required
+Password must be at least 6 characters
+```
+
+Login validation checks:
+
+```txt
+Email is required
+Password is required
+```
+
+---
+
+## Final Route Flow
+
+Task create flow:
+
+```txt
+POST /api/tasks
+↓
+protect
+↓
+validateTaskBody
+↓
+createTask
+```
+
+Task update flow:
+
+```txt
+PUT /api/tasks/:id
+↓
+protect
+↓
+validateTaskBody
+↓
+updateTask
+```
+
+Register flow:
+
+```txt
+POST /api/auth/register
+↓
+validateRegisterBody
+↓
+registerUser
+```
+
+Login flow:
+
+```txt
+POST /api/auth/login
+↓
+validateLoginBody
+↓
+loginUser
+```
+
+---
+
+## Benefit
+
+Using validation middleware improves the backend by:
+
+```txt
+Keeping controllers clean
+Avoiding duplicate validation code
+Making validation reusable
+Improving route readability
+Following better backend structure
+```
 
 
+## Request Sanitization and Allowed Values
 
+The task validation middleware now validates and sanitizes task data before it reaches the controller.
+
+Allowed task status values:
+
+```txt
+pending
+in-progress
+completed
+
+Invalid values like abc, done123, or testing are rejected with:
+
+{
+  "message": "Invalid task status"
+}
+
+The middleware also trims extra spaces before saving data.
+
+Example request:
+
+{
+  "title": "  Learn backend sanitization  ",
+  "status": " pending "
+}
+
+Saved result:
+
+{
+  "title": "Learn backend sanitization",
+  "status": "pending"
+}
+
+Validation checks whether data is correct.
+
+Sanitization cleans the data before saving.
+
+```
+## Mongoose Schema Validation
+
+Mongoose schema validation protects the database model.
+
+Task status now uses an enum:
+
+```js
+status: {
+  type: String,
+  required: true,
+  enum: ["pending", "in-progress", "completed"],
+  trim: true,
+}
+
+This means only these task statuses are allowed:
+
+pending
+in-progress
+completed
+
+The task model also uses trim: true for title and status.
+
+This gives an extra safety layer:
+
+Frontend validation
+↓
+Backend middleware validation
+↓
+Mongoose schema validation
+↓
+MongoDB
+
+Middleware validation protects the API request.
+
+Mongoose schema validation protects the database model.
+
+```
+
+## Backend Service Layer
+
+A service layer was added to separate database logic from controllers.
+
+Before service layer:
+
+```txt
+Route
+↓
+Middleware
+↓
+Controller
+↓
+Mongoose Model
+```
+
+After service layer:
+
+```txt
+Route
+↓
+Middleware
+↓
+Controller
+↓
+Service
+↓
+Mongoose Model
+↓
+MongoDB
+```
+
+---
+
+## Why Service Layer?
+
+Controllers should mainly handle:
+
+```txt
+Request data
+Response
+Status code
+```
+
+Services should handle:
+
+```txt
+Database logic
+Business logic
+Reusable operations
+```
+
+This keeps controllers cleaner and makes backend code easier to maintain.
+
+---
+
+## Task Service
+
+Task database logic was moved to:
+
+```txt
+backend/src/services/taskService.js
+```
+
+The task service contains reusable functions:
+
+```js
+findTasksByUser(userId)
+createTaskForUser(taskData, userId)
+findTaskByIdAndUser(taskId, userId)
+updateTaskByIdAndUser(taskId, userId, taskData)
+deleteTaskByIdAndUser(taskId, userId)
+```
+
+---
+
+## Task Controller After Service Layer
+
+The task controller now calls service functions instead of directly using the Mongoose model.
+
+Example:
+
+```js
+const tasks = await findTasksByUser(req.user._id);
+```
+
+Instead of:
+
+```js
+const tasks = await Task.find({ user: req.user._id });
+```
+
+---
+
+## Benefit
+
+Service layer improves the backend by:
+
+```txt
+Keeping controllers clean
+Moving database logic to one place
+Making logic reusable
+Improving project structure
+Following industry-style backend architecture
+```
+
+The API behavior remains the same, but the code structure is cleaner.
+
+## Auth Service Layer
+
+An auth service layer was added to separate auth-related database logic from the auth controller.
+
+Before auth service layer:
+
+```txt
+Route
+↓
+Middleware
+↓
+Auth Controller
+↓
+User Model
+```
+
+After auth service layer:
+
+```txt
+Route
+↓
+Middleware
+↓
+Auth Controller
+↓
+Auth Service
+↓
+User Model
+↓
+MongoDB
+```
+
+---
+
+## Auth Service File
+
+Auth service logic is created inside:
+
+```txt
+backend/src/services/authService.js
+```
+
+This file contains reusable auth-related database functions.
+
+---
+
+## Auth Service Functions
+
+```js
+findUserByEmail(email)
+findUserByEmailWithPassword(email)
+createAuthUser(userData)
+findUserById(userId)
+```
+
+---
+
+## Why `findUserByEmailWithPassword`?
+
+In the user model, password is hidden by default using:
+
+```js
+select: false
+```
+
+So during login, password must be selected manually:
+
+```js
+User.findOne({ email }).select("+password")
+```
+
+This logic is now moved into the auth service:
+
+```js
+findUserByEmailWithPassword(email)
+```
+
+This keeps the controller cleaner and makes the purpose clear.
+
+---
+
+## Auth Controller After Service Layer
+
+The auth controller now calls service functions instead of directly using the User model.
+
+Example:
+
+```js
+const user = await findUserByEmailWithPassword(email);
+```
+
+Instead of:
+
+```js
+const user = await User.findOne({ email }).select("+password");
+```
+
+---
+
+## Benefit
+
+Auth service layer improves the backend by:
+
+```txt
+Keeping auth controller clean
+Moving database logic to one place
+Making auth logic reusable
+Improving project structure
+Following industry-style backend architecture
+```
+
+The API behavior remains the same, but the code structure is cleaner.
+## User Service Layer
+
+A user service layer was added to separate user-related database logic from the user controller.
+
+Before user service layer:
+
+```txt
+Route
+↓
+Middleware
+↓
+User Controller
+↓
+User Model
+↓
+MongoDB
+```
+
+After user service layer:
+
+```txt
+Route
+↓
+Middleware
+↓
+User Controller
+↓
+User Service
+↓
+User Model
+↓
+MongoDB
+```
+
+---
+
+## User Service File
+
+User service logic is created inside:
+
+```txt
+backend/src/services/userService.js
+```
+
+This file contains reusable user-related database functions.
+
+---
+
+## User Service Functions
+
+```js
+findAllUsers()
+createNewUser(userData)
+findUserById(userId)
+updateUserById(userId, userData)
+deleteUserById(userId)
+findUserByEmail(email)
+```
+
+---
+
+## Why User Service Layer?
+
+The user controller should focus on:
+
+```txt
+Reading request data
+Sending response
+Setting status codes
+```
+
+The user service should focus on:
+
+```txt
+Database queries
+User create logic
+User update logic
+User delete logic
+Reusable database operations
+```
+
+This keeps the controller clean and makes the backend easier to maintain.
+
+---
+
+## Password Safety in User Create API
+
+The admin user creation API accepts:
+
+```json
+{
+  "name": "Test User",
+  "email": "testuser@example.com",
+  "password": "123456",
+  "role": "user"
+}
+```
+
+Before saving the user, the password is hashed using bcrypt:
+
+```js
+const hashedPassword = await bcrypt.hash(password, 10);
+```
+
+So MongoDB stores a hashed password, not the plain password.
+
+Example stored password:
+
+```txt
+$2b$10$....
+```
+
+Plain password like this should never be stored:
+
+```txt
+123456
+```
+
+---
+
+## Password Removed From Response
+
+After creating a user, the password is removed before sending the response.
+
+```js
+const userResponse = user.toObject();
+delete userResponse.password;
+```
+
+So the API response does not expose the password.
+
+Example safe response:
+
+```json
+{
+  "message": "User created successfully",
+  "user": {
+    "_id": "user_id",
+    "name": "Test User",
+    "email": "testuser@example.com",
+    "role": "user"
+  }
+}
+```
+
+---
+
+## Final User API Flow
+
+```txt
+Request
+↓
+Admin route protection
+↓
+User controller
+↓
+User service
+↓
+User model
+↓
+MongoDB
+↓
+Safe response without password
+```
+
+---
+
+## Benefit
+
+User service layer improves the backend by:
+
+```txt
+Keeping user controller clean
+Moving database logic to one place
+Making user logic reusable
+Improving project structure
+Protecting password data
+Following industry-style backend architecture
+```
+
+The API behavior remains the same, but the code structure is cleaner and safer.
+
+## User Validation Middleware
+
+User create and update validation was moved from `userController.js` to validation middleware.
+
+Used in:
+
+```js
+router.post(
+  "/",
+  protect,
+  authorizeRoles("admin"),
+  validateCreateUserBody,
+  createUser
+);
+
+router.put(
+  "/:id",
+  protect,
+  authorizeRoles("admin"),
+  validateUpdateUserBody,
+  updateUser
+);
+```
+## User Validation Middleware
+
+User create and update validation was moved from `userController.js` to validation middleware.
+
+Used in:
+
+```js
+router.post(
+  "/",
+  protect,
+  authorizeRoles("admin"),
+  validateCreateUserBody,
+  createUser
+);
+
+router.put(
+  "/:id",
+  protect,
+  authorizeRoles("admin"),
+  validateUpdateUserBody,
+  updateUser
+);
+```
+
+## Centralized Error Response Format
+
+The backend uses centralized error middleware to send consistent error responses.
+
+All errors now return this format:
+
+```json
+{
+  "success": false,
+  "message": "Error message here"
+}
+
+```
+
+## Centralized API Response Format
+
+The backend now uses a consistent API response format for both success and error responses.
+
+This makes the API easier to understand and easier to handle on the frontend.
+
+---
+
+## Success Response Format
+
+All successful responses now follow this structure:
+
+```json
+{
+  "success": true,
+  "message": "Success message",
+  "data": {}
+}
+```
+
+If no data is needed, only `success` and `message` are returned.
+
+Example:
+
+```json
+{
+  "success": true,
+  "message": "Logout successful"
+}
+```
+
+---
+
+## Error Response Format
+
+All errors are handled by centralized error middleware.
+
+Error responses follow this structure:
+
+```json
+{
+  "success": false,
+  "message": "Error message"
+}
+```
+
+Example:
+
+```json
+{
+  "success": false,
+  "message": "Email is required"
+}
+```
+
+---
+
+## Utility Used
+
+A reusable response utility was added:
+
+```txt
+backend/src/utils/sendResponse.js
+```
+
+This utility is used to send success responses from controllers.
+
+---
+
+## Controllers Updated
+
+The following controllers now use the centralized success response format:
+
+```txt
+authController.js
+taskController.js
+userController.js
+```
+
+---
+
+## Frontend Impact
+
+Because the backend response structure changed, the frontend was updated to read data from the new response format.
+
+Before:
+
+```txt
+response.user
+response.accessToken
+response.task
+```
+
+Now:
+
+```txt
+response.data.user
+response.data.accessToken
+response.data
+```
+
+---
+
+## Benefits
+
+This improves the project by:
+
+```txt
+Keeping API responses consistent
+Reducing repeated response code
+Making frontend handling easier
+Improving controller readability
+Following cleaner backend API structure
+```

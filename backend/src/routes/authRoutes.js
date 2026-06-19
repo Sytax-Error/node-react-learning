@@ -7,11 +7,15 @@ import {
   registerUser,
 } from "../controllers/authController.js";
 import { protect } from "../middleware/authMiddleware.js";
+import {
+  validateLoginBody,
+  validateRegisterBody,
+} from "../middleware/validationMiddleware.js";
 
 const router = express.Router();
 
-router.post("/register", registerUser);
-router.post("/login", loginUser);
+router.post("/register", validateRegisterBody, registerUser);
+router.post("/login", validateLoginBody, loginUser);
 router.get("/profile", protect, getProfile);
 router.post("/refresh-token", refreshAccessToken);
 router.post("/logout", logoutUser);
