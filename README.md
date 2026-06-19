@@ -5295,3 +5295,23 @@ GET /api/tasks
 GET /api/tasks?status=completed
 GET /api/tasks?page=1&limit=2
 GET /api/tasks?status=pending&page=2&limit=5
+```
+
+## Task Advanced Query System
+
+The Task API now supports advanced query features:
+
+### 🔍 Features
+
+- Filtering by status
+- Searching by title
+- Pagination (page & limit)
+- Sorting (date & alphabetical)
+
+---
+
+## Query Parameters
+
+### Status Filter
+```txt
+?status=pending | in-progress | completed

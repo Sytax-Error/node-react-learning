@@ -12,6 +12,8 @@ import { sendResponse } from "../utils/sendResponse.js";
 export const getTasks = asyncHandler(async (req, res) => {
   const result = await findTasksByUser(req.user._id, {
     status: req.query.status,
+    search: req.query.search,
+    sort: req.query.sort,
     page: req.query.page,
     limit: req.query.limit,
   }); //Get only tasks where user id matches logged-in user id

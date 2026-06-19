@@ -10,27 +10,41 @@ export const findTasksByUser = async (userId, queryOptions = {}) => {
     user: userId,
   };
 
+  // STATUS FILTER
   if (status) {
     filter.status = status;
   }
 
+  // SEARCH FILTER
+  if (queryOptions.search) {
+    filter.title = {
+      $regex: queryOptions.search,
+      $options: "i",
+    };
+  }
+
   const skip = (page - 1) * limit;
 
+  let sortOrder = -1;
+
+  if (queryOptions.sort === "asc") {
+    sortOrder = 1;
+  }
+
   const tasks = await Task.find(filter)
-    .sort({ createdAt: -1 })
+    // .sort({ createdAt: sortOrder }) // based on creation time latest first or oldest
+    .sort({ title: sortOrder }) // Alphabetical sorting
     .skip(skip)
     .limit(limit);
 
   const totalTasks = await Task.countDocuments(filter);
-
-  const totalPages = Math.ceil(totalTasks / limit);
 
   return {
     tasks,
     pagination: {
       totalTasks,
       currentPage: page,
-      totalPages,
+      totalPages: Math.ceil(totalTasks / limit),
       limit,
     },
   };
