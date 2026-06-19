@@ -32,7 +32,7 @@ const refreshAccessToken = async () => {
     throw new Error(data.message || "Failed to refresh token");
   }
 
-  return data.accessToken;
+  return data.data.accessToken;
 };
 
 export const authFetch = async (url, options = {}) => {

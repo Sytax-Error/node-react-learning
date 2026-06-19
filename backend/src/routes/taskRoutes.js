@@ -7,11 +7,14 @@ import {
   deleteTask,
 } from "../controllers/taskController.js";
 import { protect } from "../middleware/authMiddleware.js";
-import { validateTaskBody } from "../middleware/validationMiddleware.js";
+import {
+  validateTaskBody,
+  validateTaskQuery,
+} from "../middleware/validationMiddleware.js";
 
 const router = express.Router();
 
-router.get("/", protect, getTasks);
+router.get("/", protect, validateTaskQuery, getTasks);
 
 router.post("/", protect, validateTaskBody, createTasks);
 

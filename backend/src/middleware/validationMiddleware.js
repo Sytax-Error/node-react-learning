@@ -131,3 +131,38 @@ export const validateUpdateUserBody = (req, res, next) => {
 
   next();
 };
+
+export const validateTaskQuery = (req, res, next) => {
+  const { status, page, limit } = req.query;
+
+  const allowedStatuses = ["pending", "in-progress", "completed"];
+
+  if (status && !allowedStatuses.includes(status.trim())) {
+    res.status(400);
+    throw new Error("Invalid task status filter");
+  }
+
+  if (page && (Number(page) <= 0 || Number.isNaN(Number(page)))) {
+    res.status(400);
+    throw new Error("Page must be a positive number");
+  }
+
+  if (limit && (Number(limit) <= 0 || Number.isNaN(Number(limit)))) {
+    res.status(400);
+    throw new Error("Limit must be a postive number");
+  }
+
+  if (page) {
+    req.query.page = page.trim();
+  }
+
+  if (limit) {
+    req.query.limit = page.trim();
+  }
+
+  if (status) {
+    req.query.status = status.trim();
+  }
+
+  next();
+};

@@ -16,7 +16,7 @@ function TasksPage() {
 
     try {
       const data = await getTasks();
-      setTasks(data.data);
+      setTasks(data.data.tasks);
     } catch (error) {
       setError(error.message);
     } finally {

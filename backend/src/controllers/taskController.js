@@ -10,8 +10,12 @@ import {
 import { sendResponse } from "../utils/sendResponse.js";
 
 export const getTasks = asyncHandler(async (req, res) => {
-  const task = await findTasksByUser(req.user._id); //Get only tasks where user id matches logged-in user id
-  sendResponse(res, 200, "Tasks fetched successfully", task);
+  const result = await findTasksByUser(req.user._id, {
+    status: req.query.status,
+    page: req.query.page,
+    limit: req.query.limit,
+  }); //Get only tasks where user id matches logged-in user id
+  sendResponse(res, 200, "Tasks fetched successfully", result);
 });
 
 export const createTasks = asyncHandler(async (req, res) => {
