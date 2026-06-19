@@ -19,7 +19,7 @@ function Profile() {
 
       try {
         const data = await getProfile();
-        setServerUser(data.user);
+        setServerUser(data.data);
       } catch (error) {
         setProfileError(error.message);
       } finally {

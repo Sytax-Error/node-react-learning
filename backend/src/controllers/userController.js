@@ -10,12 +10,13 @@ import {
 } from "../services/userService.js";
 import { validateObjectId } from "../utils/validators.js";
 import bcrypt from "bcryptjs";
+import { sendResponse } from "../utils/sendResponse.js";
 
 // let users = [];
 
 export const getUsers = asyncHandler(async (req, res) => {
   const users = await findAllUsers();
-  res.status(200).json(users);
+  sendResponse(res, 200, "Users fetched successfully", users);
 });
 
 export const createUser = asyncHandler(async (req, res) => {
@@ -40,11 +41,9 @@ export const createUser = asyncHandler(async (req, res) => {
   const userResponse = user.toObject();
   delete userResponse.password;
 
-  res.status(201).json({
-    message: "User created successfully",
-    user: userResponse,
-  });
+  sendResponse(res, 200, "User created successfully", userResponse);
 });
+
 export const getUserById = asyncHandler(async (req, res) => {
   const { id } = req.params;
 
@@ -57,7 +56,7 @@ export const getUserById = asyncHandler(async (req, res) => {
     throw new Error("User not found");
   }
 
-  res.status(200).json(user);
+  sendResponse(res, 200, "User fetched successfully", user);
 });
 
 export const updateUser = asyncHandler(async (req, res) => {
@@ -79,10 +78,7 @@ export const updateUser = asyncHandler(async (req, res) => {
     });
   }
 
-  res.json({
-    message: "user updated successfully.",
-    user,
-  });
+  sendResponse(res, 200, "User updated successfully", user);
 });
 
 export const deleteUser = asyncHandler(async (req, res) => {
@@ -97,7 +93,5 @@ export const deleteUser = asyncHandler(async (req, res) => {
     throw new Error("User not found");
   }
 
-  res.status(200).json({
-    message: "User deleted successfully",
-  });
+  sendResponse(res, 200, "User deleted successfully");
 });

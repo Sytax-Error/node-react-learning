@@ -5155,3 +5155,120 @@ All errors now return this format:
   "success": false,
   "message": "Error message here"
 }
+
+```
+
+## Centralized API Response Format
+
+The backend now uses a consistent API response format for both success and error responses.
+
+This makes the API easier to understand and easier to handle on the frontend.
+
+---
+
+## Success Response Format
+
+All successful responses now follow this structure:
+
+```json
+{
+  "success": true,
+  "message": "Success message",
+  "data": {}
+}
+```
+
+If no data is needed, only `success` and `message` are returned.
+
+Example:
+
+```json
+{
+  "success": true,
+  "message": "Logout successful"
+}
+```
+
+---
+
+## Error Response Format
+
+All errors are handled by centralized error middleware.
+
+Error responses follow this structure:
+
+```json
+{
+  "success": false,
+  "message": "Error message"
+}
+```
+
+Example:
+
+```json
+{
+  "success": false,
+  "message": "Email is required"
+}
+```
+
+---
+
+## Utility Used
+
+A reusable response utility was added:
+
+```txt
+backend/src/utils/sendResponse.js
+```
+
+This utility is used to send success responses from controllers.
+
+---
+
+## Controllers Updated
+
+The following controllers now use the centralized success response format:
+
+```txt
+authController.js
+taskController.js
+userController.js
+```
+
+---
+
+## Frontend Impact
+
+Because the backend response structure changed, the frontend was updated to read data from the new response format.
+
+Before:
+
+```txt
+response.user
+response.accessToken
+response.task
+```
+
+Now:
+
+```txt
+response.data.user
+response.data.accessToken
+response.data
+```
+
+---
+
+## Benefits
+
+This improves the project by:
+
+```txt
+Keeping API responses consistent
+Reducing repeated response code
+Making frontend handling easier
+Improving controller readability
+Following cleaner backend API structure
+```

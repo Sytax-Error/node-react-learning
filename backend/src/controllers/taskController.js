@@ -7,10 +7,11 @@ import {
   findTasksByUser,
   updateTaskByIdAndUser,
 } from "../services/taskService.js";
+import { sendResponse } from "../utils/sendResponse.js";
 
 export const getTasks = asyncHandler(async (req, res) => {
   const task = await findTasksByUser(req.user._id); //Get only tasks where user id matches logged-in user id
-  return res.status(200).json(task);
+  sendResponse(res, 200, "Tasks fetched successfully", task);
 });
 
 export const createTasks = asyncHandler(async (req, res) => {
@@ -21,10 +22,7 @@ export const createTasks = asyncHandler(async (req, res) => {
     req.user._id, // current logged-in user's MongoDB id
   );
 
-  res.status(201).json({
-    message: "Task created.",
-    task,
-  });
+  sendResponse(res, 201, "Task created successfully", task);
 });
 
 export const getByTaskId = asyncHandler(async (req, res) => {
@@ -41,10 +39,7 @@ export const getByTaskId = asyncHandler(async (req, res) => {
     });
   }
 
-  res.status(200).json({
-    message: "Task found",
-    task,
-  });
+  sendResponse(res, 200, "Task fetched successfully", task);
 });
 
 export const updateTask = asyncHandler(async (req, res) => {
@@ -65,10 +60,7 @@ export const updateTask = asyncHandler(async (req, res) => {
     });
   }
 
-  res.status(200).json({
-    message: "Task updated successfully.",
-    task,
-  });
+  sendResponse(res, 200, "Task updated successfully", task);
 });
 
 export const deleteTask = asyncHandler(async (req, res) => {
@@ -84,7 +76,5 @@ export const deleteTask = asyncHandler(async (req, res) => {
     });
   }
 
-  res.status(200).json({
-    message: "Task deleted.",
-  });
+  sendResponse(res, 200, "Task deleted successfully");
 });

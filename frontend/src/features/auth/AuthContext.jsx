@@ -33,8 +33,8 @@ export const AuthProvider = ({ children }) => {
       const data = await loginUser(formData);
 
       const authData = {
-        user: data.user,
-        accessToken: data.accessToken,
+        user: data.data.user,
+        accessToken: data.data.accessToken,
       };
 
       localStorage.setItem("auth", JSON.stringify(authData));

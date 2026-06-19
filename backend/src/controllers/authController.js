@@ -11,6 +11,7 @@ import {
   createAuthUser,
   findUserById,
 } from "../services/authService.js";
+import { sendResponse } from "../utils/sendResponse.js";
 
 export const registerUser = asyncHandler(async (req, res) => {
   const { name, email, password, role } = req.body;
@@ -30,8 +31,7 @@ export const registerUser = asyncHandler(async (req, res) => {
     password: hashedPassword,
   });
 
-  res.status(201).json({
-    message: "User registered successfully",
+  sendResponse(res, 201, "User registered successfully", {
     user: {
       id: user._id,
       name: user.name,
@@ -68,8 +68,7 @@ export const loginUser = asyncHandler(async (req, res) => {
     maxAge: 7 * 24 * 60 * 60 * 1000, // Cookie expiry is 7 days in milliseconds.
   });
 
-  res.status(200).json({
-    message: "Login successful",
+  sendResponse(res, 200, "Login successful", {
     accessToken,
     user: {
       id: user._id,
@@ -81,9 +80,7 @@ export const loginUser = asyncHandler(async (req, res) => {
 });
 
 export const getProfile = asyncHandler(async (req, res) => {
-  res.status(200).json({
-    user: req.user,
-  });
+  sendResponse(res, 200, "Profile fetched successfully", req.user);
 });
 
 export const refreshAccessToken = asyncHandler(async (req, res) => {
@@ -105,7 +102,7 @@ export const refreshAccessToken = asyncHandler(async (req, res) => {
 
   const accessToken = generateAccessToken(user);
 
-  res.status(200).json({
+  sendResponse(res, 200, "Access token refreshed successfully", {
     accessToken,
   });
 });
@@ -118,7 +115,5 @@ export const logoutUser = asyncHandler(async (req, res) => {
     sameSite: "strict",
   });
 
-  res.status(200).json({
-    message: "Logout successful",
-  });
+  sendResponse(res, 200, "Logout successful");
 });
