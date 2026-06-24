@@ -2329,7 +2329,7 @@ Purpose:
 ValidationError → 400 Bad Request
 Technical Mongoose message → cleaner API message
 ```
-# Day 9: Registration and Authentication
+# Day 9 - 10: Registration and Authentication
 
 ## Authentication
 
@@ -5314,4 +5314,131 @@ The Task API now supports advanced query features:
 
 ### Status Filter
 ```txt
-?status=pending | in-progress | completed
+## Day 11: File Upload with Express and Multer
+
+### Topics Covered
+
+* What is `multipart/form-data`
+* Why `express.json()` cannot handle file uploads
+* What is Multer
+* Single file upload using `upload.single()`
+* Storing uploaded files in the `uploads/` folder
+* File type validation using `file.mimetype`
+* File size validation using Multer `limits`
+* Handling Multer errors in global error middleware
+* Serving uploaded files publicly using `express.static`
+* Returning uploaded file URL in API response
+* Saving profile image URL in MongoDB
+
+### APIs Added
+
+#### Upload Single File
+
+```txt
+POST /api/uploads/single
+```
+
+Body:
+
+```txt
+form-data
+key: file
+type: File
+```
+
+Response:
+
+```json
+{
+  "success": true,
+  "message": "File uploaded successfully",
+  "data": {
+    "fileName": "uploaded-file-name.png",
+    "fileUrl": "http://localhost:5000/uploads/uploaded-file-name.png"
+  }
+}
+```
+
+#### Update Logged-in User Profile Image
+
+```txt
+PATCH /api/users/profile-image
+```
+
+Headers:
+
+```txt
+Authorization: Bearer <accessToken>
+```
+
+Body:
+
+```txt
+form-data
+key: file
+type: File
+```
+
+Response:
+
+```json
+{
+  "success": true,
+  "message": "Profile image updated successfully",
+  "data": {
+    "user": {
+      "_id": "user-id",
+      "name": "User Name",
+      "email": "user@example.com",
+      "role": "user",
+      "profileImage": "http://localhost:5000/uploads/uploaded-file-name.png"
+    }
+  }
+}
+```
+
+### Important Learning
+
+`cb` in Multer means callback. Multer uses it to know what to do next.
+
+Examples:
+
+```js
+cb(null, "uploads/");
+```
+
+Means save file in the `uploads/` folder.
+
+```js
+cb(null, fileName);
+```
+
+Means use this generated file name.
+
+```js
+cb(null, true);
+```
+
+Means accept the uploaded file.
+
+```js
+cb(new Error("Only image files are allowed"), false);
+```
+
+Means reject the uploaded file.
+
+### Final Flow
+
+```txt
+Client sends form-data file
+↓
+upload.single("file")
+↓
+Multer validates file type and size
+↓
+File is saved in uploads folder
+↓
+Controller creates public file URL
+↓
+MongoDB user document is updated with profileImage URL
+```
