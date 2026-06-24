@@ -95,3 +95,20 @@ export const deleteUser = asyncHandler(async (req, res) => {
 
   sendResponse(res, 200, "User deleted successfully");
 });
+
+export const updateProfileImage = asyncHandler(async (req, res) => {
+  if (!req.file) {
+    res.status(400);
+    throw new Error("Profile image is required");
+  }
+
+  const fileUrl = `${req.protocol}://${req.get("host")}/${req.file.filename}`;
+
+  const updatedUser = await updateUserById(req.user._id, {
+    profileImage: fileUrl,
+  });
+
+  sendResponse(res, 200, "Profile image updated successfully", {
+    user: updatedUser,
+  });
+});

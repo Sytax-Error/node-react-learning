@@ -9,6 +9,7 @@ import taskRoutes from "./routes/taskRoutes.js";
 import { connectDB } from "./config/db.js";
 import cookieParser from "cookie-parser";
 import authRoutes from "./routes/authRoutes.js";
+import uploadRoutes from "./routes/uploadRoutes.js";
 
 dotenv.config(); // env config
 connectDB();
@@ -20,12 +21,14 @@ app.use(
   }),
 ); // cors
 app.use(express.json()); //reads JSON body
+app.use("/uploads", express.static("uploads"));
 app.use(loggerMiddleware); //Custom Logger Middleware
 app.use(cookieParser());
 
 app.use("/api/users", userRoutes); // link routes
 app.use("/api/tasks", taskRoutes);
 app.use("/api/auth", authRoutes);
+app.use("/api/uploads", uploadRoutes);
 
 let users = [];
 let projects = [];

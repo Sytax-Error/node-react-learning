@@ -21,6 +21,13 @@ export const errorMiddleware = (error, req, res, next) => {
     message = "Token expired";
   }
 
+  if (error.code === "LIMIT_FILE_SIZE") {
+    statusCode = 400;
+    message = "File size must be less then 2 MB";
+  }
+
+  console.log("Error name: ", error?.name, error?.code);
+
   res.status(statusCode).json({
     success: false,
     message,
