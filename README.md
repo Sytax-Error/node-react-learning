@@ -5558,3 +5558,60 @@ Image URL
 → stored in MongoDB
 
 ```
+
+### Profile Image Update with Cloudinary Public ID
+
+To properly manage profile images, we store both the Cloudinary image URL and Cloudinary public ID in MongoDB.
+
+```js
+profileImage: {
+  type: String,
+  default: "",
+},
+
+profileImagePublicId: {
+  type: String,
+  default: "",
+},
+
+Why store profileImage?
+
+profileImage is used by the frontend to display the image.
+
+<img src={user.profileImage} alt="Profile" />
+Why store profileImagePublicId?
+
+Cloudinary deletes images using public_id, not the image URL.
+
+await cloudinary.uploader.destroy(user.profileImagePublicId);
+Final Profile Image Update Flow
+User uploads new profile image
+↓
+Multer receives file
+↓
+Cloudinary uploads new image
+↓
+Local temporary file is deleted
+↓
+Old Cloudinary image is deleted using profileImagePublicId
+↓
+New secure_url is saved in profileImage
+↓
+New public_id is saved in profileImagePublicId
+Updated User Response
+{
+  "success": true,
+  "message": "Profile image updated successfully",
+  "data": {
+    "user": {
+      "_id": "user-id",
+      "name": "admin",
+      "email": "admin@test.com",
+      "role": "admin",
+      "profileImage": "https://res.cloudinary.com/...",
+      "profileImagePublicId": "node-react-learning/profile-images/..."
+    }
+  }
+}
+
+```

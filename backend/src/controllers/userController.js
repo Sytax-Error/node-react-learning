@@ -113,8 +113,13 @@ export const updateProfileImage = asyncHandler(async (req, res) => {
 
   fs.unlinkSync(req.file.path);
 
+  if (req.user.profileImagePublicId) {
+    await cloudinary.uploader.destroy(req.user.profileImagePublicId);
+  }
+
   const updatedUser = await updateUserById(req.user._id, {
-    profileImage: result.secure_url, // upload image of cloudinary
+    profileImage: result.secure_url, // upload image of clo udinary
+    profileImagePublicId: result.public_id,
   });
 
   sendResponse(res, 200, "Profile image updated successfully", {
