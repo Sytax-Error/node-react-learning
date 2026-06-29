@@ -5442,3 +5442,119 @@ Controller creates public file URL
 ↓
 MongoDB user document is updated with profileImage URL
 ```
+## Day 12: Cloud Image Upload with Cloudinary
+
+### Topics Covered
+
+- Why local file upload is not enough for production
+- What is Cloudinary
+- Cloudinary package setup
+- Cloudinary credentials using `.env`
+- Cloudinary configuration file
+- Upload image to Cloudinary using Express
+- Return Cloudinary image URL in API response
+- Save Cloudinary image URL in MongoDB user profile
+- Delete local temporary file after Cloudinary upload
+
+---
+
+### Package Installed
+
+```bash
+npm install cloudinary
+
+Environment Variables
+CLOUDINARY_CLOUD_NAME=your_cloud_name
+CLOUDINARY_API_KEY=your_api_key
+CLOUDINARY_API_SECRET=your_api_secret
+Cloudinary Config
+
+File:
+
+src/config/cloudinary.js
+import "dotenv/config";
+import { v2 as cloudinary } from "cloudinary";
+
+cloudinary.config({
+  cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
+  api_key: process.env.CLOUDINARY_API_KEY,
+  api_secret: process.env.CLOUDINARY_API_SECRET,
+});
+
+export default cloudinary;
+APIs Added / Updated
+Upload Single File to Cloudinary
+POST /api/uploads/cloudinary/single
+
+Body:
+
+form-data
+key: file
+type: File
+
+Response:
+
+{
+  "success": true,
+  "message": "File uploaded to Cloudinary successfully",
+  "data": {
+    "fileName": "uploaded-file-name.png",
+    "fileUrl": "https://res.cloudinary.com/...",
+    "publicId": "node-react-learning/..."
+  }
+}
+Update Logged-in User Profile Image with Cloudinary URL
+PATCH /api/users/profile-image
+
+Headers:
+
+Authorization: Bearer <accessToken>
+
+Body:
+
+form-data
+key: file
+type: File
+
+Response:
+
+{
+  "success": true,
+  "message": "Profile image updated successfully",
+  "data": {
+    "user": {
+      "_id": "user-id",
+      "name": "admin",
+      "email": "admin@test.com",
+      "role": "admin",
+      "profileImage": "https://res.cloudinary.com/..."
+    }
+  }
+}
+Final Flow
+Frontend sends image as form-data
+↓
+Multer receives file
+↓
+File is temporarily saved locally
+↓
+Cloudinary uploads image
+↓
+Local temporary file is deleted
+↓
+Cloudinary secure_url is saved in MongoDB
+↓
+Frontend uses profileImage URL in img tag
+Frontend Usage
+<img src={user.profileImage} alt="Profile" />
+Important Learning
+
+MongoDB does not store the actual image file.
+
+Actual image file
+→ stored in Cloudinary
+
+Image URL
+→ stored in MongoDB
+
+```
