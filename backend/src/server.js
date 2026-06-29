@@ -21,7 +21,7 @@ app.use(
   }),
 ); // cors
 app.use(express.json()); //reads JSON body
-app.use("/uploads", express.static("uploads"));
+app.use("/uploads", express.static("uploads")); // make uploads folder static for browser access
 app.use(loggerMiddleware); //Custom Logger Middleware
 app.use(cookieParser());
 

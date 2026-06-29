@@ -11,6 +11,8 @@ import {
 import { validateObjectId } from "../utils/validators.js";
 import bcrypt from "bcryptjs";
 import { sendResponse } from "../utils/sendResponse.js";
+import cloudinary from "../config/cloudinary.js";
+import fs from "fs";
 
 // let users = [];
 
@@ -102,10 +104,17 @@ export const updateProfileImage = asyncHandler(async (req, res) => {
     throw new Error("Profile image is required");
   }
 
-  const fileUrl = `${req.protocol}://${req.get("host")}/${req.file.filename}`;
+  // access the local upload folder to use image file
+  // const fileUrl = `${req.protocol}://${req.get("host")}/${req.file.filename}`;
+
+  const result = await cloudinary.uploader.upload(req.file.path, {
+    folder: "node-react-learning",
+  });
+
+  fs.unlinkSync(req.file.path);
 
   const updatedUser = await updateUserById(req.user._id, {
-    profileImage: fileUrl,
+    profileImage: result.secure_url, // upload image of cloudinary
   });
 
   sendResponse(res, 200, "Profile image updated successfully", {
