@@ -5615,3 +5615,179 @@ Updated User Response
 }
 
 ```
+
+## Day 13: Email Sending with Node.js using Nodemailer and Ethereal
+
+### Topics Covered
+
+* What is SMTP
+* What is Nodemailer
+* Why we use Ethereal Email for testing
+* Installing Nodemailer
+* Creating reusable email service
+* Sending test email from backend
+* Using SMTP config from `.env`
+* Sending welcome email after user registration
+
+---
+
+### Package Installed
+
+```bash
+npm install nodemailer
+```
+
+---
+
+### Environment Variables
+
+```env
+SMTP_HOST=smtp.ethereal.email
+SMTP_PORT=587
+SMTP_USER=your_ethereal_username
+SMTP_PASS="your_ethereal_password"
+SMTP_FROM=Node Learning App <test@example.com>
+```
+
+> `.env` should not be committed to GitHub because it contains SMTP password.
+
+---
+
+### Email Utility
+
+File:
+
+```txt
+src/utils/emailService.js
+```
+
+The email utility uses Nodemailer to send email using SMTP config from `.env`.
+
+```js
+import nodemailer from "nodemailer";
+
+export const sendEmail = async ({ to, subject, text, html }) => {
+  const transporter = nodemailer.createTransport({
+    host: process.env.SMTP_HOST,
+    port: Number(process.env.SMTP_PORT),
+    secure: false,
+    auth: {
+      user: process.env.SMTP_USER,
+      pass: process.env.SMTP_PASS,
+    },
+  });
+
+  const info = await transporter.sendMail({
+    from: process.env.SMTP_FROM,
+    to,
+    subject,
+    text,
+    html,
+  });
+
+  return nodemailer.getTestMessageUrl(info);
+};
+```
+
+---
+
+### Test Email API
+
+```txt
+POST /api/emails/test
+```
+
+This API sends a test email using Ethereal and returns a preview URL.
+
+Example response:
+
+```json
+{
+  "success": true,
+  "message": "Test email sent successfully",
+  "data": {
+    "previewUrl": "https://ethereal.email/message/..."
+  }
+}
+```
+
+---
+
+### Welcome Email After Register
+
+After user registration, backend sends a welcome email.
+
+Flow:
+
+```txt
+User sends register request
+↓
+Backend validates request body
+↓
+Password is hashed
+↓
+User is saved in MongoDB
+↓
+Welcome email is sent using sendEmail()
+↓
+Register response is returned
+```
+
+Example usage inside register controller:
+
+```js
+const previewUrl = await sendEmail({
+  to: user.email,
+  subject: "Welcome to Node Learning App",
+  text: `Hello ${user.name}, welcome to Node Learning App.`,
+  html: `
+    <h2>Welcome ${user.name}</h2>
+    <p>Your account has been created successfully.</p>
+    <p>Thank you for joining Node Learning App.</p>
+  `,
+});
+
+console.log("Welcome email preview:", previewUrl);
+```
+
+---
+
+### Important Learning
+
+Ethereal Email does not send real emails to real inboxes.
+
+It gives a preview URL where we can see the email content.
+
+```txt
+Backend sends email
+↓
+Ethereal catches email
+↓
+Preview URL is returned
+↓
+We open preview URL and check email
+```
+
+---
+
+### Common Error Fixed
+
+Error:
+
+```txt
+Invalid login: 535 Authentication failed
+```
+
+Reason:
+
+```txt
+SMTP username/password was wrong or password had special characters.
+```
+
+Fix:
+
+```env
+SMTP_PASS="exact_password_here"
+```
+
+Use quotes around password when it contains special characters.

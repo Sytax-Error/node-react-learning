@@ -12,6 +12,7 @@ import {
   findUserById,
 } from "../services/authService.js";
 import { sendResponse } from "../utils/sendResponse.js";
+import { sendEmail } from "../utils/emailService.js";
 
 export const registerUser = asyncHandler(async (req, res) => {
   const { name, email, password, role } = req.body;
@@ -38,6 +39,16 @@ export const registerUser = asyncHandler(async (req, res) => {
       email: user.email,
       role: user.role,
     },
+  });
+  await sendEmail({
+    to: user.email,
+    subject: "Welcome to Node Learning App",
+    text: `Hello ${user.name}, welcome to Node Learning App.`,
+    html: `
+    <h2>Welcome ${user.name}</h2>
+    <p>Your account has been created successfully.</p>
+    <p>Thank you for joining Node Learning App.</p>
+  `,
   });
 });
 

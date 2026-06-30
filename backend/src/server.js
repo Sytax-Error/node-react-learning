@@ -10,6 +10,7 @@ import { connectDB } from "./config/db.js";
 import cookieParser from "cookie-parser";
 import authRoutes from "./routes/authRoutes.js";
 import uploadRoutes from "./routes/uploadRoutes.js";
+import emailRouter from "./routes/emailRoutes.js";
 
 dotenv.config(); // env config
 connectDB();
@@ -29,6 +30,7 @@ app.use("/api/users", userRoutes); // link routes
 app.use("/api/tasks", taskRoutes);
 app.use("/api/auth", authRoutes);
 app.use("/api/uploads", uploadRoutes);
+app.use("/api/emails", emailRouter);
 
 let users = [];
 let projects = [];
