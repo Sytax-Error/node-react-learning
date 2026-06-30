@@ -5791,3 +5791,107 @@ SMTP_PASS="exact_password_here"
 ```
 
 Use quotes around password when it contains special characters.
+### Gmail SMTP Setup
+
+After testing email with Ethereal, we also tested real email sending using Gmail SMTP.
+
+Gmail SMTP is free for learning, but it requires a Google App Password.
+
+Normal Gmail password does not work.
+
+---
+
+### Gmail SMTP Environment Variables
+
+```env
+SMTP_HOST=smtp.gmail.com
+SMTP_PORT=587
+SMTP_USER=yourgmail@gmail.com
+SMTP_PASS="your_16_character_app_password"
+SMTP_FROM=Node Learning App <yourgmail@gmail.com>
+```
+
+> `SMTP_PASS` should be the Gmail App Password, not the normal Gmail password.
+
+---
+
+### Gmail SMTP Setup Flow
+
+```txt
+Google Account
+↓
+Enable 2-Step Verification
+↓
+Create App Password
+↓
+Add Gmail SMTP values in .env
+↓
+Restart backend server
+↓
+Test email API
+↓
+Check real inbox or spam folder
+```
+
+---
+
+### Test Email API
+
+```txt
+POST /api/emails/test
+```
+
+With Gmail SMTP, the email is sent to a real email inbox.
+
+For testing, update the `to` email in the test email controller to your own email address.
+
+```js
+const emailInfo = await sendEmail({
+  to: "yourrealemail@gmail.com",
+  subject: "Test Email from Node.js",
+  text: "Hello, this is a test email from Node.js.",
+  html: "<h2>Hello</h2><p>This is a test email from Node.js.</p>",
+});
+```
+
+---
+
+### Important Difference Between Ethereal and Gmail SMTP
+
+```txt
+Ethereal
+→ Used only for testing
+→ Does not send real email
+→ Gives preview URL
+
+Gmail SMTP
+→ Sends real email
+→ Email can arrive in inbox or spam
+→ Does not provide Ethereal preview URL
+```
+
+---
+
+### Common Gmail SMTP Notes
+
+* Gmail SMTP may send test emails to the spam folder.
+* `SMTP_FROM` email should match `SMTP_USER`.
+* `.env` should never be committed to GitHub.
+* Gmail App Password should be kept secret.
+* Restart backend after changing `.env`.
+
+---
+
+### Final Email Flow
+
+```txt
+Backend API is called
+↓
+Controller calls sendEmail()
+↓
+sendEmail() reads SMTP config from .env
+↓
+Nodemailer connects to Gmail SMTP
+↓
+Email is sent to real inbox
+```
