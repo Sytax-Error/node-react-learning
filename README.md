@@ -5989,4 +5989,60 @@ User enters new password
 Call reset-password API
 ↓
 Redirect to login page
+```
 
+#### Reset Password
+```
+POST /api/auth/reset-password/:token
+
+Body:
+
+{
+  "password": "newpass123"
+}
+
+Flow:
+
+User clicks reset link
+↓
+Frontend sends token + new password
+↓
+Backend hashes token from URL
+↓
+Backend finds user by hashed token
+↓
+Backend checks token expiry
+↓
+New password is hashed using bcrypt
+↓
+Password is updated
+↓
+Reset token fields are cleared
+User Model Fields Added
+passwordResetToken: {
+  type: String,
+},
+
+passwordResetExpires: {
+  type: Date,
+},
+Important Learning
+
+For password:
+
+bcrypt
+→ used because passwords can be weak
+→ slow and secure hashing
+
+For reset token:
+
+crypto sha256
+→ used because token is already randomly generated
+→ fast hash is enough
+Security Notes
+Plain reset token is sent only in email link.
+Hashed reset token is stored in MongoDB.
+Reset link expires after 10 minutes.
+After password reset, token fields are cleared.
+Same reset link cannot be reused.
+```
