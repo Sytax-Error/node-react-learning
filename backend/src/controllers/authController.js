@@ -13,6 +13,11 @@ import {
 } from "../services/authService.js";
 import { sendResponse } from "../utils/sendResponse.js";
 import { sendEmail } from "../utils/emailService.js";
+import crypto from "crypto";
+import {
+  findUserByResetToken,
+  updateUserById,
+} from "../services/userService.js";
 
 export const registerUser = asyncHandler(async (req, res) => {
   const { name, email, password, role } = req.body;
@@ -40,6 +45,7 @@ export const registerUser = asyncHandler(async (req, res) => {
       role: user.role,
     },
   });
+
   await sendEmail({
     to: user.email,
     subject: "Welcome to Node Learning App",
@@ -127,4 +133,85 @@ export const logoutUser = asyncHandler(async (req, res) => {
   });
 
   sendResponse(res, 200, "Logout successful");
+});
+
+export const forgotPassword = asyncHandler(async (req, res) => {
+  const { email } = req.body;
+
+  if (!email || !email.trim()) {
+    res.status(400);
+    throw new Error("User email required");
+  }
+
+  const user = await findUserByEmail(email?.trim());
+
+  if (!user) {
+    res.status(404);
+    throw new Error("user not found");
+  }
+
+  const resetToken = crypto.randomBytes(32).toString("hex");
+
+  const hashedToken = crypto
+    .createHash("sha256")
+    .update(resetToken)
+    .digest("hex");
+
+  const resetTokenExpires = Date.now() + 10 * 60 * 1000;
+
+  await updateUserById(user._id, {
+    passwordResetToken: hashedToken,
+    passwordResetExpires: resetTokenExpires,
+  });
+
+  const resetUrl = `http://localhost:5173/reset-password/${resetToken}`;
+  console.log("Sending password reset email...", resetUrl);
+
+  await sendEmail({
+    to: user.email,
+    subject: "Password Reset Request",
+    text: `Reset your password using this link: ${resetUrl}`,
+    html: `
+    <h2>Password Reset Request</h2>
+    <p>Click the link below to reset your password:</p>
+    <a href="${resetUrl}">${resetUrl}</a>
+    <p>This link will expire in 10 minutes.</p>
+  `,
+  });
+  console.log("Password reset email sent.");
+  sendResponse(res, 200, "Password reset link sent successfully");
+});
+
+export const resetPassword = asyncHandler(async (req, res) => {
+  const { token } = req.params;
+  const { password } = req.body;
+
+  if (!password) {
+    res.status(400);
+    throw new Error("Passwrod required");
+  }
+
+  if (password.length < 6) {
+    res.status(400);
+    throw new Error("Password length must be have atleast 6 characters");
+  }
+
+  const hashedToken = crypto.createHash("sha256").update(token).digest("hex");
+
+  const user = await findUserByResetToken(hashedToken);
+
+  if (!user) {
+    res.status(400);
+    throw new Error("Invalid or expired reset token");
+  }
+
+  const hashedPassword = await bcrypt.hash(password, 10);
+
+  user.password = hashedPassword;
+  user.passwordResetToken = undefined;
+  user.passwordResetExpires = undefined;
+
+  await user.save();
+
+  sendResponse(res, 200, "Password reset successfully");
 });

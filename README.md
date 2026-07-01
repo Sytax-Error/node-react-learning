@@ -5895,3 +5895,98 @@ Nodemailer connects to Gmail SMTP
 ↓
 Email is sent to real inbox
 ```
+## Day 14: Forgot Password and Reset Password Flow
+
+### Topics Covered
+
+- Forgot password API
+- Reset password API
+- Secure reset token generation using Node.js `crypto`
+- Hashing reset token before saving in MongoDB
+- Reset token expiry time
+- Sending password reset link by email
+- Validating reset token
+- Hashing new password with bcrypt
+- Clearing reset token after password reset
+
+---
+
+### APIs Added
+
+#### Forgot Password
+
+```txt
+POST /api/auth/forgot-password
+
+Body:
+
+{
+  "email": "admin@test.com"
+}
+
+Flow:
+
+User enters email
+↓
+Backend finds user
+↓
+Backend creates plain reset token
+↓
+Backend hashes token using sha256
+↓
+Hashed token + expiry saved in MongoDB
+↓
+Plain token is sent in email reset link
+Reset Password
+POST /api/auth/reset-password/:token
+
+Body:
+
+{
+  "password": "newpass123"
+}
+
+Flow:
+
+User opens reset link
+↓
+Frontend sends token + new password
+↓
+Backend hashes URL token
+↓
+Backend finds user by hashed token
+↓
+Backend checks token expiry
+↓
+New password is hashed with bcrypt
+↓
+Password is updated
+↓
+Reset token fields are cleared
+Important Learning
+Password
+→ hashed using bcrypt
+
+Reset token
+→ generated using crypto
+→ hashed using sha256 before saving
+
+MongoDB stores only the hashed reset token, not the plain token.
+
+Frontend Flow
+Forgot Password Page
+↓
+User enters email
+↓
+Call forgot-password API
+↓
+User receives reset link in email
+↓
+Reset Password Page reads token from URL
+↓
+User enters new password
+↓
+Call reset-password API
+↓
+Redirect to login page
+

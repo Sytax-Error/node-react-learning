@@ -26,3 +26,10 @@ export const deleteUserById = async (userId) => {
 export const findUserByEmail = async (email) => {
   return User.findOne({ email });
 };
+
+export const findUserByResetToken = async (hashedToken) => {
+  return User.findOne({
+    passwordResetToken: hashedToken,
+    passwordResetExpires: { $gt: Date.now() },
+  }).select("+password");
+};
