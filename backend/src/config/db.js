@@ -1,10 +1,11 @@
 import mongoose from "mongoose";
+import { env } from "./env.js";
 
 mongoose.set("sanitizeFilter", true);
 
 export const connectDB = async () => {
   try {
-    const connection = await mongoose.connect(process.env.MONGO_URI);
+    const connection = await mongoose.connect(env.mongoUri);
 
     console.log(`MongoDB Connected: ${connection.connection.host}`);
   } catch (error) {

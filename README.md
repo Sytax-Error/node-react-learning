@@ -7160,3 +7160,292 @@ In real company projects, all public and important APIs should be documented pro
 
 
 ```
+
+# Day 19: Environment-based Configuration
+
+## Objective
+
+The objective of Day 19 was to manage all environment variables from one central configuration file.
+
+Instead of using `process.env` directly in multiple files, we created a centralized `env.js` file.
+
+This makes the project cleaner, easier to maintain, and closer to real company-level backend structure.
+
+---
+
+## Why Environment Configuration is Needed
+
+Backend projects use many secret or environment-specific values.
+
+Examples:
+
+- Server port
+- MongoDB connection URL
+- JWT secrets
+- SMTP credentials
+- Cloudinary credentials
+- Twilio credentials
+
+If these values are used directly with `process.env` in many files, the project becomes harder to maintain.
+
+Example problem:
+
+```js
+process.env.JWT_ACCESS_SECRET
+```
+
+If this variable is used in many files and later the name changes, we need to update many files.
+
+To avoid this, we use a central configuration file.
+
+---
+
+## Final Flow
+
+```txt
+.env
+↓
+src/config/env.js
+↓
+env object
+↓
+Used in project files
+```
+
+---
+
+## Central Env Config File
+
+Created file:
+
+```txt
+src/config/env.js
+```
+
+This file loads `.env` values and exports them as a clean `env` object.
+
+Example:
+
+```js
+import "dotenv/config";
+
+const requiredEnv = (key) => {
+  const value = process.env[key];
+
+  if (!value) {
+    throw new Error(`Missing required environment variable: ${key}`);
+  }
+
+  return value;
+};
+
+export const env = {
+  port: process.env.PORT || 5000,
+
+  mongoUri: requiredEnv("MONGO_URI"),
+
+  jwt: {
+    accessSecret: requiredEnv("JWT_ACCESS_SECRET"),
+    refreshSecret: requiredEnv("JWT_REFRESH_SECRET"),
+    accessExpiresIn: process.env.JWT_ACCESS_EXPIRES_IN || "15m",
+    refreshExpiresIn: process.env.JWT_REFRESH_EXPIRES_IN || "7d",
+  },
+
+  smtp: {
+    host: requiredEnv("SMTP_HOST"),
+    port: process.env.SMTP_PORT || 587,
+    user: requiredEnv("SMTP_USER"),
+    pass: requiredEnv("SMTP_PASS"),
+    from: requiredEnv("SMTP_FROM"),
+  },
+
+  cloudinary: {
+    cloudName: requiredEnv("CLOUDINARY_CLOUD_NAME"),
+    apiKey: requiredEnv("CLOUDINARY_API_KEY"),
+    apiSecret: requiredEnv("CLOUDINARY_API_SECRET"),
+  },
+
+  twilio: {
+    accountSid: requiredEnv("TWILIO_ACCOUNT_SID"),
+    authToken: requiredEnv("TWILIO_AUTH_TOKEN"),
+    phoneNumber: requiredEnv("TWILIO_PHONE_NUMBER"),
+  },
+};
+```
+
+---
+
+## Required Env Validation
+
+A helper function was added:
+
+```js
+const requiredEnv = (key) => {
+  const value = process.env[key];
+
+  if (!value) {
+    throw new Error(`Missing required environment variable: ${key}`);
+  }
+
+  return value;
+};
+```
+
+This checks if important environment variables are missing.
+
+If any required value is missing, the server will show a clear error during startup.
+
+Example:
+
+```txt
+Missing required environment variable: JWT_ACCESS_SECRET
+```
+
+This is better than getting unclear runtime errors later.
+
+---
+
+## Files Updated
+
+### Server File
+
+Updated:
+
+```txt
+src/server.js
+```
+
+Before:
+
+```js
+const PORT = process.env.PORT || 5000;
+```
+
+After:
+
+```js
+const PORT = env.port;
+```
+
+---
+
+### Database Config
+
+Updated:
+
+```txt
+src/config/db.js
+```
+
+Before:
+
+```js
+await mongoose.connect(process.env.MONGO_URI);
+```
+
+After:
+
+```js
+await mongoose.connect(env.mongoUri);
+```
+
+---
+
+### JWT Token Utility
+
+Updated JWT token generation to use centralized config.
+
+Before:
+
+```js
+process.env.JWT_ACCESS_SECRET
+process.env.JWT_REFRESH_SECRET
+```
+
+After:
+
+```js
+env.jwt.accessSecret
+env.jwt.refreshSecret
+```
+
+---
+
+### Other Project Files
+
+All other `process.env` usage was replaced with the centralized `env` object.
+
+Only this file should directly use `process.env`:
+
+```txt
+src/config/env.js
+```
+
+---
+
+## Important ES Module Rule
+
+Because the project uses ES Modules, local imports must include `.js`.
+
+Correct:
+
+```js
+import { env } from "./env.js";
+```
+
+Wrong:
+
+```js
+import { env } from "./env";
+```
+
+Without `.js`, Node.js gives this error:
+
+```txt
+ERR_MODULE_NOT_FOUND
+```
+
+---
+
+## Testing
+
+After updating env configuration, the backend was restarted:
+
+```bash
+npm run dev
+```
+
+Main APIs were tested to verify that env values are working properly:
+
+```txt
+POST /api/auth/login
+GET  /api/auth/profile
+POST /api/auth/forgot-password
+POST /api/auth/forgot-password-otp
+PATCH /api/users/profile-image
+```
+
+These APIs confirm that the following configurations are working:
+
+- MongoDB
+- JWT
+- SMTP
+- Twilio
+- Cloudinary
+
+---
+
+## Key Learning
+
+Environment-based configuration helps us keep backend code clean and maintainable.
+
+Instead of using `process.env` everywhere, we use one central `env` object.
+
+This gives us:
+
+- Cleaner code
+- Better maintainability
+- Easy env validation
+- Clear startup errors
+- Better project structure
+- Company-standard configuration management

@@ -20,6 +20,7 @@ import {
   updateUserById,
 } from "../services/userService.js";
 import { sendSms } from "../utils/smsService.js";
+import { env } from "../config/env.js";
 
 export const registerUser = asyncHandler(async (req, res) => {
   const { name, email, password, role } = req.body;
@@ -110,7 +111,7 @@ export const refreshAccessToken = asyncHandler(async (req, res) => {
     throw new Error("Refresh token missing");
   }
 
-  const decoded = jwt.verify(refreshToken, process.env.JWT_REFRESH_SECRET);
+  const decoded = jwt.verify(refreshToken, env.jwt.refreshSecret);
 
   const user = await findUserById(decoded.id);
 

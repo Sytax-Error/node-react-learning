@@ -1,4 +1,5 @@
 import jwt from "jsonwebtoken";
+import { env } from "../config/env.js";
 
 export const generateAccessToken = (user) => {
   // creates a JWT token.
@@ -9,10 +10,10 @@ export const generateAccessToken = (user) => {
       role: user.role,
     },
     // Secret
-    process.env.JWT_ACCESS_SECRET,
+    env.jwt.accessSecret,
     {
       //Options Token expiry time.
-      expiresIn: process.env.JWT_ACCESS_EXPIRES_IN,
+      expiresIn: env.jwt.accessExpiresIn,
     },
   );
 };
@@ -23,9 +24,9 @@ export const generateRefreshToken = (user) => {
     {
       id: user._id,
     },
-    process.env.JWT_REFRESH_SECRET,
+    env.jwt.refreshSecret,
     {
-      expiresIn: process.env.JWT_REFRESH_EXPIRES_IN,
+      expiresIn: env.jwt.refreshExpiresIn,
     },
   );
 };

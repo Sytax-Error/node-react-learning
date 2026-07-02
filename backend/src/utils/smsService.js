@@ -1,15 +1,13 @@
 import twilio from "twilio";
+import { env } from "../config/env.js";
 
-const client = twilio(
-  process.env.TWILIO_ACCOUNT_SID,
-  process.env.TWILIO_AUTH_TOKEN,
-);
+const client = twilio(env.twilio.accountSid, env.twilio.authToken);
 
 export const sendSms = async ({ to, message }) => {
   //sends SMS using Twilio.
   const sms = await client.messages.create({
     body: message,
-    from: process.env.TWILIO_PHONE_NUMBER,
+    from: env.twilio.phoneNumber,
     to,
   });
 

@@ -1,13 +1,14 @@
 import nodemailer from "nodemailer";
+import { env } from "../config/env.js";
 
 export const sendEmail = async ({ to, subject, text, html }) => {
   const transporter = nodemailer.createTransport({
-    host: process.env.SMTP_HOST,
-    port: process.env.SMTP_PORT,
+    host: env.smtp.host,
+    port: env.smtp.port,
     secure: false,
     auth: {
-      user: process.env.SMTP_USER,
-      pass: process.env.SMTP_PASS,
+      user: env.smtp.user,
+      pass: env.smtp.pass,
     },
   });
 
@@ -19,7 +20,7 @@ export const sendEmail = async ({ to, subject, text, html }) => {
   //     html: "<h2>Hello</h2><p>This is a test email from Node.js using Nodemailer and Ethereal.</p>",
   //   });
   const info = await transporter.sendMail({
-    from: process.env.SMTP_FROM,
+    from: env.smtp.from,
     to,
     subject,
     text,

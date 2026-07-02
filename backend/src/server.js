@@ -15,6 +15,7 @@ import smsRoutes from "./routes/smsRoutes.js";
 import helmet from "helmet";
 import swaggerUi from "swagger-ui-express";
 import { swaggerSpec } from "./config/swagger.js";
+import { env } from "./config/env.js";
 
 dotenv.config(); // env config
 connectDB();
@@ -46,7 +47,7 @@ let projects = [];
 app.use(notFoundMiddleware); // not found middleware
 app.use(errorMiddleware); // errorMiddleware
 
-const PORT = process.env.PORT || 5000;
+const PORT = env.port || 5000;
 
 app.listen(PORT, () => {
   console.log(`Server is running on port ${PORT}`);

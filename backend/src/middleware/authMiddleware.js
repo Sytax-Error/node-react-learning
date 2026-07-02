@@ -1,6 +1,7 @@
 import jwt from "jsonwebtoken";
 import { User } from "../models/userModel.js";
 import { asyncHandler } from "../utils/asyncHandler.js";
+import { env } from "../config/env.js";
 
 export const protect = asyncHandler(async (req, res, next) => {
   const authHeader = req.headers.authorization; // token with Bearer
@@ -15,7 +16,7 @@ export const protect = asyncHandler(async (req, res, next) => {
   // Token is valid
   // Token is not expired
   // Token was created using our secret
-  const decoded = jwt.verify(token, process.env.JWT_ACCESS_SECRET);
+  const decoded = jwt.verify(token, env.jwt.accessSecret);
   // Finds logged-in user from MongoDB.
   const user = await User.findById(decoded.id).select("-password");
   //.select("-password")       Return user data but exclude password
