@@ -6046,3 +6046,274 @@ Reset link expires after 10 minutes.
 After password reset, token fields are cleared.
 Same reset link cannot be reused.
 ```
+## Day 15: Mobile OTP Password Reset using Twilio
+
+### Topics Covered
+
+* Why mobile OTP reset is useful
+* Twilio SMS setup
+* Creating reusable SMS service
+* Sending test SMS
+* Generating 6-digit OTP
+* Hashing OTP before saving in MongoDB
+* Saving OTP expiry time
+* Sending plain OTP by SMS
+* Verifying OTP
+* Resetting password after OTP verification
+
+---
+
+### Package Installed
+
+```bash
+npm install twilio
+```
+
+---
+
+### Environment Variables
+
+```env
+TWILIO_ACCOUNT_SID=your_account_sid
+TWILIO_AUTH_TOKEN=your_auth_token
+TWILIO_PHONE_NUMBER=your_twilio_phone_number
+```
+
+> `.env` should not be committed because it contains Twilio secrets.
+
+---
+
+### User Model Fields Added
+
+```js
+mobile: {
+  type: String,
+  trim: true,
+},
+
+passwordResetOtp: {
+  type: String,
+},
+
+passwordResetOtpExpires: {
+  type: Date,
+},
+
+isPasswordResetOtpVerified: {
+  type: Boolean,
+  default: false,
+},
+```
+
+---
+
+### SMS Utility
+
+File:
+
+```txt
+src/utils/smsService.js
+```
+
+```js
+import twilio from "twilio";
+
+const client = twilio(
+  process.env.TWILIO_ACCOUNT_SID,
+  process.env.TWILIO_AUTH_TOKEN
+);
+
+export const sendSms = async ({ to, message }) => {
+  const sms = await client.messages.create({
+    body: message,
+    from: process.env.TWILIO_PHONE_NUMBER,
+    to,
+  });
+
+  return sms;
+};
+```
+
+---
+
+### APIs Added
+
+#### Test SMS API
+
+```txt
+POST /api/sms/test
+```
+
+Body:
+
+```json
+{
+  "mobile": "+91xxxxxxxxxx"
+}
+```
+
+This API sends a test SMS using Twilio.
+
+---
+
+#### Forgot Password with OTP
+
+```txt
+POST /api/auth/forgot-password-otp
+```
+
+Body:
+
+```json
+{
+  "mobile": "+91xxxxxxxxxx"
+}
+```
+
+Flow:
+
+```txt
+Mobile number received
+↓
+User found by mobile
+↓
+6-digit OTP generated
+↓
+OTP hashed using crypto sha256
+↓
+Hashed OTP + expiry saved in MongoDB
+↓
+Plain OTP sent by SMS
+```
+
+---
+
+#### Verify Reset OTP
+
+```txt
+POST /api/auth/verify-reset-otp
+```
+
+Body:
+
+```json
+{
+  "mobile": "+91xxxxxxxxxx",
+  "otp": "123456"
+}
+```
+
+Flow:
+
+```txt
+Mobile + OTP received
+↓
+User found by mobile
+↓
+Entered OTP hashed
+↓
+Compared with saved hashed OTP
+↓
+Expiry checked
+↓
+isPasswordResetOtpVerified set to true
+```
+
+---
+
+#### Reset Password with OTP
+
+```txt
+POST /api/auth/reset-password-otp
+```
+
+Body:
+
+```json
+{
+  "mobile": "+91xxxxxxxxxx",
+  "password": "newpass123"
+}
+```
+
+Flow:
+
+```txt
+Mobile + new password received
+↓
+User found by mobile
+↓
+OTP verification status checked
+↓
+New password hashed using bcrypt
+↓
+Password updated
+↓
+OTP fields cleared
+↓
+Login works with new password
+```
+
+---
+
+### Important Learning
+
+Plain OTP is sent to the user by SMS.
+
+Hashed OTP is stored in MongoDB.
+
+```txt
+Plain OTP
+→ sent by SMS
+
+Hashed OTP
+→ saved in MongoDB
+```
+
+For password hashing:
+
+```txt
+bcrypt
+→ used for passwords
+```
+
+For OTP hashing:
+
+```txt
+crypto sha256
+→ used because OTP is temporary and system-generated
+```
+
+---
+
+### Twilio Trial Note
+
+Twilio trial accounts can send SMS only to verified receiver numbers.
+
+If this error appears:
+
+```txt
+Trial accounts cannot send messages to unverified numbers
+```
+
+Then verify the receiver mobile number in Twilio dashboard first.
+
+---
+
+### Final Mobile OTP Reset Flow
+
+```txt
+User selects mobile OTP reset
+↓
+User enters mobile number
+↓
+Backend sends OTP by SMS
+↓
+User enters OTP
+↓
+Backend verifies OTP
+↓
+User enters new password
+↓
+Backend resets password
+```

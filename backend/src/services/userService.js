@@ -33,3 +33,7 @@ export const findUserByResetToken = async (hashedToken) => {
     passwordResetExpires: { $gt: Date.now() },
   }).select("+password");
 };
+
+export const findUserByMobile = async (mobile) => {
+  return User.findOne({ mobile });
+};

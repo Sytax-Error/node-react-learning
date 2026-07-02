@@ -11,6 +11,7 @@ import cookieParser from "cookie-parser";
 import authRoutes from "./routes/authRoutes.js";
 import uploadRoutes from "./routes/uploadRoutes.js";
 import emailRouter from "./routes/emailRoutes.js";
+import smsRoutes from "./routes/smsRoutes.js";
 
 dotenv.config(); // env config
 connectDB();
@@ -31,6 +32,7 @@ app.use("/api/tasks", taskRoutes);
 app.use("/api/auth", authRoutes);
 app.use("/api/uploads", uploadRoutes);
 app.use("/api/emails", emailRouter);
+app.use("/api/sms", smsRoutes);
 
 let users = [];
 let projects = [];

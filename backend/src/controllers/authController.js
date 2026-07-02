@@ -15,9 +15,11 @@ import { sendResponse } from "../utils/sendResponse.js";
 import { sendEmail } from "../utils/emailService.js";
 import crypto from "crypto";
 import {
+  findUserByMobile,
   findUserByResetToken,
   updateUserById,
 } from "../services/userService.js";
+import { sendSms } from "../utils/smsService.js";
 
 export const registerUser = asyncHandler(async (req, res) => {
   const { name, email, password, role } = req.body;
@@ -214,4 +216,125 @@ export const resetPassword = asyncHandler(async (req, res) => {
   await user.save();
 
   sendResponse(res, 200, "Password reset successfully");
+});
+
+export const forgotPasswordOtp = asyncHandler(async (req, res) => {
+  const { mobile } = req.body || {};
+
+  if (!mobile || !mobile.trim()) {
+    res.status(400);
+    throw new Error("mobile number required");
+  }
+
+  const user = await findUserByMobile(mobile.trim());
+
+  if (!user) {
+    res.status(404);
+    throw new Error("User not found with this number");
+  }
+
+  const otp = Math.floor(100000 + Math.random() * 900000).toString();
+
+  const hashedOtp = crypto.createHash("sha256").update(otp).digest("hex");
+
+  const otpExpires = Date.now() + 5 * 60 * 1000;
+
+  await updateUserById(user._id, {
+    passwordResetOtp: hashedOtp,
+    passwordResetOtpExpires: otpExpires,
+    isPasswordResetOtpVerified: false,
+  });
+
+  await sendSms({
+    to: user.mobile,
+    message: `Your password reset otp is ${otp}. It is valid for 5 minutes`,
+  });
+
+  sendResponse(res, 200, "Forgot password with otp api is working", {
+    mobile: user.mobile,
+  });
+});
+
+export const verifyResetOtp = asyncHandler(async (req, res) => {
+  const { mobile, otp } = req.body || {};
+
+  if (!mobile || !mobile.trim()) {
+    res.status(400);
+    throw new Error("Mobile number is required");
+  }
+
+  if (!otp || !otp.trim()) {
+    res.status(400);
+    throw new Error("Otp is required");
+  }
+
+  const user = await findUserByMobile(mobile.trim());
+
+  if (!user) {
+    res.status(404);
+    throw new Error("User not found with this mobile number");
+  }
+
+  const hashedOtp = crypto
+    .createHash("sha256")
+    .update(otp.trim())
+    .digest("hex");
+
+  if (
+    hashedOtp !== user.passwordResetOtp ||
+    user.passwordResetOtpExpires < Date.now()
+  ) {
+    res.status(400);
+    throw new Error("Invalid or Expired otp");
+  }
+
+  await updateUserById(user._id, {
+    isPasswordResetOtpVerified: true,
+  });
+
+  sendResponse(res, 200, "Otp verified successfully", {
+    mobile: user.mobile,
+  });
+});
+
+export const resetPasswordWithOtp = asyncHandler(async (req, res) => {
+  const { mobile, password } = req.body || {};
+
+  if (!mobile || !mobile.trim()) {
+    res.status(400);
+    throw new Error("Mobile number is required");
+  }
+
+  if (!password || !password.trim()) {
+    res.status(400);
+    throw new Error("Password is required");
+  }
+
+  if (password.length < 6) {
+    res.status(400);
+    throw new Error("Password length must be atleast 6 character");
+  }
+
+  const user = await findUserByMobile(mobile.trim());
+
+  if (!user) {
+    res.status(404);
+    throw new Error("User not found with this number");
+  }
+
+  if (!user.isPasswordResetOtpVerified) {
+    res.status(400);
+    throw new Error("Otp verification is required");
+  }
+
+  const hashedPassword = await bcrypt.hash(password, 10);
+  console.log(hashedPassword, user);
+  user.password = hashedPassword;
+  user.passwordResetOtp = undefined;
+  user.passwordResetOtpExpires = undefined;
+  user.isPasswordResetOtpVerified = false;
+
+  await user.save();
+
+  sendResponse(res, 200, "Password reset successfully with otp");
 });

@@ -22,6 +22,10 @@ const userSchema = new mongoose.Schema(
       minlength: 6,
       select: false, // Do not return password field by default in queries.
     },
+    mobile: {
+      type: String,
+      trime: true,
+    },
     role: {
       type: String,
       required: true,
@@ -41,6 +45,16 @@ const userSchema = new mongoose.Schema(
     },
     passwordResetExpires: {
       type: Date,
+    },
+    passwordResetOtp: {
+      type: String,
+    },
+    passwordResetOtpExpires: {
+      type: Date,
+    },
+    isPasswordResetOtpVerified: {
+      type: Boolean,
+      default: false,
     },
   },
   {
