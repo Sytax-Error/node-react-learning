@@ -6317,7 +6317,7 @@ User enters new password
 ↓
 Backend resets password
 ```
-## Day 16: API Security and Rate Limiting
+# Day 16: API Security and Rate Limiting
 
 ### Objective
 
@@ -6636,3 +6636,273 @@ Verify OTP API
 ```
 
 This makes the backend safer and prevents repeated abuse of sensitive APIs.
+# Day 17: Security Headers and MongoDB Query Protection
+
+### Objective
+
+The objective of this section is to improve backend API security by adding security-related HTTP headers and safer MongoDB query handling.
+
+In this day, we covered:
+
+* Security headers using Helmet
+* MongoDB query filter protection using Mongoose
+* Safe database query practices
+* Why `express-mongo-sanitize` was not used in this project
+
+---
+
+## 1. Why API Security Is Important
+
+Backend APIs should not only handle requests and responses, they should also protect the application from common security risks.
+
+Some common risks are:
+
+* Unsafe HTTP response headers
+* MongoDB query operator injection
+* Passing complete `req.body` directly into database queries
+* Repeated or unsafe user input handling
+
+To improve security, we added basic protection at the Express and Mongoose level.
+
+---
+
+## 2. Package Installed
+
+We installed Helmet:
+
+```bash
+npm install helmet
+```
+
+Helmet is used to add secure HTTP headers to Express responses.
+
+---
+
+## 3. Helmet Setup
+
+### File Updated
+
+```txt
+src/server.js
+```
+
+### Import Helmet
+
+```js
+import helmet from "helmet";
+```
+
+### Add Helmet Middleware
+
+```js
+app.use(helmet());
+```
+
+Recommended placement:
+
+```js
+app.use(helmet());
+app.use(express.json());
+app.use(cookieParser());
+```
+
+Helmet should be added before routes so that security headers are applied to API responses.
+
+---
+
+## 4. What Helmet Does
+
+Helmet adds security-related HTTP response headers automatically.
+
+Examples of headers added by Helmet:
+
+```txt
+X-Content-Type-Options
+X-Frame-Options
+Content-Security-Policy
+Strict-Transport-Security
+```
+
+These headers help protect the application from some browser-level security risks.
+
+---
+
+## 5. MongoDB Query Protection
+
+MongoDB supports operators like:
+
+```txt
+$gt
+$ne
+$or
+$where
+```
+
+These operators are useful when we write queries intentionally, but they should not come directly from user input.
+
+Example of unsafe input:
+
+```json
+{
+  "email": {
+    "$gt": ""
+  },
+  "password": "test123"
+}
+```
+
+To improve protection, we enabled Mongoose query sanitization.
+
+---
+
+## 6. Mongoose `sanitizeFilter`
+
+### File Updated
+
+```txt
+src/config/db.js
+```
+
+### Code Added
+
+```js
+mongoose.set("sanitizeFilter", true);
+```
+
+Example:
+
+```js
+import mongoose from "mongoose";
+
+mongoose.set("sanitizeFilter", true);
+
+export const connectDB = async () => {
+  try {
+    const connection = await mongoose.connect(process.env.MONGO_URI);
+
+    console.log(`MongoDB connected: ${connection.connection.host}`);
+  } catch (error) {
+    console.error(`MongoDB connection error: ${error.message}`);
+    process.exit(1);
+  }
+};
+```
+
+### Purpose
+
+`sanitizeFilter` helps protect Mongoose query filters from unsafe MongoDB operators coming from user input.
+
+---
+
+## 7. Why `express-mongo-sanitize` Was Removed
+
+We tried using:
+
+```txt
+express-mongo-sanitize
+```
+
+But it caused an issue with Express 5:
+
+```txt
+Cannot set property query of #<IncomingMessage> which has only a getter
+```
+
+Because of this Express 5 compatibility issue, we removed the package and used Mongoose's built-in option instead:
+
+```js
+mongoose.set("sanitizeFilter", true);
+```
+
+This keeps the project clean and compatible with the current Express version.
+
+---
+
+## 8. Safe Query Practice
+
+We should avoid passing complete `req.body` directly into database queries.
+
+### Bad Practice
+
+```js
+User.findOne(req.body);
+```
+
+This is unsafe because the user can send unexpected fields or MongoDB operators.
+
+### Good Practice
+
+```js
+const { email } = req.body;
+
+User.findOne({ email });
+```
+
+This is safer because we control exactly which field is used in the database query.
+
+---
+
+## 9. Safe Patterns Used in This Project
+
+In our project, we already follow safer query patterns.
+
+Examples:
+
+```js
+const { email, password } = req.body;
+```
+
+```js
+const user = await findUserByEmail(email.trim());
+```
+
+```js
+const user = await findUserByMobile(mobile.trim());
+```
+
+Instead of passing the full request body to MongoDB, we pick only the required fields.
+
+---
+
+## 10. Final Security Flow
+
+```txt
+Client Request
+↓
+Helmet adds secure response headers
+↓
+Express reads JSON body
+↓
+Mongoose sanitizeFilter protects query filters
+↓
+Routes and controllers handle request
+↓
+Database query uses only selected fields
+```
+
+---
+
+## 11. Important Learning
+
+Security is not only about installing packages.
+
+We should also write safe backend code:
+
+* Do not trust complete `req.body`
+* Pick only required fields from request body
+* Validate input before using it
+* Avoid passing user input directly into MongoDB filters
+* Use security middleware where needed
+* Keep packages compatible with the Express version
+
+---
+
+## Day 17 Summary
+
+In Day 17, we improved backend security by adding:
+
+* Helmet for security headers
+* Mongoose `sanitizeFilter` for MongoDB query filter protection
+* Safe query practices for database operations
+
+This improves the basic security posture of the backend application.

@@ -12,6 +12,7 @@ import authRoutes from "./routes/authRoutes.js";
 import uploadRoutes from "./routes/uploadRoutes.js";
 import emailRouter from "./routes/emailRoutes.js";
 import smsRoutes from "./routes/smsRoutes.js";
+import helmet from "helmet";
 
 dotenv.config(); // env config
 connectDB();
@@ -22,6 +23,7 @@ app.use(
     credentials: true,
   }),
 ); // cors
+app.use(helmet()); // Helmet adds safer HTTP headers automatically.
 app.use(express.json()); //reads JSON body
 app.use("/uploads", express.static("uploads")); // make uploads folder static for browser access
 app.use(loggerMiddleware); //Custom Logger Middleware
