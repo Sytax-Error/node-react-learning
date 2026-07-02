@@ -13,6 +13,8 @@ import uploadRoutes from "./routes/uploadRoutes.js";
 import emailRouter from "./routes/emailRoutes.js";
 import smsRoutes from "./routes/smsRoutes.js";
 import helmet from "helmet";
+import swaggerUi from "swagger-ui-express";
+import { swaggerSpec } from "./config/swagger.js";
 
 dotenv.config(); // env config
 connectDB();
@@ -28,6 +30,8 @@ app.use(express.json()); //reads JSON body
 app.use("/uploads", express.static("uploads")); // make uploads folder static for browser access
 app.use(loggerMiddleware); //Custom Logger Middleware
 app.use(cookieParser());
+
+app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(swaggerSpec));
 
 app.use("/api/users", userRoutes); // link routes
 app.use("/api/tasks", taskRoutes);

@@ -6906,3 +6906,257 @@ In Day 17, we improved backend security by adding:
 * Safe query practices for database operations
 
 This improves the basic security posture of the backend application.
+
+# Day 18: API Documentation with Swagger
+
+### Objective
+
+The objective of Day 18 was to add API documentation to the backend project using Swagger.
+
+Swagger helps developers, testers, and frontend teams understand and test backend APIs directly from the browser.
+
+---
+
+### Why Swagger is Used
+
+Swagger is used to document backend APIs in a structured way.
+
+It helps us understand:
+
+- API endpoint URL
+- HTTP method
+- Request body
+- Query parameters
+- Path parameters
+- Authentication requirement
+- File upload format
+- Possible response status codes
+
+Swagger also provides a UI where APIs can be tested without using Postman.
+
+---
+
+### Packages Installed
+
+```bash
+npm install swagger-ui-express swagger-jsdoc
+```
+
+---
+
+### Package Explanation
+
+#### swagger-ui-express
+
+`swagger-ui-express` is used to show Swagger API documentation in the browser.
+
+Example Swagger URL:
+
+```txt
+http://localhost:5000/api-docs
+```
+
+#### swagger-jsdoc
+
+`swagger-jsdoc` is used to generate Swagger documentation from comments written inside route files.
+
+---
+
+### Swagger Config File
+
+Created a Swagger configuration file:
+
+```txt
+src/config/swagger.js
+```
+
+This file contains:
+
+- OpenAPI version
+- API title
+- API version
+- API description
+- Local development server URL
+- JWT Bearer token security setup
+- Route file path for Swagger comments
+
+Example:
+
+```js
+import swaggerJsdoc from "swagger-jsdoc";
+
+const options = {
+  definition: {
+    openapi: "3.0.0",
+    info: {
+      title: "Node React Learning API",
+      version: "1.0.0",
+      description: "API documentation for Node React Learning backend",
+    },
+    servers: [
+      {
+        url: "http://localhost:5000",
+        description: "Local development server",
+      },
+    ],
+    components: {
+      securitySchemes: {
+        bearerAuth: {
+          type: "http",
+          scheme: "bearer",
+          bearerFormat: "JWT",
+        },
+      },
+    },
+  },
+  apis: ["./src/routes/*.js"],
+};
+
+export const swaggerSpec = swaggerJsdoc(options);
+```
+
+---
+
+### Swagger Setup in Server
+
+Swagger UI was connected inside:
+
+```txt
+src/server.js
+```
+
+Required imports:
+
+```js
+import swaggerUi from "swagger-ui-express";
+import { swaggerSpec } from "./config/swagger.js";
+```
+
+Swagger route:
+
+```js
+app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(swaggerSpec));
+```
+
+After this setup, Swagger documentation is available at:
+
+```txt
+http://localhost:5000/api-docs
+```
+
+---
+
+### JWT Authorization in Swagger
+
+For protected APIs, JWT Bearer token support was added.
+
+Swagger security scheme:
+
+```js
+components: {
+  securitySchemes: {
+    bearerAuth: {
+      type: "http",
+      scheme: "bearer",
+      bearerFormat: "JWT",
+    },
+  },
+}
+```
+
+Protected APIs use:
+
+```yaml
+security:
+  - bearerAuth: []
+```
+
+This allows us to test protected APIs directly from Swagger UI by using the **Authorize** button.
+
+---
+
+### APIs Documented
+
+For learning purpose, important APIs were documented.
+
+#### Auth APIs
+
+```txt
+POST /api/auth/register
+POST /api/auth/login
+GET  /api/auth/profile
+
+POST /api/auth/forgot-password
+POST /api/auth/reset-password/{token}
+
+POST /api/auth/forgot-password-otp
+POST /api/auth/verify-reset-otp
+POST /api/auth/reset-password-otp
+```
+
+#### User APIs
+
+```txt
+GET     /api/users
+POST    /api/users
+GET     /api/users/{id}
+PUT     /api/users/{id}
+DELETE  /api/users/{id}
+PATCH   /api/users/profile-image
+```
+
+#### Task APIs
+
+```txt
+GET  /api/tasks
+POST /api/tasks
+```
+
+---
+
+### Swagger Concepts Learned
+
+In this day, we learned how to document:
+
+- Simple GET API
+- POST API with request body
+- Protected API with JWT token
+- API with query parameters
+- API with path parameters
+- File upload API using `multipart/form-data`
+- API grouping using tags
+- Response status codes
+- Swagger Authorize button for Bearer token
+
+---
+
+### Testing Swagger
+
+Run the backend server:
+
+```bash
+npm run dev
+```
+
+Open Swagger UI in browser:
+
+```txt
+http://localhost:5000/api-docs
+```
+
+Login API can be tested first to get an access token.
+
+Then click the **Authorize** button and paste the access token.
+
+After authorization, protected APIs can be tested from Swagger UI.
+
+---
+
+### Important Note
+
+For learning purpose, only important APIs were documented.
+
+In real company projects, all public and important APIs should be documented properly so that frontend developers, backend developers, QA testers, and external teams can understand and test the APIs easily.
+
+
+```

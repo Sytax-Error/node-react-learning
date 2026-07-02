@@ -14,8 +14,52 @@ import {
 
 const router = express.Router();
 
+/**
+ * @swagger
+ * /api/tasks:
+ *   get:
+ *     summary: Get all tasks
+ *     description: Returns all tasks.
+ *     tags:
+ *       - Tasks
+ *     responses:
+ *       200:
+ *         description: Tasks fetched successfully
+ */
 router.get("/", protect, validateTaskQuery, getTasks);
 
+/**
+ * @swagger
+ * /api/tasks:
+ *   post:
+ *     summary: Create new task
+ *     description: Creates a new task.
+ *     tags:
+ *       - Tasks
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - title
+ *             properties:
+ *               title:
+ *                 type: string
+ *                 example: Learn Swagger
+ *               description:
+ *                 type: string
+ *                 example: Add API documentation for task routes
+ *               status:
+ *                 type: string
+ *                 example: pending
+ *     responses:
+ *       201:
+ *         description: Task created successfully
+ *       400:
+ *         description: Validation error
+ */
 router.post("/", protect, validateTaskBody, createTasks);
 
 router.get("/:id", protect, getByTaskId);
