@@ -5442,7 +5442,7 @@ Controller creates public file URL
 ↓
 MongoDB user document is updated with profileImage URL
 ```
-## Day 12: Cloud Image Upload with Cloudinary
+# Day 12: Cloud Image Upload with Cloudinary
 
 ### Topics Covered
 
@@ -5616,7 +5616,7 @@ Updated User Response
 
 ```
 
-## Day 13: Email Sending with Node.js using Nodemailer and Ethereal
+# Day 13: Email Sending with Node.js using Nodemailer and Ethereal
 
 ### Topics Covered
 
@@ -5895,7 +5895,7 @@ Nodemailer connects to Gmail SMTP
 ↓
 Email is sent to real inbox
 ```
-## Day 14: Forgot Password and Reset Password Flow
+# Day 14: Forgot Password and Reset Password Flow
 
 ### Topics Covered
 
@@ -6046,7 +6046,7 @@ Reset link expires after 10 minutes.
 After password reset, token fields are cleared.
 Same reset link cannot be reused.
 ```
-## Day 15: Mobile OTP Password Reset using Twilio
+# Day 15: Mobile OTP Password Reset using Twilio
 
 ### Topics Covered
 
@@ -6317,3 +6317,322 @@ User enters new password
 ↓
 Backend resets password
 ```
+## Day 16: API Security and Rate Limiting
+
+### Objective
+
+In this section, we added rate limiting to protect public authentication APIs from repeated or abusive requests.
+
+Rate limiting is important for APIs like login, forgot password, and OTP verification because these APIs can be misused for brute-force attacks, email spam, SMS spam, or OTP guessing.
+
+---
+
+### Why Rate Limiting Is Needed
+
+Without rate limiting, anyone can repeatedly call APIs like:
+
+```txt
+POST /api/auth/login
+POST /api/auth/forgot-password
+POST /api/auth/forgot-password-otp
+POST /api/auth/verify-reset-otp
+```
+
+This can cause security and cost issues.
+
+Examples:
+
+```txt
+Login API
+→ attacker can try many password combinations
+
+Forgot password email API
+→ attacker can spam reset emails
+
+Forgot password OTP API
+→ attacker can spam SMS OTP messages
+
+Verify OTP API
+→ attacker can try many OTP combinations
+```
+
+Rate limiting helps block repeated requests after a safe limit.
+
+---
+
+### Package Installed
+
+```bash
+npm install express-rate-limit
+```
+
+---
+
+### Middleware Created
+
+File:
+
+```txt
+src/middleware/rateLimiterMiddleware.js
+```
+
+We created separate limiters for different types of APIs.
+
+```js
+import rateLimit from "express-rate-limit";
+
+export const loginLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  max: 5,
+  message: {
+    success: false,
+    message: "Too many login attempts, please try again after 15 minutes",
+  },
+});
+
+export const forgotPasswordLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  max: 3,
+  message: {
+    success: false,
+    message: "Too many password reset requests, please try again later",
+  },
+});
+
+export const otpLimiter = rateLimit({
+  windowMs: 5 * 60 * 1000,
+  max: 5,
+  message: {
+    success: false,
+    message: "Too many OTP attempts, please try again after 5 minutes",
+  },
+});
+```
+
+---
+
+### 1. Login Rate Limiter
+
+```js
+export const loginLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  max: 5,
+  message: {
+    success: false,
+    message: "Too many login attempts, please try again after 15 minutes",
+  },
+});
+```
+
+#### Meaning
+
+```txt
+windowMs: 15 * 60 * 1000
+→ 15 minutes time window
+
+max: 5
+→ only 5 login requests allowed in 15 minutes
+```
+
+#### Used On
+
+```txt
+POST /api/auth/login
+```
+
+#### Purpose
+
+```txt
+Protects login API from brute-force password attempts.
+```
+
+---
+
+### 2. Forgot Password Rate Limiter
+
+```js
+export const forgotPasswordLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  max: 3,
+  message: {
+    success: false,
+    message: "Too many password reset requests, please try again later",
+  },
+});
+```
+
+#### Meaning
+
+```txt
+Only 3 password reset requests are allowed in 15 minutes.
+```
+
+#### Used On
+
+```txt
+POST /api/auth/forgot-password
+POST /api/auth/forgot-password-otp
+```
+
+#### Purpose
+
+```txt
+Protects email reset API from email spam.
+Protects OTP reset API from SMS spam.
+```
+
+---
+
+### 3. OTP Rate Limiter
+
+```js
+export const otpLimiter = rateLimit({
+  windowMs: 5 * 60 * 1000,
+  max: 5,
+  message: {
+    success: false,
+    message: "Too many OTP attempts, please try again after 5 minutes",
+  },
+});
+```
+
+#### Meaning
+
+```txt
+Only 5 OTP verification attempts are allowed in 5 minutes.
+```
+
+#### Used On
+
+```txt
+POST /api/auth/verify-reset-otp
+```
+
+#### Purpose
+
+```txt
+Protects OTP verification API from repeated OTP guessing.
+```
+
+---
+
+### Routes Updated
+
+File:
+
+```txt
+src/routes/authRoutes.js
+```
+
+```js
+import {
+  loginLimiter,
+  forgotPasswordLimiter,
+  otpLimiter,
+} from "../middleware/rateLimiterMiddleware.js";
+```
+
+Routes:
+
+```js
+router.post("/login", loginLimiter, validateLoginBody, loginUser);
+
+router.post("/forgot-password", forgotPasswordLimiter, forgotPassword);
+
+router.post(
+  "/forgot-password-otp",
+  forgotPasswordLimiter,
+  forgotPasswordOtp
+);
+
+router.post("/verify-reset-otp", otpLimiter, verifyResetOtp);
+```
+
+---
+
+### Rate Limited APIs
+
+| API                                  | Limiter                 | Limit                   |
+| ------------------------------------ | ----------------------- | ----------------------- |
+| `POST /api/auth/login`               | `loginLimiter`          | 5 requests / 15 minutes |
+| `POST /api/auth/forgot-password`     | `forgotPasswordLimiter` | 3 requests / 15 minutes |
+| `POST /api/auth/forgot-password-otp` | `forgotPasswordLimiter` | 3 requests / 15 minutes |
+| `POST /api/auth/verify-reset-otp`    | `otpLimiter`            | 5 requests / 5 minutes  |
+
+---
+
+### Expected Error Response
+
+When request limit is crossed, backend returns:
+
+```json
+{
+  "success": false,
+  "message": "Too many requests message here"
+}
+```
+
+Status code:
+
+```txt
+429 Too Many Requests
+```
+
+Example login limit response:
+
+```json
+{
+  "success": false,
+  "message": "Too many login attempts, please try again after 15 minutes"
+}
+```
+
+---
+
+### Final Request Flow
+
+```txt
+Client calls protected auth API
+↓
+Rate limiter middleware checks request count
+↓
+If request count is within limit
+    → request continues to controller
+↓
+If request count crosses limit
+    → backend returns 429 Too Many Requests
+```
+
+---
+
+### Important Learning
+
+Rate limiting is one of the basic API security protections.
+
+It helps protect backend from:
+
+```txt
+Brute-force login attempts
+Forgot password email spam
+SMS OTP spam
+OTP guessing attacks
+```
+
+Different APIs need different limits, so we created separate limiters instead of using one common limiter for all routes.
+
+---
+
+### Day 16 Summary
+
+In Day 16, we added API security using `express-rate-limit`.
+
+We protected important public authentication APIs:
+
+```txt
+Login API
+Forgot password email API
+Forgot password OTP API
+Verify OTP API
+```
+
+This makes the backend safer and prevents repeated abuse of sensitive APIs.
