@@ -7627,3 +7627,222 @@ Morgan improves backend request logging.
 It helps during development by showing useful API request information in the terminal.
 
 Using Morgan with `NODE_ENV` keeps logging clean and environment-specific.
+
+# Day 20: Production-ready Error Logging
+
+## Objective
+
+The objective of Day 20 was to improve backend error logging and make error responses safer for production.
+
+We updated the global error middleware so developers can see useful error details in development, while users receive safe error messages in production.
+
+---
+
+## Why Error Logging is Needed
+
+Error logging helps developers understand what went wrong in the backend.
+
+It helps identify:
+
+- Which API failed
+- Which HTTP method was used
+- What error occurred
+- What status code was returned
+- When the error happened
+- Where the error happened in code
+
+Without proper error logging, debugging backend issues becomes difficult.
+
+---
+
+## File Updated
+
+Updated file:
+
+```txt
+src/middleware/errorMiddleware.js
+```
+
+This is the global error middleware of the backend project.
+
+---
+
+## Existing Error Handling
+
+The project already handled common error cases:
+
+- Mongoose validation errors
+- Invalid JWT token
+- Expired JWT token
+- Multer file size error
+
+Example:
+
+```js
+if (error.name === "JsonWebTokenError") {
+  statusCode = 401;
+  message = "Invalid token";
+}
+```
+
+---
+
+## Structured Error Logging
+
+A structured error log was added.
+
+Example:
+
+```js
+const errorLog = {
+  time: new Date().toISOString(),
+  method: req.method,
+  url: req.originalUrl,
+  statusCode,
+  name: error.name,
+  code: error.code,
+  message: error.message,
+};
+```
+
+This gives clear information about backend errors.
+
+---
+
+## Development Error Logs
+
+Detailed error logs are shown only in development mode.
+
+```js
+if (env.nodeEnv === "development") {
+  console.error("ERROR LOG:", errorLog);
+  console.error(error.stack);
+}
+```
+
+This helps developers debug issues during development.
+
+---
+
+## Production-safe Error Response
+
+In production, internal server error details should not be exposed to users.
+
+So for `500` errors, a safe message is returned.
+
+```js
+const responseMessage =
+  env.nodeEnv === "production" && statusCode === 500
+    ? "Internal Server Error"
+    : message;
+```
+
+Response:
+
+```js
+res.status(statusCode).json({
+  success: false,
+  message: responseMessage,
+});
+```
+
+---
+
+## Why Internal Errors Are Hidden in Production
+
+Internal errors can expose sensitive backend details.
+
+Example unsafe message:
+
+```txt
+Cannot read properties of undefined
+```
+
+In production, the user should only see:
+
+```txt
+Internal Server Error
+```
+
+This makes the backend safer.
+
+---
+
+## Request Body Not Logged
+
+Request body was not logged.
+
+Reason:
+
+Request body may contain sensitive data like:
+
+- Password
+- Token
+- OTP
+- Secret values
+
+So only safe request details are logged.
+
+---
+
+## Development vs Production Behavior
+
+### Development
+
+In development:
+
+- Actual error message is returned
+- Structured error log is printed
+- Stack trace is printed
+
+### Production
+
+In production:
+
+- `500` error details are hidden from response
+- User receives a safe generic message
+- Stack trace is not printed
+
+---
+
+## Testing
+
+Development mode was tested using:
+
+```env
+NODE_ENV=development
+```
+
+Expected behavior:
+
+```txt
+Detailed error log shown in terminal
+Actual error message returned in response
+```
+
+Production mode was tested using:
+
+```env
+NODE_ENV=production
+```
+
+Expected behavior:
+
+```txt
+No stack trace printed
+500 error response shows Internal Server Error
+```
+
+After testing, environment was changed back to:
+
+```env
+NODE_ENV=development
+```
+
+---
+
+## Key Learning
+
+Production-ready error logging improves backend debugging and security.
+
+It allows developers to see useful error details during development, while keeping production error responses safe for users.

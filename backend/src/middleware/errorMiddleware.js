@@ -1,3 +1,5 @@
+import { env } from "../config/env.js";
+
 export const errorMiddleware = (error, req, res, next) => {
   let statusCode =
     error.statusCode || (res.statusCode === 200 ? 500 : res.statusCode);
@@ -23,10 +25,28 @@ export const errorMiddleware = (error, req, res, next) => {
 
   if (error.code === "LIMIT_FILE_SIZE") {
     statusCode = 400;
-    message = "File size must be less then 2 MB";
+    message = "File size must be less than 2 MB";
   }
 
-  console.log("Error name: ", error?.name, error?.code);
+  const errorLog = {
+    time: new Date().toISOString(),
+    method: req.method,
+    url: req.originalUrl,
+    statusCode,
+    name: error.name,
+    code: error.code,
+    message: error.message,
+  };
+
+  if (env.nodeEnv === "development") {
+    console.error("ERROR LOG:", errorLog);
+    console.error(error.stack);
+  }
+
+  const responseMessage =
+    env.nodeEnv === "production" && statusCode === 500
+      ? "Internal Server Error"
+      : message;
 
   res.status(statusCode).json({
     success: false,
