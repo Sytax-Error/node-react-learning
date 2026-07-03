@@ -12,7 +12,7 @@ const requiredEnv = (key) => {
 
 export const env = {
   nodeEnv: process.env.NODE_ENV || "development",
-
+  frontendUrl: process.env.FRONTEND_URL || "http://localhost:5173",
   port: process.env.PORT || 5000,
 
   mongoUri: requiredEnv("MONGO_URI"),

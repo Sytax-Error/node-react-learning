@@ -7846,3 +7846,162 @@ NODE_ENV=development
 Production-ready error logging improves backend debugging and security.
 
 It allows developers to see useful error details during development, while keeping production error responses safe for users.
+
+# Day 21: Proper CORS Configuration
+
+## Objective
+
+The objective of Day 21 was to configure CORS properly for the backend project.
+
+Instead of allowing all origins or hardcoding the frontend URL directly inside `server.js`, we moved the frontend URL to the `.env` file and used it through the centralized `env` config.
+
+---
+
+## What is CORS?
+
+CORS means Cross-Origin Resource Sharing.
+
+It controls which frontend application is allowed to call the backend APIs.
+
+Example:
+
+```txt
+Frontend: http://localhost:5173
+Backend:  http://localhost:5000
+```
+
+Even though both are running on localhost, the ports are different.
+
+So the browser treats them as different origins.
+
+Because of this, the backend must allow the frontend origin.
+
+---
+
+## Why CORS is Needed
+
+When React calls the backend API, the browser checks whether the backend allows that frontend origin.
+
+Example frontend request:
+
+```js
+fetch("http://localhost:5000/api/auth/login");
+```
+
+The browser checks if this frontend is allowed:
+
+```txt
+http://localhost:5173
+```
+
+If the backend allows it, the request works.
+
+If not, the browser shows a CORS error.
+
+---
+
+## Previous CORS Setup
+
+Earlier, the frontend URL was directly written inside `server.js`.
+
+```js
+app.use(
+  cors({
+    origin: "http://localhost:5173",
+    credentials: true,
+  })
+);
+```
+
+This works, but the frontend URL is hardcoded.
+
+Hardcoded URLs are not good because they become difficult to change for different environments.
+
+---
+
+## Environment Variable Added
+
+Added frontend URL in `.env`:
+
+```env
+FRONTEND_URL=http://localhost:5173
+```
+
+---
+
+## Env Config Updated
+
+Updated:
+
+```txt
+src/config/env.js
+```
+
+Added:
+
+```js
+frontendUrl: process.env.FRONTEND_URL || "http://localhost:5173",
+```
+
+Now the frontend URL is managed from the centralized environment config.
+
+---
+
+## Final CORS Setup
+
+Updated CORS setup in:
+
+```txt
+src/server.js
+```
+
+Final code:
+
+```js
+app.use(
+  cors({
+    origin: env.frontendUrl,
+    credentials: true,
+  })
+);
+```
+
+---
+
+## Why credentials is true
+
+`credentials: true` allows the frontend to send credentials with requests.
+
+Credentials can include:
+
+- Cookies
+- Authorization-related headers
+- Session information
+
+This is useful when the backend uses cookies or protected authentication flows.
+
+---
+
+## Final Flow
+
+```txt
+.env
+↓
+FRONTEND_URL
+↓
+src/config/env.js
+↓
+env.frontendUrl
+↓
+CORS origin
+```
+
+---
+
+## Key Learning
+
+Proper CORS configuration improves backend security.
+
+Instead of allowing every website to call the backend, we allow only the required frontend URL.
+
+This makes the backend cleaner, safer, and easier to configure for different environments.
