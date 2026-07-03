@@ -10,7 +10,7 @@ import { connectDB } from "./config/db.js";
 import cookieParser from "cookie-parser";
 import authRoutes from "./routes/authRoutes.js";
 import uploadRoutes from "./routes/uploadRoutes.js";
-import emailRouter from "./routes/emailRoutes.js";
+import emailRoutes from "./routes/emailRoutes.js";
 import smsRoutes from "./routes/smsRoutes.js";
 import helmet from "helmet";
 import swaggerUi from "swagger-ui-express";
@@ -41,12 +41,12 @@ if (env.nodeEnv === "development") {
 
 app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(swaggerSpec));
 
-app.use("/api/users", userRoutes); // link routes
-app.use("/api/tasks", taskRoutes);
-app.use("/api/auth", authRoutes);
-app.use("/api/uploads", uploadRoutes);
-app.use("/api/emails", emailRouter);
-app.use("/api/sms", smsRoutes);
+app.use(`${env.apiPrefix}/users`, userRoutes);
+app.use(`${env.apiPrefix}/tasks`, taskRoutes);
+app.use(`${env.apiPrefix}/auth`, authRoutes);
+app.use(`${env.apiPrefix}/uploads`, uploadRoutes);
+app.use(`${env.apiPrefix}/emails`, emailRoutes);
+app.use(`${env.apiPrefix}/sms`, smsRoutes);
 
 let users = [];
 let projects = [];

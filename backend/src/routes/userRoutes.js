@@ -18,7 +18,7 @@ const router = express.Router();
 
 /**
  * @swagger
- * /api/users/profile-image:
+ * /api/v1/users/profile-image:
  *   patch:
  *     summary: Update logged-in user's profile image
  *     description: Uploads and updates the profile image of the currently logged-in user.
@@ -56,7 +56,7 @@ router.patch(
 
 /**
  * @swagger
- * /api/users:
+ * /api/v1/users:
  *   get:
  *     summary: Get all users
  *     description: Returns all users with pagination, search, and sorting.
@@ -107,7 +107,7 @@ router.get("/", protect, authorizeRoles("admin"), getUsers);
 
 /**
  * @swagger
- * /api/users/{id}:
+ * /api/v1/users/{id}:
  *   get:
  *     summary: Get user by ID
  *     description: Returns a single user by MongoDB user ID.
@@ -137,7 +137,7 @@ router.get("/:id", protect, authorizeRoles("admin"), getUserById);
 
 /**
  * @swagger
- * /api/users:
+ * /api/v1/users:
  *   post:
  *     summary: Create new user
  *     description: Creates a new user. This API is usually used by admin.
@@ -191,7 +191,7 @@ router.post(
 
 /**
  * @swagger
- * /api/users/{id}:
+ * /api/v1/users/{id}:
  *   put:
  *     summary: Update user by ID
  *     description: Updates an existing user by MongoDB user ID. This API is usually used by admin.
@@ -245,7 +245,7 @@ router.put(
 
 /**
  * @swagger
- * /api/users/{id}:
+ * /api/v1/users/{id}:
  *   delete:
  *     summary: Delete user by ID
  *     description: Deletes a user by MongoDB user ID. This API is usually used by admin.

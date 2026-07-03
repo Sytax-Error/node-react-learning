@@ -8005,3 +8005,260 @@ Proper CORS configuration improves backend security.
 Instead of allowing every website to call the backend, we allow only the required frontend URL.
 
 This makes the backend cleaner, safer, and easier to configure for different environments.
+
+# Day 22: API Versioning
+
+## Objective
+
+The objective of Day 22 was to add API versioning to the backend project.
+
+API versioning helps us manage backend API changes without breaking old frontend applications.
+
+---
+
+## What is API Versioning?
+
+API versioning means adding a version number in API URLs.
+
+Before versioning:
+
+```txt
+/api/auth/login
+/api/users
+/api/tasks
+```
+
+After versioning:
+
+```txt
+/api/v1/auth/login
+/api/v1/users
+/api/v1/tasks
+```
+
+Here, `v1` means version 1 of the API.
+
+---
+
+## Why API Versioning is Needed
+
+In real projects, APIs change over time.
+
+If frontend applications are already using old APIs, changing those APIs directly can break the frontend.
+
+API versioning allows us to keep old APIs and new APIs separately.
+
+Example:
+
+```txt
+/api/v1/users
+/api/v2/users
+```
+
+Old frontend can continue using `v1`.
+
+New frontend can use `v2`.
+
+---
+
+## API Prefix Added
+
+Added API prefix in `.env`:
+
+```env
+API_PREFIX=/api/v1
+```
+
+---
+
+## Env Config Updated
+
+Updated:
+
+```txt
+src/config/env.js
+```
+
+Added:
+
+```js
+apiPrefix: process.env.API_PREFIX || "/api/v1",
+```
+
+This keeps the API version prefix configurable from one central place.
+
+---
+
+## Server Routes Updated
+
+Updated API routes in:
+
+```txt
+src/server.js
+```
+
+Before:
+
+```js
+app.use("/api/users", userRoutes);
+app.use("/api/tasks", taskRoutes);
+app.use("/api/auth", authRoutes);
+app.use("/api/uploads", uploadRoutes);
+app.use("/api/emails", emailRouter);
+app.use("/api/sms", smsRoutes);
+```
+
+After:
+
+```js
+app.use(`${env.apiPrefix}/users`, userRoutes);
+app.use(`${env.apiPrefix}/tasks`, taskRoutes);
+app.use(`${env.apiPrefix}/auth`, authRoutes);
+app.use(`${env.apiPrefix}/uploads`, uploadRoutes);
+app.use(`${env.apiPrefix}/emails`, emailRouter);
+app.use(`${env.apiPrefix}/sms`, smsRoutes);
+```
+
+---
+
+## Final API URLs
+
+After versioning, backend APIs are available at:
+
+```txt
+/api/v1/auth
+/api/v1/users
+/api/v1/tasks
+/api/v1/uploads
+/api/v1/emails
+/api/v1/sms
+```
+
+Example:
+
+```txt
+POST /api/v1/auth/login
+GET  /api/v1/auth/profile
+GET  /api/v1/tasks
+GET  /api/v1/users
+```
+
+---
+
+## Routes Not Versioned
+
+These routes were not changed:
+
+```txt
+/api-docs
+/uploads
+```
+
+Reason:
+
+`/api-docs` is used for Swagger documentation.
+
+`/uploads` is used for static file access.
+
+They are not normal backend API routes.
+
+---
+
+## Swagger Paths Updated
+
+Swagger API paths were updated from:
+
+```txt
+/api/auth
+/api/users
+/api/tasks
+```
+
+to:
+
+```txt
+/api/v1/auth
+/api/v1/users
+/api/v1/tasks
+```
+
+Now Swagger documentation matches the backend versioned routes.
+
+---
+
+## Frontend API Base URL Updated
+
+Frontend API base URL was updated.
+
+Before:
+
+```js
+const API_BASE_URL = "http://localhost:5000/api";
+```
+
+After:
+
+```js
+const API_BASE_URL = "http://localhost:5000/api/v1";
+```
+
+Now frontend API calls use versioned backend APIs.
+
+Example:
+
+```js
+`${API_BASE_URL}/auth/login`
+`${API_BASE_URL}/tasks`
+`${API_BASE_URL}/users`
+```
+
+---
+
+## Final Flow
+
+```txt
+.env
+↓
+API_PREFIX=/api/v1
+↓
+src/config/env.js
+↓
+env.apiPrefix
+↓
+src/server.js
+↓
+/api/v1 routes
+↓
+Frontend API calls
+```
+
+---
+
+## Testing
+
+New versioned APIs were tested:
+
+```txt
+POST /api/v1/auth/login
+GET  /api/v1/auth/profile
+GET  /api/v1/tasks
+GET  /api/v1/users
+```
+
+Old non-versioned APIs should return route not found:
+
+```txt
+/api/auth/login
+/api/tasks
+/api/users
+```
+
+---
+
+## Key Learning
+
+API versioning is useful for long-term backend maintenance.
+
+It allows us to make future API changes safely without breaking existing frontend applications.
+
+Using `API_PREFIX` from `.env` keeps API versioning clean and configurable.

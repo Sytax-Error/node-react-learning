@@ -26,7 +26,7 @@ const router = express.Router();
 
 /**
  * @swagger
- * /api/auth/login:
+ * /api/v1/auth/login:
  *   post:
  *     summary: Login user
  *     description: Login user using email and password.
@@ -60,7 +60,7 @@ router.post("/login", loginLimiter, validateLoginBody, loginUser);
 
 /**
  * @swagger
- * /api/auth/register:
+ * /api/v1/auth/register:
  *   post:
  *     summary: Register new user
  *     description: Creates a new user account.
@@ -98,7 +98,7 @@ router.post("/register", validateRegisterBody, registerUser);
 
 /**
  * @swagger
- * /api/auth/profile:
+ * /api/v1/auth/profile:
  *   get:
  *     summary: Get logged-in user profile
  *     description: Returns the profile of the currently logged-in user.
@@ -118,7 +118,7 @@ router.post("/logout", logoutUser);
 
 /**
  * @swagger
- * /api/auth/forgot-password:
+ * /api/v1/auth/forgot-password:
  *   post:
  *     summary: Send password reset link
  *     description: Sends a password reset link to the user's registered email.
@@ -148,7 +148,7 @@ router.post("/forgot-password", forgotPasswordLimiter, forgotPassword);
 
 /**
  * @swagger
- * /api/auth/reset-password/{token}:
+ * /api/v1/auth/reset-password/{token}:
  *   post:
  *     summary: Reset password using email token
  *     description: Resets user password using the token received in email.
@@ -183,7 +183,7 @@ router.post("/reset-password/:token", resetPassword);
 
 /**
  * @swagger
- * /api/auth/forgot-password-otp:
+ * /api/v1/auth/forgot-password-otp:
  *   post:
  *     summary: Send password reset OTP
  *     description: Sends a password reset OTP to user's registered mobile number.
@@ -213,7 +213,7 @@ router.post("/forgot-password-otp", forgotPasswordLimiter, forgotPasswordOtp);
 
 /**
  * @swagger
- * /api/auth/verify-reset-otp:
+ * /api/v1/auth/verify-reset-otp:
  *   post:
  *     summary: Verify password reset OTP
  *     description: Verifies OTP sent to user's registered mobile number.
@@ -247,7 +247,7 @@ router.post("/verify-reset-otp", otpLimiter, verifyResetOtp);
 
 /**
  * @swagger
- * /api/auth/reset-password-otp:
+ * /api/v1/auth/reset-password-otp:
  *   post:
  *     summary: Reset password using OTP
  *     description: Resets user password after OTP verification.

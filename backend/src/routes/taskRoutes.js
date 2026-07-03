@@ -16,7 +16,7 @@ const router = express.Router();
 
 /**
  * @swagger
- * /api/tasks:
+ * /api/v1/tasks:
  *   get:
  *     summary: Get all tasks
  *     description: Returns all tasks.
@@ -30,7 +30,7 @@ router.get("/", protect, validateTaskQuery, getTasks);
 
 /**
  * @swagger
- * /api/tasks:
+ * /api/v1/tasks:
  *   post:
  *     summary: Create new task
  *     description: Creates a new task.
