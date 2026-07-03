@@ -900,7 +900,7 @@ large project management
 
 ---
 
-# Current Completed APIs
+## Current Completed APIs
 
 ## Users
 
@@ -924,7 +924,7 @@ DELETE /api/projects/:id
 
 ---
 
-# Quick Revision
+## Quick Revision
 
 ## Node.js
 
@@ -7449,3 +7449,181 @@ This gives us:
 - Clear startup errors
 - Better project structure
 - Company-standard configuration management
+
+# Day 19: Logging with Morgan
+
+## Objective
+
+The objective of Day 20 was to improve API request logging in the backend using Morgan.
+
+Morgan helps us see request details in the terminal whenever an API is called.
+
+---
+
+## What is Morgan?
+
+Morgan is an HTTP request logger middleware for Express.js.
+
+It logs useful information about incoming API requests.
+
+Example log:
+
+```txt
+POST /api/auth/login 200 120.456 ms - 650
+GET /api/users 200 35.123 ms - 1024
+GET /api/unknown 404 8.221 ms - 75
+```
+
+---
+
+## Why Logging is Needed
+
+Logging helps developers understand:
+
+- Which API was called
+- Which HTTP method was used
+- What status code was returned
+- How much time the API took
+- Which API failed
+- Whether the request reached the backend or not
+
+This is useful for debugging and development.
+
+---
+
+## Package Installed
+
+```bash
+npm install morgan
+```
+
+---
+
+## Morgan Setup
+
+Morgan was added in:
+
+```txt
+src/server.js
+```
+
+Import:
+
+```js
+import morgan from "morgan";
+```
+
+Middleware setup:
+
+```js
+if (env.nodeEnv === "development") {
+  app.use(
+    morgan(":method :url :status :response-time ms - :res[content-length]")
+  );
+}
+```
+
+---
+
+## Environment-based Logging
+
+Morgan is enabled only in development mode.
+
+For this, `nodeEnv` was added in:
+
+```txt
+src/config/env.js
+```
+
+```js
+nodeEnv: process.env.NODE_ENV || "development",
+```
+
+Then Morgan was conditionally enabled:
+
+```js
+if (env.nodeEnv === "development") {
+  app.use(
+    morgan(":method :url :status :response-time ms - :res[content-length]")
+  );
+}
+```
+
+---
+
+## Why Morgan is Used Only in Development
+
+In development, request logs are useful for debugging.
+
+In production, too many logs can make the terminal noisy and may expose unnecessary request details.
+
+So Morgan is enabled only when:
+
+```txt
+NODE_ENV=development
+```
+
+---
+
+## Old Logger Middleware Removed
+
+Earlier, the project used a custom logger middleware:
+
+```js
+console.log(`${req.method} ${req.url}`);
+```
+
+After adding Morgan, this custom logger was removed from `server.js` to avoid duplicate logs.
+
+Morgan gives more useful request information than the custom logger.
+
+---
+
+## Custom Log Format
+
+A custom Morgan format was used:
+
+```txt
+:method :url :status :response-time ms - :res[content-length]
+```
+
+This logs:
+
+- HTTP method
+- API URL
+- Status code
+- Response time
+- Response content length
+
+Example:
+
+```txt
+POST /api/auth/login 200 120.456 ms - 650
+```
+
+---
+
+## Security Note
+
+Request body was not logged.
+
+Reason:
+
+Request body may contain sensitive data like:
+
+- Password
+- Token
+- OTP
+- Secret values
+
+So only safe request information is logged.
+
+---
+
+## Key Learning
+
+Morgan improves backend request logging.
+
+It helps during development by showing useful API request information in the terminal.
+
+Using Morgan with `NODE_ENV` keeps logging clean and environment-specific.

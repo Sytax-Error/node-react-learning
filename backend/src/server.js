@@ -1,7 +1,7 @@
 import express from "express";
 import cors from "cors";
 import userRoutes from "./routes/userRoutes.js";
-import { loggerMiddleware } from "./middleware/loggerMiddleware.js";
+// import { loggerMiddleware } from "./middleware/loggerMiddleware.js";
 import dotenv from "dotenv";
 import { notFoundMiddleware } from "./middleware/notFoundMiddleware.js";
 import { errorMiddleware } from "./middleware/errorMiddleware.js";
@@ -16,6 +16,7 @@ import helmet from "helmet";
 import swaggerUi from "swagger-ui-express";
 import { swaggerSpec } from "./config/swagger.js";
 import { env } from "./config/env.js";
+import morgan from "morgan";
 
 dotenv.config(); // env config
 connectDB();
@@ -29,8 +30,14 @@ app.use(
 app.use(helmet()); // Helmet adds safer HTTP headers automatically.
 app.use(express.json()); //reads JSON body
 app.use("/uploads", express.static("uploads")); // make uploads folder static for browser access
-app.use(loggerMiddleware); //Custom Logger Middleware
+// app.use(loggerMiddleware); //Custom Logger Middleware
 app.use(cookieParser());
+
+if (env.nodeEnv === "development") {
+  app.use(
+    morgan(":method :url :status :response-time ms - :res[content-length]"),
+  );
+}
 
 app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(swaggerSpec));
 
