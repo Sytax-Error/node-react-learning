@@ -8262,3 +8262,179 @@ API versioning is useful for long-term backend maintenance.
 It allows us to make future API changes safely without breaking existing frontend applications.
 
 Using `API_PREFIX` from `.env` keeps API versioning clean and configurable.
+
+# Day 23: Health Check API
+
+### Objective
+
+Create a health check endpoint to verify that the backend server is running and MongoDB is connected.
+
+Health check APIs are commonly used by deployment platforms, monitoring tools, load balancers, and developers.
+
+---
+
+### API Added
+
+```txt
+GET /api/v1/health
+```
+
+---
+
+### Files Added
+
+```txt
+src/controllers/healthController.js
+src/routes/healthRoutes.js
+```
+
+---
+
+### Route Registration
+
+The health route is registered inside the central API router:
+
+```txt
+src/routes/index.js
+```
+
+```js
+import healthRoutes from "./healthRoutes.js";
+
+router.use("/health", healthRoutes);
+```
+
+Final route:
+
+```txt
+/api/v1/health
+```
+
+---
+
+### Controller Logic
+
+```js
+import mongoose from "mongoose";
+import { env } from "../config/env.js";
+import { sendResponse } from "../utils/sendResponse.js";
+
+export const healthCheck = (req, res) => {
+  sendResponse(res, 200, "Server is healthy", {
+    status: "ok",
+    environment: env.nodeEnv,
+    uptime: `${Math.floor(process.uptime())} seconds`,
+    timestamp: new Date().toISOString(),
+    database: {
+      status: mongoose.connection.readyState === 1 ? "connected" : "disconnected",
+    },
+  });
+};
+```
+
+---
+
+### Response Example
+
+```json
+{
+  "success": true,
+  "message": "Server is healthy",
+  "data": {
+    "status": "ok",
+    "environment": "development",
+    "uptime": "120 seconds",
+    "timestamp": "2026-07-06T10:00:00.000Z",
+    "database": {
+      "status": "connected"
+    }
+  }
+}
+```
+
+---
+
+### MongoDB Connection Status
+
+Mongoose provides the current database connection state using:
+
+```js
+mongoose.connection.readyState
+```
+
+Connection states:
+
+```txt
+0 = disconnected
+1 = connected
+2 = connecting
+3 = disconnecting
+```
+
+In this API, we return:
+
+```js
+database: {
+  status: mongoose.connection.readyState === 1 ? "connected" : "disconnected",
+}
+```
+
+So if MongoDB is connected, response will show:
+
+```json
+{
+  "database": {
+    "status": "connected"
+  }
+}
+```
+
+---
+
+### Why Health Check API is Useful
+
+Health check APIs help confirm:
+
+```txt
+Server is running
+MongoDB is connected
+Current environment
+Server uptime
+Current server timestamp
+```
+
+They are useful for:
+
+```txt
+Deployment platforms
+Monitoring tools
+Load balancers
+DevOps teams
+Developers
+```
+
+---
+
+### Final Flow
+
+```txt
+Client / monitoring tool
+↓
+GET /api/v1/health
+↓
+Central API router
+↓
+Health route
+↓
+Health controller
+↓
+Server and database status returned
+```
+
+---
+
+### Key Learning
+
+A health check API is a small but important production feature.
+
+It helps quickly verify whether the backend service and database connection are working properly.
