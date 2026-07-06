@@ -1,7 +1,5 @@
-console.log("Hello from Node.js");
+import fs from "fs";
 
-console.log("Current file path:", import.meta.url);
+fs.writeFileSync("message.txt", "Hello from Node.js file system");
 
-console.log("Node version:", process.version);
-
-console.log("Platform:", process.platform);
+console.log("File created successfully");

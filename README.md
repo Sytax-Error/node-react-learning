@@ -8820,3 +8820,358 @@ MongoDB connection closed
 Graceful shutdown is important for production backend applications.
 
 It helps prevent sudden server termination and closes important resources like MongoDB connection safely.
+
+# Day 2: How Node.js Runs JavaScript Outside the Browser
+
+## Objective
+
+The objective of Day 2 is to understand how Node.js runs JavaScript outside the browser and how the Node.js runtime is different from the browser runtime.
+
+---
+
+## What Happens When We Run node app.js?
+
+When we run this command:
+
+```bash
+node app.js
+```
+
+Node.js performs these steps:
+
+```txt
+1. Node.js reads the app.js file
+2. JavaScript code is passed to the V8 engine
+3. V8 converts JavaScript into machine code
+4. The computer executes the machine code
+5. Output is printed in the terminal
+```
+
+Simple flow:
+
+```txt
+app.js
+↓
+Node.js runtime
+↓
+V8 engine
+↓
+Machine code
+↓
+Terminal output
+```
+
+---
+
+## Example
+
+File:
+
+```txt
+nodejs-core/app.js
+```
+
+Code:
+
+```js
+console.log("Step 1: Node.js reads this file");
+console.log("Step 2: V8 executes this JavaScript code");
+console.log("Step 3: Output is printed in terminal");
+```
+
+Run command:
+
+```bash
+node app.js
+```
+
+Output:
+
+```txt
+Step 1: Node.js reads this file
+Step 2: V8 executes this JavaScript code
+Step 3: Output is printed in terminal
+```
+
+---
+
+## JavaScript Language vs Runtime Environment
+
+JavaScript is the programming language.
+
+The place where JavaScript runs is called the runtime environment.
+
+There are two common JavaScript runtime environments:
+
+```txt
+Browser runtime
+Node.js runtime
+```
+
+---
+
+## Same JavaScript Language
+
+Normal JavaScript code can run in both browser and Node.js.
+
+Example:
+
+```js
+const language = "JavaScript";
+
+console.log("Language:", language);
+```
+
+This is normal JavaScript language code.
+
+---
+
+## Browser Runtime
+
+The browser runtime provides browser-related APIs.
+
+Examples:
+
+```txt
+document
+window
+localStorage
+DOM
+alert
+```
+
+Example browser code:
+
+```js
+document.querySelector("h1");
+```
+
+This works in the browser because the browser has an HTML document and DOM.
+
+---
+
+## Node.js Runtime
+
+The Node.js runtime provides backend/server-side APIs.
+
+Examples:
+
+```txt
+process
+fs
+path
+http
+events
+buffer
+stream
+```
+
+Example Node.js code:
+
+```js
+console.log(process.version);
+```
+
+This works in Node.js because Node.js provides the `process` object.
+
+---
+
+## Node.js Runtime Test
+
+Code:
+
+```js
+const language = "JavaScript";
+
+console.log("Language:", language);
+
+console.log("Runtime:", "Node.js");
+
+console.log("Node version:", process.version);
+```
+
+Run command:
+
+```bash
+node app.js
+```
+
+Example output:
+
+```txt
+Language: JavaScript
+Runtime: Node.js
+Node version: v22.22.0
+```
+
+---
+
+## Why Node.js Does Not Have DOM
+
+DOM means Document Object Model.
+
+The DOM represents the HTML page in the browser.
+
+Example HTML:
+
+```html
+<h1>Hello</h1>
+```
+
+The browser creates a DOM structure for this HTML.
+
+That is why browser JavaScript can use:
+
+```js
+document.querySelector("h1");
+```
+
+Node.js does not run inside an HTML page.
+
+Node.js runs on a computer or server.
+
+So Node.js does not have:
+
+```txt
+document
+window
+DOM
+HTML page
+browser screen
+```
+
+---
+
+## Browser API Error in Node.js
+
+Code:
+
+```js
+console.log("Node.js does not have DOM");
+
+console.log("Node.js has process object:", process.version);
+
+console.log(document);
+```
+
+Run command:
+
+```bash
+node app.js
+```
+
+Output:
+
+```txt
+ReferenceError: document is not defined
+```
+
+Reason:
+
+```txt
+document belongs to the browser runtime.
+document does not belong to the Node.js runtime.
+```
+
+---
+
+## Node.js Gives Backend Powers
+
+Node.js provides backend APIs that are not available directly in the browser.
+
+One example is the `fs` module.
+
+`fs` means File System.
+
+It allows Node.js to work with files.
+
+---
+
+## File System Example
+
+Code:
+
+```js
+import fs from "fs";
+
+fs.writeFileSync("message.txt", "Hello from Node.js file system");
+
+console.log("File created successfully");
+```
+
+Run command:
+
+```bash
+node app.js
+```
+
+Output:
+
+```txt
+File created successfully
+```
+
+After running this code, a new file is created:
+
+```txt
+message.txt
+```
+
+File content:
+
+```txt
+Hello from Node.js file system
+```
+
+---
+
+## What This Proves
+
+This proves that Node.js can work with the computer file system.
+
+Browser JavaScript cannot directly create files on the computer like this.
+
+Node.js can do this because it provides backend APIs.
+
+Examples:
+
+```txt
+fs       → file system
+path     → file path handling
+http     → create server
+process  → current Node.js process
+```
+
+---
+
+## Browser Runtime vs Node.js Runtime Summary
+
+```txt
+Browser Runtime
+↓
+Used for frontend
+Works with HTML, CSS, DOM, window, document
+
+Node.js Runtime
+↓
+Used for backend
+Works with files, servers, APIs, databases, process
+```
+
+---
+
+## Key Learning
+
+In Day 2, we learned:
+
+```txt
+node app.js runs JavaScript outside the browser
+Node.js reads the JavaScript file and sends it to V8
+V8 executes JavaScript code
+JavaScript is the language
+Browser and Node.js are runtime environments
+Browser runtime provides document and window
+Node.js runtime provides process, fs, path, http
+Node.js does not have DOM
+Node.js can work with files using fs module
+```
