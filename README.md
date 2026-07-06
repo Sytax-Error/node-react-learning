@@ -8438,3 +8438,156 @@ Server and database status returned
 A health check API is a small but important production feature.
 
 It helps quickly verify whether the backend service and database connection are working properly.
+
+# Day 24: Response Compression
+
+## Objective
+
+The objective of Day 24 was to add response compression to the Express backend.
+
+Response compression reduces the size of API responses before sending them to the frontend.
+
+This helps improve performance, especially for large JSON responses.
+
+---
+
+## Package Installed
+
+```bash
+npm install compression
+```
+
+---
+
+## Middleware Added
+
+Updated:
+
+```txt
+src/server.js
+```
+
+Imported compression:
+
+```js
+import compression from "compression";
+```
+
+Added middleware:
+
+```js
+app.use(compression());
+```
+
+Recommended order:
+
+```js
+app.use(helmet());
+app.use(compression());
+app.use(express.json());
+```
+
+---
+
+## What Compression Does
+
+Before compression:
+
+```txt
+Backend sends full response size
+```
+
+After compression:
+
+```txt
+Backend compresses response
+Browser receives smaller response
+Browser decompresses automatically
+```
+
+---
+
+## Content-Encoding Header
+
+Compression can be verified from response headers.
+
+Example:
+
+```txt
+Content-Encoding: br
+```
+
+or:
+
+```txt
+Content-Encoding: gzip
+```
+
+Meaning:
+
+```txt
+br   = Brotli compression
+gzip = Gzip compression
+```
+
+Both are valid.
+
+---
+
+## Why Content-Encoding May Not Appear
+
+Small responses may not be compressed by default.
+
+Reason:
+
+```txt
+Compression overhead is not useful for very small responses
+```
+
+For testing only, we temporarily used:
+
+```js
+app.use(
+  compression({
+    threshold: 0,
+  })
+);
+```
+
+This forces compression even for small responses.
+
+After testing, we changed back to:
+
+```js
+app.use(compression());
+```
+
+---
+
+## Final Middleware Flow
+
+```txt
+helmet
+↓
+compression
+↓
+express.json
+↓
+routes
+```
+
+---
+
+## Key Learning
+
+Response compression improves API performance by reducing response size.
+
+It is especially useful when backend returns large JSON data such as:
+
+```txt
+task lists
+user lists
+reports
+dashboard data
+analytics data
+```

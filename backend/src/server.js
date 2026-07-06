@@ -18,6 +18,7 @@ import { swaggerSpec } from "./config/swagger.js";
 import { env } from "./config/env.js";
 import morgan from "morgan";
 import apiRoutes from "./routes/index.js";
+import compression from "compression";
 
 dotenv.config(); // env config
 connectDB();
@@ -29,6 +30,7 @@ app.use(
   }),
 ); // cors
 app.use(helmet()); // Helmet adds safer HTTP headers automatically.
+app.use(compression()); // Api response compression
 app.use(express.json()); //reads JSON body
 app.use("/uploads", express.static("uploads")); // make uploads folder static for browser access
 // app.use(loggerMiddleware); //Custom Logger Middleware
