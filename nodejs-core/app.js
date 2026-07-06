@@ -1,5 +1,14 @@
 import fs from "fs";
 
-fs.writeFileSync("message.txt", "Hello from Node.js file system");
+console.log("Start");
 
-console.log("File created successfully");
+fs.readFile("data.txt", "utf-8", (error, data) => {
+  if (error) {
+    console.log("Error:", error.message);
+    return;
+  }
+
+  console.log(data);
+});
+
+console.log("End");

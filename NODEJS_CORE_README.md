@@ -316,3 +316,433 @@ Node.js uses the V8 engine to execute JavaScript
 Node.js uses libuv and event loop for async work
 Node.js is mainly used for backend development
 ```
+
+# Day 3: Synchronous vs Asynchronous Code
+
+## Objective
+
+The objective of Day 3 is to understand the difference between synchronous and asynchronous code in Node.js.
+
+This is one of the most important concepts before learning the Node.js Event Loop.
+
+---
+
+## What is Synchronous Code?
+
+Synchronous code runs line by line.
+
+One line must finish before the next line starts.
+
+Example:
+
+```js
+console.log("Start");
+
+console.log("Middle");
+
+console.log("End");
+```
+
+Output:
+
+```txt
+Start
+Middle
+End
+```
+
+Flow:
+
+```txt
+Start runs
+↓
+Middle runs
+↓
+End runs
+```
+
+This is called synchronous execution.
+
+---
+
+## Blocking Behavior in Synchronous Code
+
+Synchronous code can block the next line.
+
+Example:
+
+```js
+console.log("Start");
+
+for (let i = 0; i < 5; i++) {
+  console.log("Running loop:", i);
+}
+
+console.log("End");
+```
+
+Output:
+
+```txt
+Start
+Running loop: 0
+Running loop: 1
+Running loop: 2
+Running loop: 3
+Running loop: 4
+End
+```
+
+Here, `End` waits until the loop finishes.
+
+This is called blocking behavior.
+
+---
+
+## What is Asynchronous Code?
+
+Asynchronous code means a task can start, and JavaScript can continue running the next lines without waiting for that task to finish.
+
+Example:
+
+```js
+console.log("Start");
+
+setTimeout(() => {
+  console.log("Inside setTimeout");
+}, 2000);
+
+console.log("End");
+```
+
+Output:
+
+```txt
+Start
+End
+Inside setTimeout
+```
+
+Flow:
+
+```txt
+Start prints
+↓
+setTimeout starts timer
+↓
+End prints
+↓
+After 2 seconds, callback runs
+```
+
+This is called asynchronous execution.
+
+---
+
+## Why End Prints Before setTimeout
+
+`setTimeout` is asynchronous.
+
+JavaScript does not wait for the timer to complete.
+
+So this code:
+
+```js
+console.log("Start");
+
+setTimeout(() => {
+  console.log("Inside setTimeout");
+}, 2000);
+
+console.log("End");
+```
+
+Prints:
+
+```txt
+Start
+End
+Inside setTimeout
+```
+
+This proves that asynchronous code does not block the next line.
+
+---
+
+## Zero Second Timer Example
+
+Code:
+
+```js
+console.log("Start");
+
+setTimeout(() => {
+  console.log("Inside setTimeout");
+}, 0);
+
+console.log("End");
+```
+
+Output:
+
+```txt
+Start
+End
+Inside setTimeout
+```
+
+Even though the timer is `0`, the callback does not run immediately.
+
+Reason:
+
+```txt
+setTimeout callback runs only after current synchronous code is completed.
+```
+
+So `0` milliseconds means:
+
+```txt
+Run after synchronous code is finished.
+```
+
+It does not mean:
+
+```txt
+Run immediately.
+```
+
+---
+
+## Synchronous File Reading
+
+Created file:
+
+```txt
+nodejs-core/data.txt
+```
+
+File content:
+
+```txt
+This is sample file content.
+```
+
+Code:
+
+```js
+import fs from "fs";
+
+console.log("Start");
+
+const data = fs.readFileSync("data.txt", "utf-8");
+
+console.log(data);
+
+console.log("End");
+```
+
+Output:
+
+```txt
+Start
+This is sample file content.
+End
+```
+
+---
+
+## Why readFileSync Blocks
+
+`fs.readFileSync()` is synchronous.
+
+It blocks the next line until file reading is complete.
+
+Flow:
+
+```txt
+Start prints
+↓
+File reading starts
+↓
+Node.js waits until file reading completes
+↓
+File content prints
+↓
+End prints
+```
+
+So this line:
+
+```js
+const data = fs.readFileSync("data.txt", "utf-8");
+```
+
+blocks the code execution until the file is fully read.
+
+---
+
+## Asynchronous File Reading
+
+Code:
+
+```js
+import fs from "fs";
+
+console.log("Start");
+
+fs.readFile("data.txt", "utf-8", (error, data) => {
+  if (error) {
+    console.log("Error:", error.message);
+    return;
+  }
+
+  console.log(data);
+});
+
+console.log("End");
+```
+
+Output:
+
+```txt
+Start
+End
+This is sample file content.
+```
+
+---
+
+## Why readFile Does Not Block
+
+`fs.readFile()` is asynchronous.
+
+It starts file reading in the background and allows the next line to run.
+
+Flow:
+
+```txt
+Start prints
+↓
+File reading starts in background
+↓
+End prints
+↓
+File reading completes
+↓
+Callback runs
+↓
+File content prints
+```
+
+So this line:
+
+```js
+fs.readFile("data.txt", "utf-8", callback);
+```
+
+does not block the next line.
+
+---
+
+## Synchronous vs Asynchronous File Reading
+
+### Synchronous
+
+```js
+const data = fs.readFileSync("data.txt", "utf-8");
+```
+
+Behavior:
+
+```txt
+Waits for file reading to complete.
+Blocks the next line.
+```
+
+Output:
+
+```txt
+Start
+This is sample file content.
+End
+```
+
+---
+
+### Asynchronous
+
+```js
+fs.readFile("data.txt", "utf-8", callback);
+```
+
+Behavior:
+
+```txt
+Starts file reading.
+Does not block the next line.
+Runs callback later.
+```
+
+Output:
+
+```txt
+Start
+End
+This is sample file content.
+```
+
+---
+
+## Simple Difference
+
+```txt
+Synchronous code
+↓
+Waits for current task to finish
+Blocks next line
+
+Asynchronous code
+↓
+Starts task
+Does not wait
+Runs result later using callback
+```
+
+---
+
+## Why Node.js Uses Asynchronous Code
+
+Node.js is mostly used for backend work.
+
+Backend applications perform many time-taking operations like:
+
+```txt
+Reading files
+Writing files
+Calling APIs
+Connecting to databases
+Sending emails
+Uploading files
+Handling many users at the same time
+```
+
+If all these operations are synchronous, the server can become slow.
+
+Asynchronous code helps Node.js continue handling other work while waiting for slow tasks to complete.
+
+---
+
+## Key Learning
+
+In Day 3, we learned:
+
+```txt
+Synchronous code runs line by line
+Synchronous code blocks the next line
+Asynchronous code does not block the next line
+setTimeout is asynchronous
+setTimeout with 0 milliseconds still runs after synchronous code
+fs.readFileSync is synchronous and blocking
+fs.readFile is asynchronous and non-blocking
+Node.js uses async code heavily for better performance
+```
