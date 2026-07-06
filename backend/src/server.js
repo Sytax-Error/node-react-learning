@@ -19,6 +19,7 @@ import { env } from "./config/env.js";
 import morgan from "morgan";
 import apiRoutes from "./routes/index.js";
 import compression from "compression";
+import mongoose from "mongoose";
 
 dotenv.config(); // env config
 connectDB();
@@ -51,6 +52,28 @@ app.use(errorMiddleware); // errorMiddleware
 
 const PORT = env.port || 5000;
 
-app.listen(PORT, () => {
+const server = app.listen(PORT, () => {
   console.log(`Server is running on port ${PORT}`);
 });
+
+const gracefulShutdown = async (signal) => {
+  console.log(`${signal} received. Shutting down gracefully...`);
+
+  server.close(async () => {
+    try {
+      console.log("HTTP server closed");
+
+      await mongoose.connection.close();
+
+      console.log("MongoDB connection closed");
+
+      process.exit(0);
+    } catch (error) {
+      console.error("Error during graceful shutdown:", error);
+      process.exit(1);
+    }
+  });
+};
+
+process.on("SIGINT", () => gracefulShutdown("SIGINT"));
+process.on("SIGTERM", () => gracefulShutdown("SIGTERM"));

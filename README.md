@@ -8591,3 +8591,232 @@ reports
 dashboard data
 analytics data
 ```
+
+# Day 25: Graceful Shutdown
+
+## Objective
+
+The objective of Day 25 was to add graceful shutdown handling to the Express backend.
+
+Graceful shutdown helps the server close safely when the application is stopped.
+
+---
+
+## What is Graceful Shutdown?
+
+Graceful shutdown means stopping the backend server safely instead of suddenly killing the process.
+
+When the application receives a stop signal, it should:
+
+```txt
+Stop accepting new requests
+Close active server connection
+Close MongoDB connection
+Exit the process safely
+```
+
+---
+
+## Why Graceful Shutdown is Needed
+
+In production, backend applications can be stopped by:
+
+```txt
+Ctrl + C
+Docker stop
+Deployment restart
+Render
+AWS
+Linux server
+Process manager
+```
+
+These systems usually send signals like:
+
+```txt
+SIGINT
+SIGTERM
+```
+
+The backend should listen to these signals and shut down properly.
+
+---
+
+## Server Instance Stored
+
+Updated the server listen code in:
+
+```txt
+src/server.js
+```
+
+Before:
+
+```js
+app.listen(PORT, () => {
+  console.log(`Server is running on port ${PORT}`);
+});
+```
+
+After:
+
+```js
+const server = app.listen(PORT, () => {
+  console.log(`Server is running on port ${PORT}`);
+});
+```
+
+The server instance is stored so we can later call:
+
+```js
+server.close();
+```
+
+---
+
+## Mongoose Imported
+
+Imported mongoose in:
+
+```txt
+src/server.js
+```
+
+```js
+import mongoose from "mongoose";
+```
+
+This is used to close the MongoDB connection safely during shutdown.
+
+---
+
+## Graceful Shutdown Function
+
+Added shutdown function:
+
+```js
+const gracefulShutdown = async (signal) => {
+  console.log(`${signal} received. Shutting down gracefully...`);
+
+  server.close(async () => {
+    try {
+      console.log("HTTP server closed");
+
+      await mongoose.connection.close();
+
+      console.log("MongoDB connection closed");
+
+      process.exit(0);
+    } catch (error) {
+      console.error("Error during graceful shutdown:", error);
+      process.exit(1);
+    }
+  });
+};
+```
+
+---
+
+## Shutdown Signals
+
+Added listeners for shutdown signals:
+
+```js
+process.on("SIGINT", () => gracefulShutdown("SIGINT"));
+process.on("SIGTERM", () => gracefulShutdown("SIGTERM"));
+```
+
+---
+
+## Signal Meaning
+
+```txt
+SIGINT
+```
+
+Usually happens when pressing:
+
+```txt
+Ctrl + C
+```
+
+```txt
+SIGTERM
+```
+
+Usually sent by:
+
+```txt
+Docker
+Render
+AWS
+Linux server
+Deployment platform
+Process manager
+```
+
+---
+
+## Exit Codes
+
+```txt
+process.exit(0)
+```
+
+Means the application stopped successfully.
+
+```txt
+process.exit(1)
+```
+
+Means the application stopped because of an error.
+
+---
+
+## Final Shutdown Flow
+
+```txt
+Stop signal received
+↓
+gracefulShutdown() runs
+↓
+server.close()
+↓
+HTTP server stops accepting new requests
+↓
+MongoDB connection closes
+↓
+Process exits safely
+```
+
+---
+
+## Testing
+
+Started the backend:
+
+```bash
+npm run dev
+```
+
+Then stopped it using:
+
+```txt
+Ctrl + C
+```
+
+Expected terminal output:
+
+```txt
+SIGINT received. Shutting down gracefully...
+HTTP server closed
+MongoDB connection closed
+```
+
+---
+
+## Key Learning
+
+Graceful shutdown is important for production backend applications.
+
+It helps prevent sudden server termination and closes important resources like MongoDB connection safely.
