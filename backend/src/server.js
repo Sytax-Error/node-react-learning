@@ -17,6 +17,7 @@ import swaggerUi from "swagger-ui-express";
 import { swaggerSpec } from "./config/swagger.js";
 import { env } from "./config/env.js";
 import morgan from "morgan";
+import apiRoutes from "./routes/index.js";
 
 dotenv.config(); // env config
 connectDB();
@@ -41,15 +42,7 @@ if (env.nodeEnv === "development") {
 
 app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(swaggerSpec));
 
-app.use(`${env.apiPrefix}/users`, userRoutes);
-app.use(`${env.apiPrefix}/tasks`, taskRoutes);
-app.use(`${env.apiPrefix}/auth`, authRoutes);
-app.use(`${env.apiPrefix}/uploads`, uploadRoutes);
-app.use(`${env.apiPrefix}/emails`, emailRoutes);
-app.use(`${env.apiPrefix}/sms`, smsRoutes);
-
-let users = [];
-let projects = [];
+app.use(env.apiPrefix, apiRoutes);
 
 app.use(notFoundMiddleware); // not found middleware
 app.use(errorMiddleware); // errorMiddleware
