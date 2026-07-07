@@ -1,15 +1,9 @@
-console.log("Start");
+import { add as sum, substract } from "./math.js";
+import myMessage from "./message.js";
 
-setTimeout(() => {
-  console.log("Inside Timer");
-}, 0);
+const result = sum(2, 4);
+const result1 = substract(10, 4);
 
-const startTime = Date.now();
+console.log(myMessage());
 
-while (Date.now() - startTime < 3000) {
-  console.log("Blocking loop");
-}
-
-console.log("Blocking finish");
-
-console.log("End");
+console.log(result, result1);

@@ -1654,3 +1654,612 @@ Blocking synchronous code delays async callbacks
 Async callbacks cannot interrupt running synchronous code
 Event Loop allows Node.js to handle non-blocking operations
 ```
+# Day 6: Node.js Modules
+
+## Objective
+
+The objective of Day 6 is to understand how modules work in Node.js.
+
+Modules help us split code into separate files and reuse code across the project.
+
+---
+
+## What is a Module?
+
+A module is a separate JavaScript file.
+
+Instead of writing all code in one file, we can divide code into multiple files.
+
+Example:
+
+```txt
+nodejs-core/
+├── app.js
+├── math.js
+└── message.js
+```
+
+Each file can act as a module.
+
+---
+
+## Why Modules are Needed
+
+Modules help keep code:
+
+```txt
+Clean
+Reusable
+Organized
+Easy to maintain
+Easy to test
+```
+
+Without modules, one file can become very large and difficult to manage.
+
+Bad structure:
+
+```txt
+app.js
+↓
+all functions
+all logic
+all variables
+all code
+```
+
+Better structure:
+
+```txt
+app.js
+↓
+main file that uses other modules
+
+math.js
+↓
+math-related functions
+
+message.js
+↓
+message-related functions
+```
+
+---
+
+## Module Systems in Node.js
+
+Node.js mainly supports two module systems:
+
+```txt
+CommonJS
+ES Modules
+```
+
+---
+
+## ES Modules
+
+ES Modules use:
+
+```txt
+import
+export
+```
+
+Example:
+
+```js
+import fs from "fs";
+
+export const add = () => {};
+```
+
+Our current Express backend project uses ES Modules.
+
+That is why we write:
+
+```js
+import express from "express";
+```
+
+---
+
+## CommonJS
+
+CommonJS uses:
+
+```txt
+require
+module.exports
+```
+
+Example:
+
+```js
+const fs = require("fs");
+
+module.exports = {};
+```
+
+CommonJS is the older Node.js module system.
+
+---
+
+## Named Export
+
+Created file:
+
+```txt
+nodejs-core/math.js
+```
+
+Code:
+
+```js
+export const add = (a, b) => {
+  return a + b;
+};
+```
+
+This is called a named export because the function is exported with a name:
+
+```txt
+add
+```
+
+---
+
+## Importing Named Export
+
+Code in:
+
+```txt
+nodejs-core/app.js
+```
+
+```js
+import { add } from "./math.js";
+
+const result = add(10, 20);
+
+console.log("Result:", result);
+```
+
+Run command:
+
+```bash
+node app.js
+```
+
+Output:
+
+```txt
+Result: 30
+```
+
+---
+
+## Multiple Named Exports
+
+Updated:
+
+```txt
+nodejs-core/math.js
+```
+
+```js
+export const add = (a, b) => {
+  return a + b;
+};
+
+export const subtract = (a, b) => {
+  return a - b;
+};
+```
+
+Updated:
+
+```txt
+nodejs-core/app.js
+```
+
+```js
+import { add, subtract } from "./math.js";
+
+console.log("Add:", add(10, 20));
+
+console.log("Subtract:", subtract(30, 10));
+```
+
+Output:
+
+```txt
+Add: 30
+Subtract: 20
+```
+
+---
+
+## Named Export Rule
+
+Named exports must be imported using curly braces.
+
+Example:
+
+```js
+import { add, subtract } from "./math.js";
+```
+
+Important:
+
+```txt
+Named export
+↓
+Import with same exported name
+↓
+Use curly braces
+```
+
+---
+
+## Import Alias
+
+Named imports can be renamed using `as`.
+
+Example:
+
+```js
+import { add as sum, subtract } from "./math.js";
+
+console.log("Sum:", sum(10, 20));
+
+console.log("Subtract:", subtract(30, 10));
+```
+
+Output:
+
+```txt
+Sum: 30
+Subtract: 20
+```
+
+Meaning:
+
+```txt
+add is exported from math.js
+sum is the local name inside app.js
+```
+
+---
+
+## Default Export
+
+Created file:
+
+```txt
+nodejs-core/message.js
+```
+
+Code:
+
+```js
+const getMessage = () => {
+  return "Hello from default export";
+};
+
+export default getMessage;
+```
+
+This is called a default export.
+
+A file can have one default export.
+
+---
+
+## Importing Default Export
+
+Code:
+
+```js
+import getMessage from "./message.js";
+
+console.log(getMessage());
+```
+
+Output:
+
+```txt
+Hello from default export
+```
+
+---
+
+## Default Export Rule
+
+Default export is imported without curly braces.
+
+Example:
+
+```js
+import getMessage from "./message.js";
+```
+
+Important:
+
+```txt
+Default export
+↓
+Import without curly braces
+```
+
+---
+
+## Default Export Can Be Renamed
+
+With default export, the import name can be different.
+
+Example:
+
+```js
+import myMessage from "./message.js";
+
+console.log(myMessage());
+```
+
+Output:
+
+```txt
+Hello from default export
+```
+
+This works because `message.js` has one default export.
+
+So Node.js knows what to import.
+
+---
+
+## Named Export vs Default Export
+
+### Named Export
+
+Export:
+
+```js
+export const add = (a, b) => {
+  return a + b;
+};
+```
+
+Import:
+
+```js
+import { add } from "./math.js";
+```
+
+Rules:
+
+```txt
+Uses curly braces
+Import name should match exported name
+Multiple named exports are allowed
+```
+
+---
+
+### Default Export
+
+Export:
+
+```js
+export default getMessage;
+```
+
+Import:
+
+```js
+import myMessage from "./message.js";
+```
+
+Rules:
+
+```txt
+Does not use curly braces
+Import name can be different
+Only one default export is allowed per file
+```
+
+---
+
+## Using Named and Default Export Together
+
+Code in:
+
+```txt
+nodejs-core/app.js
+```
+
+```js
+import myMessage from "./message.js";
+import { add, subtract } from "./math.js";
+
+console.log(myMessage());
+
+console.log("Add:", add(10, 20));
+
+console.log("Subtract:", subtract(30, 10));
+```
+
+Output:
+
+```txt
+Hello from default export
+Add: 30
+Subtract: 20
+```
+
+---
+
+## CommonJS Module System
+
+CommonJS is the older Node.js module system.
+
+It uses:
+
+```txt
+require
+module.exports
+```
+
+Because our project uses ES Modules, we used `.cjs` files for CommonJS practice.
+
+---
+
+## CommonJS Export
+
+Created file:
+
+```txt
+nodejs-core/commonMath.cjs
+```
+
+Code:
+
+```js
+const multiply = (a, b) => {
+  return a * b;
+};
+
+module.exports = {
+  multiply,
+};
+```
+
+---
+
+## CommonJS Import
+
+Created file:
+
+```txt
+nodejs-core/commonApp.cjs
+```
+
+Code:
+
+```js
+const { multiply } = require("./commonMath.cjs");
+
+console.log("Multiply:", multiply(10, 5));
+```
+
+Run command:
+
+```bash
+node commonApp.cjs
+```
+
+Output:
+
+```txt
+Multiply: 50
+```
+
+---
+
+## ES Modules vs CommonJS
+
+```txt
+ES Modules
+↓
+import / export
+
+CommonJS
+↓
+require / module.exports
+```
+
+---
+
+## ES Modules Example
+
+Export:
+
+```js
+export const add = (a, b) => {
+  return a + b;
+};
+```
+
+Import:
+
+```js
+import { add } from "./math.js";
+```
+
+---
+
+## CommonJS Example
+
+Export:
+
+```js
+module.exports = {
+  multiply,
+};
+```
+
+Import:
+
+```js
+const { multiply } = require("./commonMath.cjs");
+```
+
+---
+
+## Why Local Imports Need .js Extension
+
+In ES Modules, local file imports should include the file extension.
+
+Correct:
+
+```js
+import { add } from "./math.js";
+```
+
+Wrong:
+
+```js
+import { add } from "./math";
+```
+
+In our Express project, this is why we write:
+
+```js
+import { env } from "./config/env.js";
+```
+
+If `.js` is missing, Node.js can throw:
+
+```txt
+ERR_MODULE_NOT_FOUND
+```
+
+---
+
+## Key Learning
+
+In Day 6, we learned:
+
+```txt
+A module is a separate JavaScript file
+Modules help keep code clean and reusable
+Node.js supports CommonJS and ES Modules
+ES Modules use import and export
+CommonJS uses require and module.exports
+Named exports use curly braces
+Default exports do not use curly braces
+Default exports can be imported with any name
+Named exports can be renamed using as
+Local ES Module imports need .js extension
+Our Express backend project uses ES Modules
+```
