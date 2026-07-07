@@ -746,3 +746,504 @@ fs.readFileSync is synchronous and blocking
 fs.readFile is asynchronous and non-blocking
 Node.js uses async code heavily for better performance
 ```
+
+# Day 4: Call Stack, Callback Queue, and Microtask Queue
+
+## Objective
+
+The objective of Day 4 is to understand how JavaScript manages synchronous and asynchronous code internally.
+
+This topic helps us understand the Node.js Event Loop more easily.
+
+---
+
+## What is Call Stack?
+
+The call stack is the place where JavaScript keeps track of currently running code.
+
+Simple meaning:
+
+```txt
+Call Stack
+↓
+Place where JavaScript executes functions
+```
+
+JavaScript runs synchronous code using the call stack.
+
+---
+
+## Basic Call Stack Example
+
+Code:
+
+```js
+function first() {
+  console.log("First function");
+}
+
+function second() {
+  console.log("Second function");
+}
+
+console.log("Start");
+
+first();
+
+second();
+
+console.log("End");
+```
+
+Output:
+
+```txt
+Start
+First function
+Second function
+End
+```
+
+Flow:
+
+```txt
+console.log("Start") runs
+↓
+first() enters call stack
+↓
+first() finishes and leaves call stack
+↓
+second() enters call stack
+↓
+second() finishes and leaves call stack
+↓
+console.log("End") runs
+```
+
+---
+
+## Function Inside Function
+
+Code:
+
+```js
+function third() {
+  console.log("Third function");
+}
+
+function second() {
+  console.log("Second function start");
+
+  third();
+
+  console.log("Second function end");
+}
+
+function first() {
+  console.log("First function start");
+
+  second();
+
+  console.log("First function end");
+}
+
+console.log("Program start");
+
+first();
+
+console.log("Program end");
+```
+
+Output:
+
+```txt
+Program start
+First function start
+Second function start
+Third function
+Second function end
+First function end
+Program end
+```
+
+---
+
+## Call Stack Order
+
+Call stack follows this rule:
+
+```txt
+Last In, First Out
+```
+
+Short form:
+
+```txt
+LIFO
+```
+
+Meaning:
+
+```txt
+The last function that enters the stack finishes first.
+```
+
+In this example:
+
+```txt
+first()
+↓
+second()
+↓
+third()
+```
+
+`third()` entered last, so it finishes first.
+
+Visual:
+
+```txt
+Call Stack
+
+| third  |  ← finishes first
+| second |
+| first  |
+```
+
+Flow:
+
+```txt
+1. first() enters stack
+2. second() enters stack
+3. third() enters stack
+4. third() finishes and leaves
+5. second() finishes and leaves
+6. first() finishes and leaves
+```
+
+---
+
+## Call Stack with Error
+
+Code:
+
+```js
+function third() {
+  throw new Error("Something went wrong in third function");
+}
+
+function second() {
+  third();
+}
+
+function first() {
+  second();
+}
+
+first();
+```
+
+Output:
+
+```txt
+Error: Something went wrong in third function
+    at third
+    at second
+    at first
+```
+
+This is called a stack trace.
+
+It tells us the function call path:
+
+```txt
+first() called second()
+second() called third()
+third() threw the error
+```
+
+Stack trace helps us debug where an error came from.
+
+---
+
+## What is Callback Queue?
+
+Callback Queue is where some asynchronous callbacks wait before going back to the call stack.
+
+Example asynchronous API:
+
+```txt
+setTimeout
+```
+
+---
+
+## Callback Queue Example
+
+Code:
+
+```js
+console.log("Start");
+
+setTimeout(() => {
+  console.log("Inside setTimeout");
+}, 0);
+
+console.log("End");
+```
+
+Output:
+
+```txt
+Start
+End
+Inside setTimeout
+```
+
+---
+
+## Why setTimeout Runs Later
+
+`setTimeout` callback does not directly run in the call stack.
+
+Flow:
+
+```txt
+console.log("Start") runs
+↓
+setTimeout callback goes to timer system
+↓
+console.log("End") runs
+↓
+Call stack becomes empty
+↓
+setTimeout callback moves to callback queue
+↓
+Event loop sends callback to call stack
+↓
+Inside setTimeout prints
+```
+
+So even with `0` milliseconds, `setTimeout` runs after synchronous code.
+
+---
+
+## What is Microtask Queue?
+
+Microtask Queue is another queue used by JavaScript.
+
+It is used by:
+
+```txt
+Promise.then()
+async/await continuation
+queueMicrotask()
+```
+
+Important rule:
+
+```txt
+Microtask Queue has higher priority than Callback Queue.
+```
+
+That means Promise callbacks run before `setTimeout` callbacks.
+
+---
+
+## Microtask Queue Example
+
+Code:
+
+```js
+console.log("Start");
+
+setTimeout(() => {
+  console.log("Inside setTimeout");
+}, 0);
+
+Promise.resolve().then(() => {
+  console.log("Inside Promise");
+});
+
+console.log("End");
+```
+
+Output:
+
+```txt
+Start
+End
+Inside Promise
+Inside setTimeout
+```
+
+---
+
+## Why Promise Runs Before setTimeout
+
+Flow:
+
+```txt
+Start prints
+↓
+setTimeout callback waits in Callback Queue
+↓
+Promise callback waits in Microtask Queue
+↓
+End prints
+↓
+Call stack becomes empty
+↓
+Microtask Queue runs first
+↓
+Callback Queue runs after that
+```
+
+So this is the priority:
+
+```txt
+Call Stack
+↓
+Microtask Queue
+↓
+Callback Queue
+```
+
+---
+
+## process.nextTick in Node.js
+
+Node.js has one special queue:
+
+```txt
+process.nextTick Queue
+```
+
+This queue has higher priority than Promise microtasks.
+
+---
+
+## process.nextTick Example
+
+Code:
+
+```js
+console.log("Start");
+
+setTimeout(() => {
+  console.log("Inside setTimeout");
+}, 0);
+
+Promise.resolve().then(() => {
+  console.log("Inside Promise");
+});
+
+process.nextTick(() => {
+  console.log("Inside process.nextTick");
+});
+
+console.log("End");
+```
+
+Output:
+
+```txt
+Start
+End
+Inside process.nextTick
+Inside Promise
+Inside setTimeout
+```
+
+---
+
+## Node.js Priority Order
+
+In Node.js, execution priority is:
+
+```txt
+1. Synchronous code
+2. process.nextTick queue
+3. Promise microtask queue
+4. Timer / Callback queue
+```
+
+Simple flow:
+
+```txt
+Call Stack
+↓
+process.nextTick Queue
+↓
+Promise Microtask Queue
+↓
+Callback Queue / Timer Queue
+```
+
+---
+
+## Final Execution Rule
+
+Remember this rule:
+
+```txt
+Synchronous code always runs first.
+
+After synchronous code finishes, Node.js checks process.nextTick queue.
+
+Then Node.js checks Promise microtask queue.
+
+Then Node.js runs timer/callback queue tasks like setTimeout.
+```
+
+---
+
+## Complete Priority Example
+
+Code:
+
+```js
+console.log("Start");
+
+setTimeout(() => {
+  console.log("Inside setTimeout");
+}, 0);
+
+Promise.resolve().then(() => {
+  console.log("Inside Promise");
+});
+
+process.nextTick(() => {
+  console.log("Inside process.nextTick");
+});
+
+console.log("End");
+```
+
+Output:
+
+```txt
+Start
+End
+Inside process.nextTick
+Inside Promise
+Inside setTimeout
+```
+
+---
+
+## Key Learning
+
+In Day 4, we learned:
+
+```txt
+Call stack runs synchronous code
+Call stack follows LIFO rule
+Stack trace shows function call path during errors
+setTimeout callback waits in callback queue
+Promise.then callback waits in microtask queue
+Microtask queue has higher priority than callback queue
+process.nextTick has higher priority than Promise in Node.js
+Synchronous code always runs first
+Node.js execution order is sync code, nextTick, Promise, then timer callbacks
+```

@@ -1,14 +1,15 @@
-import fs from "fs";
+console.log("start");
 
-console.log("Start");
+setTimeout(() => {
+  console.log("Inside setTimeout");
+}, 0);
 
-fs.readFile("data.txt", "utf-8", (error, data) => {
-  if (error) {
-    console.log("Error:", error.message);
-    return;
-  }
-
-  console.log(data);
+Promise.resolve().then(() => {
+  console.log("Inside promise");
 });
 
-console.log("End");
+process.nextTick(() => {
+  console.log("Inside next tick");
+});
+
+console.log("end");
