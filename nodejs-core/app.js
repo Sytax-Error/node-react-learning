@@ -1,15 +1,15 @@
-console.log("start");
+console.log("Start");
 
 setTimeout(() => {
-  console.log("Inside setTimeout");
+  console.log("Inside Timer");
 }, 0);
 
-Promise.resolve().then(() => {
-  console.log("Inside promise");
-});
+const startTime = Date.now();
 
-process.nextTick(() => {
-  console.log("Inside next tick");
-});
+while (Date.now() - startTime < 3000) {
+  console.log("Blocking loop");
+}
 
-console.log("end");
+console.log("Blocking finish");
+
+console.log("End");

@@ -1247,3 +1247,410 @@ process.nextTick has higher priority than Promise in Node.js
 Synchronous code always runs first
 Node.js execution order is sync code, nextTick, Promise, then timer callbacks
 ```
+# Day 5: Event Loop
+
+## Objective
+
+The objective of Day 5 is to understand what the Event Loop is and how Node.js handles asynchronous code.
+
+The Event Loop is one of the most important concepts in Node.js.
+
+---
+
+## What is Event Loop?
+
+The Event Loop is the mechanism that allows Node.js to handle asynchronous code.
+
+Simple meaning:
+
+```txt
+Event Loop checks whether the call stack is empty.
+
+If the call stack is empty, it moves waiting callbacks from queues to the call stack.
+```
+
+---
+
+## Why Event Loop is Needed
+
+Node.js uses a single main thread to execute JavaScript code.
+
+If Node.js waited for every slow task to finish, the server would become blocked.
+
+Slow tasks can be:
+
+```txt
+File reading
+Database query
+API call
+Timer
+Network request
+```
+
+The Event Loop helps Node.js continue running other code while async tasks are waiting in the background.
+
+---
+
+## Basic Event Loop Flow
+
+```txt
+Synchronous code runs first
+↓
+Call stack becomes empty
+↓
+Event Loop checks queues
+↓
+process.nextTick callbacks run
+↓
+Promise microtasks run
+↓
+Timer callbacks run
+```
+
+---
+
+## Event Loop Priority Example
+
+Code:
+
+```js
+console.log("Start");
+
+setTimeout(() => {
+  console.log("Timer callback");
+}, 0);
+
+Promise.resolve().then(() => {
+  console.log("Promise callback");
+});
+
+process.nextTick(() => {
+  console.log("Next tick callback");
+});
+
+console.log("End");
+```
+
+Output:
+
+```txt
+Start
+End
+Next tick callback
+Promise callback
+Timer callback
+```
+
+---
+
+## Execution Order
+
+In Node.js, the execution order is:
+
+```txt
+1. Synchronous code
+2. process.nextTick queue
+3. Promise microtask queue
+4. Timer callback queue
+```
+
+This is why the output is:
+
+```txt
+Start
+End
+Next tick callback
+Promise callback
+Timer callback
+```
+
+---
+
+## Event Loop with Asynchronous File Reading
+
+Code:
+
+```js
+import fs from "fs";
+
+console.log("Program start");
+
+fs.readFile("data.txt", "utf-8", (error, data) => {
+  if (error) {
+    console.log("Error:", error.message);
+    return;
+  }
+
+  console.log("File content:", data);
+});
+
+console.log("Program end");
+```
+
+Output:
+
+```txt
+Program start
+Program end
+File content: This is sample file content.
+```
+
+---
+
+## Why Program End Prints First
+
+`fs.readFile()` is asynchronous.
+
+Node.js starts file reading in the background and continues executing the next line.
+
+Flow:
+
+```txt
+Program start prints
+↓
+File reading starts in background
+↓
+Program end prints
+↓
+File reading completes
+↓
+Callback waits in queue
+↓
+Event Loop sends callback to call stack
+↓
+File content prints
+```
+
+---
+
+## Event Loop Responsibility
+
+The Event Loop has one main responsibility:
+
+```txt
+Check whether the call stack is empty.
+
+If it is empty, move ready callbacks from queues to the call stack.
+```
+
+Simple structure:
+
+```txt
+Call Stack
+↓
+Runs current JavaScript code
+
+Queues
+↓
+Store callbacks waiting to run
+
+Event Loop
+↓
+Moves callbacks from queues to call stack when stack is empty
+```
+
+---
+
+## Multiple Async Tasks Example
+
+Code:
+
+```js
+console.log("Start");
+
+setTimeout(() => {
+  console.log("Timer 1");
+}, 0);
+
+setTimeout(() => {
+  console.log("Timer 2");
+}, 0);
+
+Promise.resolve().then(() => {
+  console.log("Promise 1");
+});
+
+Promise.resolve().then(() => {
+  console.log("Promise 2");
+});
+
+console.log("End");
+```
+
+Output:
+
+```txt
+Start
+End
+Promise 1
+Promise 2
+Timer 1
+Timer 2
+```
+
+Reason:
+
+```txt
+Synchronous code runs first
+Promise callbacks run next
+Timer callbacks run after Promise callbacks
+```
+
+---
+
+## Event Loop and Blocking Code
+
+Even if async callbacks are ready, they cannot run until synchronous code finishes.
+
+Code:
+
+```js
+console.log("Start");
+
+setTimeout(() => {
+  console.log("Timer callback");
+}, 0);
+
+for (let i = 0; i < 5; i++) {
+  console.log("Blocking loop:", i);
+}
+
+console.log("End");
+```
+
+Output:
+
+```txt
+Start
+Blocking loop: 0
+Blocking loop: 1
+Blocking loop: 2
+Blocking loop: 3
+Blocking loop: 4
+End
+Timer callback
+```
+
+---
+
+## Why Timer Callback Runs Last
+
+The `for` loop is synchronous.
+
+So the timer callback waits until:
+
+```txt
+Loop finishes
+↓
+End prints
+↓
+Call stack becomes empty
+↓
+Event Loop sends timer callback to call stack
+```
+
+Important rule:
+
+```txt
+Event Loop can run callbacks only when the call stack is empty.
+```
+
+---
+
+## Heavy Blocking Code Example
+
+Code:
+
+```js
+console.log("Start");
+
+setTimeout(() => {
+  console.log("Timer callback");
+}, 0);
+
+const startTime = Date.now();
+
+while (Date.now() - startTime < 3000) {
+  // blocking for 3 seconds
+}
+
+console.log("Blocking finished");
+
+console.log("End");
+```
+
+Output:
+
+```txt
+Start
+Blocking finished
+End
+Timer callback
+```
+
+---
+
+## Why setTimeout 0 Still Waits
+
+Even though the timer is `0`, it still waits for the blocking `while` loop to finish.
+
+Reason:
+
+```txt
+Async callback cannot interrupt running synchronous code.
+```
+
+The callback can run only when the call stack becomes empty.
+
+---
+
+## Simple Event Loop Rule
+
+```txt
+Synchronous code always runs first.
+
+Async callbacks wait in queues.
+
+Event Loop moves callbacks to call stack only when the call stack is empty.
+```
+
+---
+
+## Final Event Loop Flow
+
+```txt
+JavaScript synchronous code
+↓
+Call Stack
+↓
+Call Stack becomes empty
+↓
+Event Loop checks queues
+↓
+process.nextTick Queue
+↓
+Promise Microtask Queue
+↓
+Timer / Callback Queue
+↓
+Callback runs in Call Stack
+```
+
+---
+
+## Key Learning
+
+In Day 5, we learned:
+
+```txt
+Event Loop handles asynchronous callbacks
+Synchronous code always runs first
+Event Loop checks queues after call stack becomes empty
+process.nextTick runs before Promise
+Promise callbacks run before timer callbacks
+setTimeout callback waits in timer queue
+fs.readFile callback runs later after async file reading
+Blocking synchronous code delays async callbacks
+Async callbacks cannot interrupt running synchronous code
+Event Loop allows Node.js to handle non-blocking operations
+```
