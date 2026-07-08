@@ -3651,3 +3651,631 @@ import.meta.url can be converted into file path
 __dirname is useful with fs module
 Using path with fs makes file handling safer
 ```
+
+# Day 9: Process Object
+
+## Objective
+
+The objective of Day 9 is to understand the Node.js `process` object.
+
+The `process` object gives information and control over the currently running Node.js program.
+
+---
+
+## What is process Object?
+
+`process` is a global object in Node.js.
+
+Global means we can use it directly without importing it.
+
+Example:
+
+```js
+console.log(process.version);
+```
+
+No import is required.
+
+The `process` object provides information about:
+
+```txt
+Node.js version
+Operating system platform
+Current working directory
+Environment variables
+Command-line arguments
+Memory usage
+Process uptime
+Process exit
+```
+
+---
+
+## Basic Process Information
+
+Code:
+
+```js
+console.log("Node version:", process.version);
+
+console.log("Platform:", process.platform);
+
+console.log("Process ID:", process.pid);
+```
+
+Example output:
+
+```txt
+Node version: v22.22.0
+Platform: linux
+Process ID: 12345
+```
+
+---
+
+## Meaning
+
+```txt
+process.version
+↓
+Shows current Node.js version
+
+process.platform
+↓
+Shows operating system platform
+
+process.pid
+↓
+Shows current Node.js process ID
+```
+
+---
+
+## process.cwd()
+
+`cwd` means Current Working Directory.
+
+`process.cwd()` tells us from which folder the Node.js command is running.
+
+Code:
+
+```js
+console.log("Current working directory:", process.cwd());
+```
+
+Run:
+
+```bash
+node app.js
+```
+
+Example output:
+
+```txt
+Current working directory: /home/user/project/nodejs-core
+```
+
+---
+
+## Important Point About process.cwd()
+
+`process.cwd()` depends on where the command is executed from.
+
+Example:
+
+```bash
+node nodejs-core/app.js
+```
+
+If this command is run from the project root, then:
+
+```txt
+process.cwd()
+↓
+Project root folder
+```
+
+Even though the file is inside:
+
+```txt
+nodejs-core/app.js
+```
+
+---
+
+## process.cwd() vs __dirname
+
+`process.cwd()` and `__dirname` are different.
+
+Code:
+
+```js
+import path from "path";
+import { fileURLToPath } from "url";
+
+const __filename = fileURLToPath(import.meta.url);
+
+const __dirname = path.dirname(__filename);
+
+console.log("process.cwd():", process.cwd());
+
+console.log("__dirname:", __dirname);
+```
+
+---
+
+## Difference
+
+```txt
+process.cwd()
+↓
+Folder from where node command is executed
+
+__dirname
+↓
+Folder where current file exists
+```
+
+`process.cwd()` can change depending on where the command runs.
+
+`__dirname` stays based on the current file location.
+
+---
+
+## process.env
+
+`process.env` stores environment variables available to the Node.js process.
+
+In backend projects, we commonly use environment variables for:
+
+```txt
+PORT
+MONGO_URI
+JWT_SECRET
+SMTP_USER
+CLOUDINARY_API_KEY
+NODE_ENV
+```
+
+Example:
+
+```js
+console.log("NODE_ENV:", process.env.NODE_ENV);
+
+console.log("HOME:", process.env.HOME);
+```
+
+---
+
+## System Environment Variables
+
+Some environment variables are provided by the operating system.
+
+Example on Linux or Ubuntu:
+
+```txt
+HOME
+PATH
+USER
+SHELL
+PWD
+LANG
+```
+
+That is why this can work without a `.env` file:
+
+```js
+console.log(process.env.HOME);
+```
+
+Because `HOME` is already available in the system environment.
+
+---
+
+## .env File and dotenv
+
+A `.env` file is just a normal file.
+
+Node.js does not read `.env` automatically.
+
+Example `.env`:
+
+```env
+NODE_ENV=development
+```
+
+This value will not be available in `process.env.NODE_ENV` unless we load it using `dotenv`.
+
+Example:
+
+```js
+import "dotenv/config";
+
+console.log(process.env.NODE_ENV);
+```
+
+---
+
+## process.env Rule
+
+```txt
+process.env
+↓
+Reads environment variables available to the Node.js process
+
+.env file
+↓
+Normal file containing environment variables
+
+dotenv
+↓
+Loads .env file values into process.env
+```
+
+Final flow:
+
+```txt
+.env
+↓
+dotenv/config
+↓
+process.env
+```
+
+---
+
+## Passing Environment Variable from Terminal
+
+We can also pass environment variables directly from terminal.
+
+Example:
+
+```bash
+NODE_ENV=development node app.js
+```
+
+Then this code:
+
+```js
+console.log(process.env.NODE_ENV);
+```
+
+Will output:
+
+```txt
+development
+```
+
+---
+
+## process.argv
+
+`process.argv` stores command-line arguments.
+
+Code:
+
+```js
+console.log(process.argv);
+```
+
+Run:
+
+```bash
+node app.js
+```
+
+Example output:
+
+```txt
+[
+  "/usr/bin/node",
+  "/path/to/nodejs-core/app.js"
+]
+```
+
+Run with arguments:
+
+```bash
+node app.js Lavesh React Node
+```
+
+Example output:
+
+```txt
+[
+  "/usr/bin/node",
+  "/path/to/nodejs-core/app.js",
+  "Lavesh",
+  "React",
+  "Node"
+]
+```
+
+---
+
+## process.argv Meaning
+
+```txt
+process.argv[0]
+↓
+Node.js executable path
+
+process.argv[1]
+↓
+Current file path
+
+process.argv[2]
+↓
+First custom argument
+
+process.argv[3]
+↓
+Second custom argument
+```
+
+---
+
+## Using Command-line Arguments
+
+Code:
+
+```js
+const name = process.argv[2];
+const role = process.argv[3];
+
+console.log("Name:", name);
+console.log("Role:", role);
+```
+
+Run:
+
+```bash
+node app.js Lavesh "React Developer"
+```
+
+Output:
+
+```txt
+Name: Lavesh
+Role: React Developer
+```
+
+---
+
+## Why Quotes are Used
+
+We used:
+
+```bash
+"React Developer"
+```
+
+Because it has a space.
+
+Without quotes:
+
+```bash
+node app.js Lavesh React Developer
+```
+
+Node.js treats them as separate arguments:
+
+```txt
+process.argv[2] → Lavesh
+process.argv[3] → React
+process.argv[4] → Developer
+```
+
+---
+
+## process.uptime()
+
+`process.uptime()` tells how many seconds the current Node.js process has been running.
+
+Code:
+
+```js
+console.log("Process started");
+
+setTimeout(() => {
+  console.log("Uptime:", process.uptime(), "seconds");
+}, 3000);
+```
+
+Example output:
+
+```txt
+Process started
+Uptime: 3.00 seconds
+```
+
+This is useful in health check APIs.
+
+---
+
+## process.memoryUsage()
+
+`process.memoryUsage()` returns memory usage details of the current Node.js process.
+
+Code:
+
+```js
+const memoryUsage = process.memoryUsage();
+
+console.log(memoryUsage);
+```
+
+Example output:
+
+```txt
+{
+  rss: 43286528,
+  heapTotal: 5603328,
+  heapUsed: 4398120,
+  external: 1491893,
+  arrayBuffers: 10515
+}
+```
+
+---
+
+## Memory Usage Fields
+
+```txt
+rss
+↓
+Total memory used by Node.js process
+
+heapTotal
+↓
+Total memory allocated for JavaScript objects
+
+heapUsed
+↓
+Memory currently used by JavaScript objects
+
+external
+↓
+Memory used by C++ objects connected to JavaScript
+```
+
+---
+
+## Convert Memory Bytes to MB
+
+Memory values come in bytes.
+
+To convert bytes to MB:
+
+```txt
+bytes / 1024 = KB
+KB / 1024 = MB
+```
+
+Code:
+
+```js
+const memoryUsage = process.memoryUsage();
+
+console.log("RSS:", Math.round(memoryUsage.rss / 1024 / 1024), "MB");
+
+console.log("Heap Total:", Math.round(memoryUsage.heapTotal / 1024 / 1024), "MB");
+
+console.log("Heap Used:", Math.round(memoryUsage.heapUsed / 1024 / 1024), "MB");
+```
+
+Example output:
+
+```txt
+RSS: 42 MB
+Heap Total: 5 MB
+Heap Used: 4 MB
+```
+
+---
+
+## process.exit()
+
+`process.exit()` stops the current Node.js process.
+
+Code:
+
+```js
+console.log("Before exit");
+
+process.exit(0);
+
+console.log("After exit");
+```
+
+Output:
+
+```txt
+Before exit
+```
+
+This line does not run:
+
+```js
+console.log("After exit");
+```
+
+Because `process.exit()` stops the program immediately.
+
+---
+
+## Exit Code Meaning
+
+```txt
+process.exit(0)
+↓
+Successful exit
+
+process.exit(1)
+↓
+Exit because of error
+```
+
+---
+
+## Common process Properties and Methods
+
+```txt
+process.version
+↓
+Node.js version
+
+process.platform
+↓
+Operating system platform
+
+process.pid
+↓
+Current process ID
+
+process.cwd()
+↓
+Current working directory
+
+process.env
+↓
+Environment variables
+
+process.argv
+↓
+Command-line arguments
+
+process.uptime()
+↓
+Process running time in seconds
+
+process.memoryUsage()
+↓
+Memory usage details
+
+process.exit()
+↓
+Stops the Node.js process
+```
+
+---
+
+## Key Learning
+
+In Day 9, we learned:
+
+```txt
+process is a global object in Node.js
+process gives information about current Node.js program
+process.version shows Node.js version
+process.platform shows operating system
+process.pid shows process ID
+process.cwd() shows command running folder
+process.cwd() is different from __dirname
+process.env reads environment variables
+.env file needs dotenv to load values into process.env
+process.argv reads command-line arguments
+process.uptime() shows running time
+process.memoryUsage() shows memory usage
+process.exit() stops the process
+```
