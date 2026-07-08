@@ -2263,3 +2263,805 @@ Named exports can be renamed using as
 Local ES Module imports need .js extension
 Our Express backend project uses ES Modules
 ```
+# Day 7: File System Module
+
+## Objective
+
+The objective of Day 7 is to understand the Node.js `fs` module.
+
+The `fs` module allows Node.js to work with files and folders.
+
+---
+
+## What is fs Module?
+
+`fs` means File System.
+
+It is a built-in Node.js module used to work with files and folders.
+
+Using `fs`, we can:
+
+```txt
+Read files
+Write files
+Append data to files
+Delete files
+Create folders
+Read folder contents
+Check if file exists
+```
+
+In browser JavaScript, we cannot directly access system files like this.
+
+Node.js can access files because it runs on a computer or server.
+
+---
+
+## Practice Folder Structure
+
+Created folder and file:
+
+```txt
+nodejs-core/
+├── app.js
+├── files/
+│   └── notes.txt
+```
+
+Content inside `notes.txt`:
+
+```txt
+This is my first fs module note.
+```
+
+---
+
+## Read File Synchronously
+
+Code:
+
+```js
+import fs from "fs";
+
+const data = fs.readFileSync("./files/notes.txt", "utf-8");
+
+console.log(data);
+```
+
+Output:
+
+```txt
+This is my first fs module note.
+```
+
+---
+
+## What is readFileSync?
+
+`fs.readFileSync()` reads a file synchronously.
+
+Meaning:
+
+```txt
+Node.js waits until file reading is complete.
+Then the next line runs.
+```
+
+So this method is blocking.
+
+---
+
+## Understanding utf-8
+
+Code:
+
+```js
+const data = fs.readFileSync("./files/notes.txt", "utf-8");
+```
+
+`utf-8` tells Node.js to read the file as normal text.
+
+Without `utf-8`, Node.js returns Buffer data.
+
+Example without `utf-8`:
+
+```js
+import fs from "fs";
+
+const data = fs.readFileSync("./files/notes.txt");
+
+console.log(data);
+```
+
+Output:
+
+```txt
+<Buffer 54 68 69 73 20 69 73 ...>
+```
+
+---
+
+## Buffer to String
+
+If file is read without `utf-8`, we can convert Buffer to string.
+
+Code:
+
+```js
+import fs from "fs";
+
+const data = fs.readFileSync("./files/notes.txt");
+
+console.log("Buffer data:", data);
+
+console.log("Text data:", data.toString());
+```
+
+Output:
+
+```txt
+Buffer data: <Buffer ...>
+Text data: This is my first fs module note.
+```
+
+---
+
+## Write File Synchronously
+
+Code:
+
+```js
+import fs from "fs";
+
+fs.writeFileSync(
+  "./files/output.txt",
+  "This file is created using Node.js fs module."
+);
+
+console.log("File written successfully");
+```
+
+Output:
+
+```txt
+File written successfully
+```
+
+Created file:
+
+```txt
+nodejs-core/files/output.txt
+```
+
+File content:
+
+```txt
+This file is created using Node.js fs module.
+```
+
+---
+
+## What is writeFileSync?
+
+`fs.writeFileSync()` writes data to a file synchronously.
+
+Important behavior:
+
+```txt
+Creates a new file if it does not exist.
+Overwrites old content if the file already exists.
+```
+
+---
+
+## Append Data Synchronously
+
+Code:
+
+```js
+import fs from "fs";
+
+fs.appendFileSync(
+  "./files/output.txt",
+  "\nThis line is appended using appendFileSync."
+);
+
+console.log("Data appended successfully");
+```
+
+Output:
+
+```txt
+Data appended successfully
+```
+
+Final file content:
+
+```txt
+This file is created using Node.js fs module.
+This line is appended using appendFileSync.
+```
+
+---
+
+## writeFileSync vs appendFileSync
+
+```txt
+writeFileSync
+↓
+Creates or overwrites file content
+
+appendFileSync
+↓
+Adds new content at the end of file
+```
+
+---
+
+## Read Folder Files Synchronously
+
+Code:
+
+```js
+import fs from "fs";
+
+const files = fs.readdirSync("./files");
+
+console.log(files);
+```
+
+Example output:
+
+```txt
+[ 'notes.txt', 'output.txt' ]
+```
+
+---
+
+## What is readdirSync?
+
+`fs.readdirSync()` reads the contents of a folder synchronously.
+
+It returns an array of file and folder names.
+
+---
+
+## Check File Exists
+
+Code:
+
+```js
+import fs from "fs";
+
+const fileExists = fs.existsSync("./files/output.txt");
+
+console.log("File exists:", fileExists);
+```
+
+Output:
+
+```txt
+File exists: true
+```
+
+Test with wrong file:
+
+```js
+import fs from "fs";
+
+const fileExists = fs.existsSync("./files/random.txt");
+
+console.log("File exists:", fileExists);
+```
+
+Output:
+
+```txt
+File exists: false
+```
+
+---
+
+## What is existsSync?
+
+`fs.existsSync()` checks whether a file or folder exists.
+
+It returns:
+
+```txt
+true  → file or folder exists
+false → file or folder does not exist
+```
+
+---
+
+## Create Folder Synchronously
+
+Code:
+
+```js
+import fs from "fs";
+
+if (!fs.existsSync("./new-folder")) {
+  fs.mkdirSync("./new-folder");
+  console.log("Folder created successfully");
+} else {
+  console.log("Folder already exists");
+}
+```
+
+First run output:
+
+```txt
+Folder created successfully
+```
+
+Second run output:
+
+```txt
+Folder already exists
+```
+
+---
+
+## What is mkdirSync?
+
+`fs.mkdirSync()` creates a new folder synchronously.
+
+We used `fs.existsSync()` before creating the folder to avoid an error if the folder already exists.
+
+---
+
+## Delete File Synchronously
+
+Code:
+
+```js
+import fs from "fs";
+
+if (fs.existsSync("./files/output.txt")) {
+  fs.unlinkSync("./files/output.txt");
+  console.log("File deleted successfully");
+} else {
+  console.log("File does not exist");
+}
+```
+
+First run output:
+
+```txt
+File deleted successfully
+```
+
+Second run output:
+
+```txt
+File does not exist
+```
+
+---
+
+## What is unlinkSync?
+
+`fs.unlinkSync()` deletes a file synchronously.
+
+We used `existsSync()` first to avoid an error if the file does not exist.
+
+---
+
+## Asynchronous File Read with Callback
+
+Code:
+
+```js
+import fs from "fs";
+
+console.log("Start");
+
+fs.readFile("./files/notes.txt", "utf-8", (error, data) => {
+  if (error) {
+    console.log("Error:", error.message);
+    return;
+  }
+
+  console.log("File content:", data);
+});
+
+console.log("End");
+```
+
+Output:
+
+```txt
+Start
+End
+File content: This is my first fs module note.
+```
+
+---
+
+## Why End Prints First?
+
+`fs.readFile()` is asynchronous.
+
+Node.js starts reading the file and continues to the next line.
+
+That is why `End` prints before the file content.
+
+---
+
+## Asynchronous File Write with Callback
+
+Code:
+
+```js
+import fs from "fs";
+
+console.log("Start");
+
+fs.writeFile(
+  "./files/async-output.txt",
+  "This file is created asynchronously.",
+  (error) => {
+    if (error) {
+      console.log("Error:", error.message);
+      return;
+    }
+
+    console.log("File written successfully");
+  }
+);
+
+console.log("End");
+```
+
+Output:
+
+```txt
+Start
+End
+File written successfully
+```
+
+Created file:
+
+```txt
+nodejs-core/files/async-output.txt
+```
+
+---
+
+## Asynchronous File Append with Callback
+
+Code:
+
+```js
+import fs from "fs";
+
+console.log("Start");
+
+fs.appendFile(
+  "./files/async-output.txt",
+  "\nThis line is appended asynchronously.",
+  (error) => {
+    if (error) {
+      console.log("Error:", error.message);
+      return;
+    }
+
+    console.log("Data appended successfully");
+  }
+);
+
+console.log("End");
+```
+
+Output:
+
+```txt
+Start
+End
+Data appended successfully
+```
+
+---
+
+## Callback API vs Promise API
+
+Node.js provides different ways to use the `fs` module.
+
+### Callback Style
+
+```js
+fs.readFile("./files/notes.txt", "utf-8", (error, data) => {
+  console.log(data);
+});
+```
+
+### Promise Style
+
+```js
+import fs from "fs/promises";
+
+const data = await fs.readFile("./files/notes.txt", "utf-8");
+```
+
+Modern Node.js projects commonly use the Promise API with `async/await`.
+
+---
+
+## Why fs/promises is Cleaner
+
+`fs/promises` is cleaner because:
+
+```txt
+No callback nesting
+Works with async/await
+Cleaner error handling with try/catch
+Easier to read
+Common in modern Node.js projects
+```
+
+---
+
+## Read File Using fs/promises
+
+Code:
+
+```js
+import fs from "fs/promises";
+
+const readNoteFile = async () => {
+  try {
+    console.log("Start");
+
+    const data = await fs.readFile("./files/notes.txt", "utf-8");
+
+    console.log("File content:", data);
+
+    console.log("End");
+  } catch (error) {
+    console.log("Error:", error.message);
+  }
+};
+
+readNoteFile();
+```
+
+Output:
+
+```txt
+Start
+File content: This is my first fs module note.
+End
+```
+
+---
+
+## Write File Using fs/promises
+
+Code:
+
+```js
+import fs from "fs/promises";
+
+const writeFileExample = async () => {
+  try {
+    console.log("Start");
+
+    await fs.writeFile(
+      "./files/promise-output.txt",
+      "This file is created using fs promises."
+    );
+
+    console.log("File written successfully");
+
+    console.log("End");
+  } catch (error) {
+    console.log("Error:", error.message);
+  }
+};
+
+writeFileExample();
+```
+
+Output:
+
+```txt
+Start
+File written successfully
+End
+```
+
+Created file:
+
+```txt
+nodejs-core/files/promise-output.txt
+```
+
+---
+
+## Append File Using fs/promises
+
+Code:
+
+```js
+import fs from "fs/promises";
+
+const appendFileExample = async () => {
+  try {
+    console.log("Start");
+
+    await fs.appendFile(
+      "./files/promise-output.txt",
+      "\nThis line is appended using fs promises."
+    );
+
+    console.log("Data appended successfully");
+
+    console.log("End");
+  } catch (error) {
+    console.log("Error:", error.message);
+  }
+};
+
+appendFileExample();
+```
+
+Output:
+
+```txt
+Start
+Data appended successfully
+End
+```
+
+---
+
+## Read Folder Using fs/promises
+
+Code:
+
+```js
+import fs from "fs/promises";
+
+const readFolderExample = async () => {
+  try {
+    console.log("Start");
+
+    const files = await fs.readdir("./files");
+
+    console.log("Files:", files);
+
+    console.log("End");
+  } catch (error) {
+    console.log("Error:", error.message);
+  }
+};
+
+readFolderExample();
+```
+
+Example output:
+
+```txt
+Start
+Files: [ 'notes.txt', 'promise-output.txt' ]
+End
+```
+
+---
+
+## Check File Exists Using fs/promises
+
+With `fs/promises`, we can use `fs.access()` to check if a file or folder is accessible.
+
+Code:
+
+```js
+import fs from "fs/promises";
+
+const checkFileExists = async () => {
+  try {
+    await fs.access("./files/notes.txt");
+
+    console.log("File exists");
+  } catch (error) {
+    console.log("File does not exist");
+  }
+};
+
+checkFileExists();
+```
+
+Output:
+
+```txt
+File exists
+```
+
+If file does not exist:
+
+```txt
+File does not exist
+```
+
+---
+
+## Delete File Using fs/promises
+
+Code:
+
+```js
+import fs from "fs/promises";
+
+const deleteFileExample = async () => {
+  try {
+    await fs.unlink("./files/async-output.txt");
+
+    console.log("File deleted successfully");
+  } catch (error) {
+    console.log("Error:", error.message);
+  }
+};
+
+deleteFileExample();
+```
+
+Output:
+
+```txt
+File deleted successfully
+```
+
+If file does not exist:
+
+```txt
+Error: ENOENT: no such file or directory
+```
+
+---
+
+## Sync API vs Callback API vs Promise API
+
+```txt
+Sync API
+↓
+Blocks next line
+Example: readFileSync, writeFileSync
+
+Callback API
+↓
+Does not block next line
+Uses callback function
+Example: readFile, writeFile
+
+Promise API
+↓
+Does not block next line
+Works with async/await
+Example: fs/promises
+```
+
+---
+
+## Key Learning
+
+In Day 7, we learned:
+
+```txt
+fs means File System
+fs is a built-in Node.js module
+Node.js can read, write, append, and delete files
+Node.js can create folders and read folder contents
+utf-8 converts file data into readable text
+Without utf-8, Node.js returns Buffer
+writeFileSync overwrites content
+appendFileSync adds content at the end
+readFileSync is synchronous and blocking
+readFile is asynchronous and callback-based
+fs/promises works with async/await
+fs.access checks whether a file exists
+fs.unlink deletes a file
+Modern Node.js projects commonly use fs/promises
+```
