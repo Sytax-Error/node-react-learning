@@ -3065,3 +3065,589 @@ fs.access checks whether a file exists
 fs.unlink deletes a file
 Modern Node.js projects commonly use fs/promises
 ```
+
+# Day 8: Path Module
+
+## Objective
+
+The objective of Day 8 is to understand the Node.js `path` module.
+
+The `path` module helps us work with file and folder paths safely.
+
+It is useful when working with files using the `fs` module.
+
+---
+
+## What is path Module?
+
+`path` is a built-in Node.js module.
+
+It helps us create, read, and manage file paths.
+
+Example paths:
+
+```txt
+./files/notes.txt
+/home/user/project/files/notes.txt
+C:\Users\Lavesh\project\files\notes.txt
+```
+
+Different operating systems use different path separators.
+
+Linux, Ubuntu, and Mac use:
+
+```txt
+/
+```
+
+Windows uses:
+
+```txt
+\
+```
+
+So instead of manually writing paths, we use the Node.js `path` module.
+
+---
+
+## Why path Module is Useful
+
+The `path` module helps us:
+
+```txt
+Create safe file paths
+Work across Windows, Linux, and Mac
+Avoid path separator issues
+Get file name from path
+Get folder name from path
+Get file extension
+Create absolute paths
+Use file paths safely with fs module
+```
+
+---
+
+## Import path Module
+
+Code:
+
+```js
+import path from "path";
+```
+
+`path` is a built-in Node.js module, so we do not need to install it.
+
+---
+
+## path.join()
+
+`path.join()` joins multiple path parts safely.
+
+Code:
+
+```js
+import path from "path";
+
+const filePath = path.join("files", "notes.txt");
+
+console.log(filePath);
+```
+
+Output on Linux, Ubuntu, or Mac:
+
+```txt
+files/notes.txt
+```
+
+Output on Windows:
+
+```txt
+files\notes.txt
+```
+
+---
+
+## Why path.join() is Useful
+
+Instead of manually writing:
+
+```js
+"./files/notes.txt"
+```
+
+we can write:
+
+```js
+path.join("files", "notes.txt");
+```
+
+This creates the correct path based on the operating system.
+
+---
+
+## Using path.join() with fs
+
+Code:
+
+```js
+import fs from "fs";
+import path from "path";
+
+const filePath = path.join("files", "notes.txt");
+
+const data = fs.readFileSync(filePath, "utf-8");
+
+console.log(data);
+```
+
+Output:
+
+```txt
+This is my first fs module note.
+```
+
+Flow:
+
+```txt
+path.join()
+↓
+Creates safe file path
+↓
+fs.readFileSync()
+↓
+Reads file content
+```
+
+---
+
+## path.resolve()
+
+`path.resolve()` creates an absolute path.
+
+Code:
+
+```js
+import path from "path";
+
+const relativePath = path.join("files", "notes.txt");
+
+const absolutePath = path.resolve("files", "notes.txt");
+
+console.log("Relative path:", relativePath);
+
+console.log("Absolute path:", absolutePath);
+```
+
+Example output:
+
+```txt
+Relative path: files/notes.txt
+Absolute path: /home/userThis is my first fs module note.
+```
+
+Flow:
+
+```txt
+path.join()
+↓
+Creates safe file path
+↓
+fs.readFileSync()
+↓
+Reads file content
+```
+
+---
+
+## path.resolve()
+
+`path.resolve()` creates an absolute path.
+
+Code:
+
+```js
+import path from "path";
+
+const relativePath = path.join("files", "notes.txt");
+
+const absolutePath = path.resolve("files", "notes.txt");
+
+console.log("Relative path:", relativePath);
+
+console.log("Absolute path:", absolutePath);
+```
+
+Example output:
+
+```txt
+Relative path: files/notes.txt
+Absolute path: /home/project/nodejs-core/files/notes.txt
+```
+
+---
+
+## path.join() vs path.resolve()
+
+```txt
+path.join()
+↓
+Joins path parts
+
+path.resolve()
+↓
+Creates full absolute path from current working directory
+```
+
+---
+
+## path.basename()
+
+`path.basename()` returns the last part of a path.
+
+Usually, it returns the file name.
+
+Code:
+
+```js
+import path from "path";
+
+const filePath = path.resolve("files", "notes.txt");
+
+const fileName = path.basename(filePath);
+
+console.log("Full path:", filePath);
+
+console.log("File name:", fileName);
+```
+
+Output:
+
+```txt
+Full path: /home/.../nodejs-core/files/notes.txt
+File name: notes.txt
+```
+
+---
+
+## path.dirname()
+
+`path.dirname()` returns the folder path from a file path.
+
+Code:
+
+```js
+import path from "path";
+
+const filePath = path.resolve("files", "notes.txt");
+
+const folderPath = path.dirname(filePath);
+
+console.log("Full path:", filePath);
+
+console.log("Folder path:", folderPath);
+```
+
+Output:
+
+```txt
+Full path: /home/.../nodejs-core/files/notes.txt
+Folder path: /home/.../nodejs-core/files
+```
+
+---
+
+## path.extname()
+
+`path.extname()` returns the file extension.
+
+Code:
+
+```js
+import path from "path";
+
+const filePath = path.resolve("files", "notes.txt");
+
+const extension = path.extname(filePath);
+
+console.log("Full path:", filePath);
+
+console.log("Extension:", extension);
+```
+
+Output:
+
+```txt
+Full path: /home/.../nodejs-core/files/notes.txt
+Extension: .txt
+```
+
+Examples:
+
+```txt
+notes.txt       → .txt
+image.png       → .png
+server.js       → .js
+archive.tar.gz  → .gz
+```
+
+---
+
+## path.parse()
+
+`path.parse()` breaks a path into different parts.
+
+Code:
+
+```js
+import path from "path";
+
+const filePath = path.resolve("files", "notes.txt");
+
+const parsedPath = path.parse(filePath);
+
+console.log(parsedPath);
+```
+
+Example output:
+
+```js
+{
+  root: "/",
+  dir: "/home/.../nodejs-core/files",
+  base: "notes.txt",
+  ext: ".txt",
+  name: "notes"
+}
+```
+
+---
+
+## path.parse() Output Meaning
+
+```txt
+root
+↓
+Root directory
+
+dir
+↓
+Folder path
+
+base
+↓
+Full file name with extension
+
+ext
+↓
+File extension
+
+name
+↓
+File name without extension
+```
+
+---
+
+## __dirname in ES Modules
+
+In CommonJS, Node.js provides:
+
+```js
+__dirname
+```
+
+It means:
+
+```txt
+Current file folder path
+```
+
+But in ES Modules, `__dirname` is not directly available.
+
+Because our project uses ES Modules, we need to create it manually.
+
+---
+
+## Creating __filename and __dirname in ES Modules
+
+Code:
+
+```js
+import path from "path";
+import { fileURLToPath } from "url";
+
+const __filename = fileURLToPath(import.meta.url);
+
+const __dirname = path.dirname(__filename);
+
+console.log("File name:", __filename);
+
+console.log("Directory name:", __dirname);
+```
+
+Example output:
+
+```txt
+File name: /home/.../nodejs-core/app.js
+Directory name: /home/.../nodejs-core
+```
+
+---
+
+## Meaning of import.meta.url
+
+`import.meta.url` gives the current file URL.
+
+Example:
+
+```txt
+file:///home/.../nodejs-core/app.js
+```
+
+But this is a file URL, not a normal file path.
+
+So we convert it using:
+
+```js
+fileURLToPath(import.meta.url);
+```
+
+---
+
+## Meaning of __filename and __dirname
+
+```txt
+__filename
+↓
+Full path of current file
+
+__dirname
+↓
+Folder path of current file
+```
+
+---
+
+## Using __dirname with fs
+
+Code:
+
+```js
+import fs from "fs";
+import path from "path";
+import { fileURLToPath } from "url";
+
+const __filename = fileURLToPath(import.meta.url);
+
+const __dirname = path.dirname(__filename);
+
+const filePath = path.join(__dirname, "files", "notes.txt");
+
+const data = fs.readFileSync(filePath, "utf-8");
+
+console.log("File path:", filePath);
+
+console.log("File content:", data);
+```
+
+Output:
+
+```txt
+File path: /home/.../nodejs-core/files/notes.txt
+File content: This is my first fs module note.
+```
+
+---
+
+## Why __dirname is Useful
+
+Using only relative path:
+
+```js
+"./files/notes.txt"
+```
+
+depends on where the command is executed from.
+
+Using `__dirname` creates a path based on the current file location.
+
+Example:
+
+```js
+const filePath = path.join(__dirname, "files", "notes.txt");
+```
+
+This is safer and more reliable.
+
+---
+
+## Final Useful Pattern
+
+For ES Modules, this is a common useful pattern:
+
+```js
+import path from "path";
+import { fileURLToPath } from "url";
+
+const __filename = fileURLToPath(import.meta.url);
+
+const __dirname = path.dirname(__filename);
+```
+
+Then use it like this:
+
+```js
+const filePath = path.join(__dirname, "files", "notes.txt");
+```
+
+---
+
+## Common path Methods
+
+```txt
+path.join()
+↓
+Joins path parts safely
+
+path.resolve()
+↓
+Creates absolute path
+
+path.basename()
+↓
+Returns file name
+
+path.dirname()
+↓
+Returns folder path
+
+path.extname()
+↓
+Returns file extension
+
+path.parse()
+↓
+Returns path details as object
+```
+
+---
+
+## Key Learning
+
+In Day 8, we learned:
+
+```txt
+path is a built-in Node.js module
+path helps work with file and folder paths
+Different operating systems use different path separators
+path.join creates safe paths
+path.resolve creates absolute paths
+path.basename returns file name
+path.dirname returns folder path
+path.extname returns file extension
+path.parse breaks path into parts
+__dirname is not directly available in ES Modules
+import.meta.url can be converted into file path
+__dirname is useful with fs module
+Using path with fs makes file handling safer
+```
