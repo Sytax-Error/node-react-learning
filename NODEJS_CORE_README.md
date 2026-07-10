@@ -4844,3 +4844,580 @@ emitter.off removes a listener
 EventEmitter helps separate main actions from side actions
 Event-driven code is useful in backend applications
 ```
+
+# Day 11: Buffer in Node.js
+
+## Objective
+
+The objective of Day 11 is to understand what Buffer is in Node.js and why it is used for handling binary data.
+
+Buffer is important when working with:
+
+```txt
+Files
+Images
+PDFs
+Audio
+Video
+Uploads
+Streams
+Network data
+```
+
+---
+
+## What is Buffer?
+
+In Node.js, `Buffer` is used to handle binary data.
+
+Simple meaning:
+
+```txt
+Buffer = Temporary memory area used to store binary data
+```
+
+Binary data means data that is stored in bytes.
+
+Examples:
+
+```txt
+Image file
+Audio file
+Video file
+PDF file
+Uploaded file
+Network data
+```
+
+---
+
+## Create Buffer from String
+
+Code:
+
+```js
+const buffer = Buffer.from("Hello Node.js");
+
+console.log(buffer);
+```
+
+Output:
+
+```txt
+<Buffer 48 65 6c 6c 6f 20 4e 6f 64 65 2e 6a 73>
+```
+
+The text `"Hello Node.js"` is converted into bytes.
+
+---
+
+## Convert Buffer Back to String
+
+Code:
+
+```js
+const buffer = Buffer.from("Hello Node.js");
+
+console.log("Buffer:", buffer);
+console.log("String:", buffer.toString());
+```
+
+Output:
+
+```txt
+Buffer: <Buffer 48 65 6c 6c 6f 20 4e 6f 64 65 2e 6a 73>
+String: Hello Node.js
+```
+
+---
+
+## Buffer Length
+
+`buffer.length` gives the number of bytes stored in the Buffer.
+
+Code:
+
+```js
+const buffer = Buffer.from("Hello Node.js");
+
+console.log("Buffer:", buffer);
+console.log("String:", buffer.toString());
+console.log("Buffer length:", buffer.length);
+```
+
+Output:
+
+```txt
+Buffer: <Buffer 48 65 6c 6c 6f 20 4e 6f 64 65 2e 6a 73>
+String: Hello Node.js
+Buffer length: 13
+```
+
+For normal English text:
+
+```txt
+1 character usually = 1 byte
+```
+
+So:
+
+```txt
+Hello Node.js = 13 bytes
+```
+
+---
+
+## Create Empty Buffer
+
+Code:
+
+```js
+const buffer = Buffer.alloc(10);
+
+console.log(buffer);
+console.log("Buffer length:", buffer.length);
+```
+
+Output:
+
+```txt
+<Buffer 00 00 00 00 00 00 00 00 00 00>
+Buffer length: 10
+```
+
+Meaning:
+
+```txt
+Buffer.alloc(10)
+↓
+Creates 10 empty bytes
+```
+
+Each `00` means empty/default byte.
+
+---
+
+## Write Data into Buffer
+
+Code:
+
+```js
+const buffer = Buffer.alloc(10);
+
+buffer.write("Hello");
+
+console.log(buffer);
+console.log("String:", buffer.toString());
+console.log("Buffer length:", buffer.length);
+```
+
+Output:
+
+```txt
+<Buffer 48 65 6c 6c 6f 00 00 00 00 00>
+String: Hello
+Buffer length: 10
+```
+
+Meaning:
+
+```txt
+48 65 6c 6c 6f = Hello
+00 00 00 00 00 = empty bytes
+```
+
+---
+
+## Read Only Useful Bytes
+
+Sometimes Buffer has extra empty bytes.
+
+Code:
+
+```js
+const buffer = Buffer.alloc(10);
+
+buffer.write("Hello");
+
+console.log(buffer);
+console.log("Full string:", buffer.toString());
+console.log("Clean string:", buffer.toString("utf-8", 0, 5));
+console.log("Buffer length:", buffer.length);
+```
+
+Output:
+
+```txt
+<Buffer 48 65 6c 6c 6f 00 00 00 00 00>
+Full string: Hello
+Clean string: Hello
+Buffer length: 10
+```
+
+Meaning:
+
+```js
+buffer.toString("utf-8", 0, 5);
+```
+
+This reads bytes from index `0` to before index `5`.
+
+---
+
+## Create Buffer from Array
+
+Buffer can also be created from byte values.
+
+Code:
+
+```js
+const buffer = Buffer.from([72, 101, 108, 108, 111]);
+
+console.log(buffer);
+console.log(buffer.toString());
+```
+
+Output:
+
+```txt
+<Buffer 48 65 6c 6c 6f>
+Hello
+```
+
+Meaning:
+
+```txt
+72 101 108 108 111
+↓
+H e l l o
+```
+
+---
+
+## Buffer with File Reading
+
+When we read a file without `utf-8`, Node.js returns Buffer.
+
+Code:
+
+```js
+import fs from "fs";
+
+const data = fs.readFileSync("./files/notes.txt");
+
+console.log("Buffer data:", data);
+console.log("String data:", data.toString());
+```
+
+Output:
+
+```txt
+Buffer data: <Buffer 54 68 69 73 20 69 73 ...>
+String data: This is my first fs module note.
+```
+
+Meaning:
+
+```txt
+fs.readFileSync("./files/notes.txt")
+↓
+without utf-8
+↓
+returns Buffer
+```
+
+But:
+
+```txt
+fs.readFileSync("./files/notes.txt", "utf-8")
+↓
+with utf-8
+↓
+returns string
+```
+
+---
+
+## Write Buffer Data into File
+
+Code:
+
+```js
+import fs from "fs";
+
+const buffer = Buffer.from("This file is created using Buffer data.");
+
+fs.writeFileSync("./files/buffer-output.txt", buffer);
+
+console.log("File created successfully");
+
+const data = fs.readFileSync("./files/buffer-output.txt");
+
+console.log("Buffer data:", data);
+console.log("String data:", data.toString());
+```
+
+Output:
+
+```txt
+File created successfully
+Buffer data: <Buffer 54 68 69 73 20 66 69 6c 65 ...>
+String data: This file is created using Buffer data.
+```
+
+Flow:
+
+```txt
+Text
+↓
+Buffer.from()
+↓
+Buffer data
+↓
+fs.writeFileSync()
+↓
+File created
+```
+
+---
+
+## How Images, Audio, Video and PDF are Handled
+
+Image, audio, video, and PDF files are not normal text.
+
+Examples:
+
+```txt
+photo.png
+song.mp3
+video.mp4
+document.pdf
+```
+
+These files contain binary data.
+
+So Node.js reads them as Buffer.
+
+Example:
+
+```js
+import fs from "fs";
+
+const imageBuffer = fs.readFileSync("./files/photo.png");
+
+console.log(imageBuffer);
+console.log(imageBuffer.length);
+```
+
+Output looks like:
+
+```txt
+<Buffer 89 50 4e 47 0d 0a 1a 0a ...>
+245678
+```
+
+Here:
+
+```txt
+245678 = total bytes of image file
+```
+
+---
+
+## Should We Convert Image Buffer to String?
+
+Technically we can do this:
+
+```js
+console.log(imageBuffer.toString());
+```
+
+But we should not do this for images, audio, video, or PDFs.
+
+Because these files are not text files.
+
+So output will look unreadable.
+
+For binary files, we usually keep data as Buffer.
+
+---
+
+## Copy Image Using Buffer
+
+Code:
+
+```js
+import fs from "fs";
+
+const imageBuffer = fs.readFileSync("./files/photo.png");
+
+fs.writeFileSync("./files/photo-copy.png", imageBuffer);
+
+console.log("Image copied successfully");
+```
+
+Flow:
+
+```txt
+photo.png
+↓
+Read as Buffer
+↓
+Write same Buffer
+↓
+photo-copy.png
+```
+
+Node.js does not need to understand the image visually.
+
+It only reads and writes the bytes.
+
+---
+
+## Copy Audio Using Buffer
+
+Code:
+
+```js
+import fs from "fs";
+
+const audioBuffer = fs.readFileSync("./files/song.mp3");
+
+fs.writeFileSync("./files/song-copy.mp3", audioBuffer);
+
+console.log("Audio copied successfully");
+```
+
+---
+
+## Copy Video Using Buffer
+
+Code:
+
+```js
+import fs from "fs";
+
+const videoBuffer = fs.readFileSync("./files/video.mp4");
+
+fs.writeFileSync("./files/video-copy.mp4", videoBuffer);
+
+console.log("Video copied successfully");
+```
+
+Same concept:
+
+```txt
+File bytes
+↓
+Buffer
+↓
+Write bytes again
+```
+
+---
+
+## Buffer vs Stream
+
+For small files, Buffer is fine.
+
+Example:
+
+```txt
+Small image
+Small PDF
+Small text file
+```
+
+But for large files, Buffer can use too much memory.
+
+Example:
+
+```txt
+500 MB video
+↓
+readFileSync()
+↓
+Full 500 MB loaded into RAM
+```
+
+That is not good.
+
+For large files, Node.js uses Streams.
+
+Simple difference:
+
+```txt
+Buffer
+↓
+Loads full file into memory
+
+Stream
+↓
+Reads file in small chunks
+```
+
+---
+
+## Real Backend Upload Example
+
+When user uploads an image from frontend:
+
+```txt
+Frontend sends image
+↓
+Backend receives image
+↓
+Image data comes as Buffer
+↓
+Backend saves locally or uploads to cloud storage
+```
+
+Example idea:
+
+```js
+const imageBuffer = req.file.buffer;
+```
+
+Then backend can upload this Buffer to Cloudinary, S3, or save it locally.
+
+---
+
+## Real Use Cases of Buffer
+
+Buffer is useful for:
+
+```txt
+File upload
+Image upload
+PDF handling
+Audio files
+Video files
+Streams
+Network data
+API file response
+Cloud storage upload
+```
+
+---
+
+## Key Learning
+
+In Day 11, we learned:
+
+```txt
+Buffer is used to handle binary data
+Binary data means data stored in bytes
+Buffer can be created from string
+Buffer can be converted back to string
+buffer.length gives byte size
+Buffer.alloc creates fixed empty memory
+buffer.write writes data into Buffer
+Buffer can be created from byte array
+File reading without utf-8 returns Buffer
+File writing can accept Buffer
+Images, audio, video, and PDFs are handled as Buffer
+We should not convert binary files to string
+For small files Buffer is okay
+For large files Streams are better
+Buffer is important for uploads and file handling
+```
