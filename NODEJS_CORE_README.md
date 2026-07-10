@@ -4279,3 +4279,568 @@ process.uptime() shows running time
 process.memoryUsage() shows memory usage
 process.exit() stops the process
 ```
+
+# Day 10: Events and EventEmitter
+
+## Objective
+
+The objective of Day 10 is to understand events in Node.js and how to use the built-in `EventEmitter` class.
+
+Node.js is event-driven, so understanding events is important for learning how Node.js works internally.
+
+---
+
+## What are Events in Node.js?
+
+An event means something happened.
+
+Examples:
+
+```txt
+User logged in
+User registered
+File uploaded
+Email sent
+Order created
+Message received
+Database connected
+Server started
+```
+
+Simple meaning:
+
+```txt
+Event = Something happened
+```
+
+Example:
+
+```txt
+User registered
+↓
+Send welcome email
+```
+
+Here:
+
+```txt
+User registered
+↓
+Event
+
+Send welcome email
+↓
+Action after event
+```
+
+---
+
+## What is EventEmitter?
+
+`EventEmitter` is a built-in Node.js class used to create and handle custom events.
+
+It comes from the built-in `events` module.
+
+Import:
+
+```js
+import EventEmitter from "events";
+```
+
+Create emitter:
+
+```js
+const emitter = new EventEmitter();
+```
+
+---
+
+## First Event Example
+
+Code:
+
+```js
+import EventEmitter from "events";
+
+const emitter = new EventEmitter();
+
+emitter.on("greet", () => {
+  console.log("Hello from event");
+});
+
+emitter.emit("greet");
+```
+
+Output:
+
+```txt
+Hello from event
+```
+
+---
+
+## Meaning of on() and emit()
+
+```js
+emitter.on("greet", callback);
+```
+
+Meaning:
+
+```txt
+Listen for greet event
+```
+
+```js
+emitter.emit("greet");
+```
+
+Meaning:
+
+```txt
+Trigger greet event
+```
+
+Flow:
+
+```txt
+emitter.on("greet")
+↓
+Listener is registered
+
+emitter.emit("greet")
+↓
+Event is triggered
+
+Callback runs
+↓
+Output is printed
+```
+
+---
+
+## Passing Data with Event
+
+Events can also send data.
+
+Code:
+
+```js
+import EventEmitter from "events";
+
+const emitter = new EventEmitter();
+
+emitter.on("userRegistered", (userName) => {
+  console.log(`Welcome ${userName}`);
+});
+
+emitter.emit("userRegistered", "Lavesh");
+```
+
+Output:
+
+```txt
+Welcome Lavesh
+```
+
+---
+
+## How Data is Passed
+
+```js
+emitter.emit("userRegistered", "Lavesh");
+```
+
+Here, `"Lavesh"` is passed as data to the listener.
+
+Listener receives it here:
+
+```js
+emitter.on("userRegistered", (userName) => {
+  console.log(`Welcome ${userName}`);
+});
+```
+
+---
+
+## Passing Multiple Values
+
+Events can pass more than one value.
+
+Code:
+
+```js
+import EventEmitter from "events";
+
+const emitter = new EventEmitter();
+
+emitter.on("userRegistered", (name, email) => {
+  console.log("User registered");
+  console.log("Name:", name);
+  console.log("Email:", email);
+});
+
+emitter.emit("userRegistered", "Lavesh", "lavesh@example.com");
+```
+
+Output:
+
+```txt
+User registered
+Name: Lavesh
+Email: lavesh@example.com
+```
+
+---
+
+## Passing Object Data
+
+In real projects, it is better to pass data as an object.
+
+Code:
+
+```js
+import EventEmitter from "events";
+
+const emitter = new EventEmitter();
+
+emitter.on("userRegistered", (user) => {
+  console.log("User registered");
+  console.log("Name:", user.name);
+  console.log("Email:", user.email);
+});
+
+emitter.emit("userRegistered", {
+  name: "Lavesh",
+  email: "lavesh@example.com",
+});
+```
+
+Output:
+
+```txt
+User registered
+Name: Lavesh
+Email: lavesh@example.com
+```
+
+---
+
+## Why Object Data is Better
+
+Passing an object is cleaner because:
+
+```txt
+All related data stays together
+Easy to add more fields later
+Easy to read
+Less confusion with argument order
+```
+
+Example:
+
+```js
+emitter.emit("userRegistered", {
+  name: "Lavesh",
+  email: "lavesh@example.com",
+});
+```
+
+---
+
+## Multiple Listeners for Same Event
+
+One event can have multiple listeners.
+
+Example:
+
+```txt
+userRegistered event
+↓
+Listener 1: Send welcome email
+Listener 2: Save activity log
+Listener 3: Notify admin
+```
+
+Code:
+
+```js
+import EventEmitter from "events";
+
+const emitter = new EventEmitter();
+
+emitter.on("userRegistered", (user) => {
+  console.log("Send welcome email to:", user.email);
+});
+
+emitter.on("userRegistered", (user) => {
+  console.log("Save activity log for:", user.name);
+});
+
+emitter.emit("userRegistered", {
+  name: "Lavesh",
+  email: "lavesh@example.com",
+});
+```
+
+Output:
+
+```txt
+Send welcome email to: lavesh@example.com
+Save activity log for: Lavesh
+```
+
+---
+
+## once() Listener
+
+Sometimes we want a listener to run only one time.
+
+For that, Node.js provides:
+
+```js
+emitter.once();
+```
+
+Code:
+
+```js
+import EventEmitter from "events";
+
+const emitter = new EventEmitter();
+
+emitter.once("serverStarted", () => {
+  console.log("Server started event handled only once");
+});
+
+emitter.emit("serverStarted");
+emitter.emit("serverStarted");
+emitter.emit("serverStarted");
+```
+
+Output:
+
+```txt
+Server started event handled only once
+```
+
+Even though the event was emitted three times, the listener ran only once.
+
+---
+
+## Removing a Listener
+
+Sometimes we need to stop listening to an event.
+
+For that, we can use:
+
+```js
+emitter.off();
+```
+
+or:
+
+```js
+emitter.removeListener();
+```
+
+---
+
+## off() Example
+
+Code:
+
+```js
+import EventEmitter from "events";
+
+const emitter = new EventEmitter();
+
+const sendEmail = (user) => {
+  console.log("Send email to:", user.email);
+};
+
+emitter.on("userRegistered", sendEmail);
+
+emitter.emit("userRegistered", {
+  name: "Lavesh",
+  email: "lavesh@example.com",
+});
+
+emitter.off("userRegistered", sendEmail);
+
+emitter.emit("userRegistered", {
+  name: "Amit",
+  email: "amit@example.com",
+});
+```
+
+Output:
+
+```txt
+Send email to: lavesh@example.com
+```
+
+The second event does not print anything because the listener was removed.
+
+---
+
+## Important Rule for Removing Listener
+
+To remove a listener, the listener function should have a reference.
+
+Correct:
+
+```js
+const sendEmail = (user) => {
+  console.log("Send email to:", user.email);
+};
+
+emitter.on("userRegistered", sendEmail);
+
+emitter.off("userRegistered", sendEmail);
+```
+
+This works because `sendEmail` has a function reference.
+
+---
+
+## Real Backend-style Example
+
+Code:
+
+```js
+import EventEmitter from "events";
+
+const emitter = new EventEmitter();
+
+const sendWelcomeEmail = (user) => {
+  console.log(`Welcome email sent to ${user.email}`);
+};
+
+const saveActivityLog = (user) => {
+  console.log(`Activity log saved for ${user.name}`);
+};
+
+emitter.on("userRegistered", sendWelcomeEmail);
+emitter.on("userRegistered", saveActivityLog);
+
+const registerUser = (user) => {
+  console.log("User saved in database:", user.name);
+
+  emitter.emit("userRegistered", user);
+};
+
+registerUser({
+  name: "Lavesh",
+  email: "lavesh@example.com",
+});
+```
+
+Output:
+
+```txt
+User saved in database: Lavesh
+Welcome email sent to lavesh@example.com
+Activity log saved for Lavesh
+```
+
+---
+
+## Real Backend Flow
+
+```txt
+registerUser()
+↓
+User saved in database
+↓
+userRegistered event emitted
+↓
+Welcome email listener runs
+↓
+Activity log listener runs
+```
+
+This separates the main work from side actions.
+
+---
+
+## Why EventEmitter is Useful
+
+EventEmitter helps us separate logic.
+
+Example:
+
+```txt
+Main action
+↓
+User registration
+
+Side actions
+↓
+Send email
+Save log
+Notify admin
+```
+
+Instead of putting everything inside one function, we can emit an event and let listeners handle side work.
+
+This keeps code cleaner and more maintainable.
+
+---
+
+## EventEmitter Methods Learned
+
+```txt
+emitter.on()
+↓
+Registers a listener for an event
+
+emitter.emit()
+↓
+Triggers an event
+
+emitter.once()
+↓
+Registers a listener that runs only once
+
+emitter.off()
+↓
+Removes a listener
+```
+
+---
+
+## Simple Event Flow
+
+```txt
+Create EventEmitter
+↓
+Register listener using on()
+↓
+Trigger event using emit()
+↓
+Listener callback runs
+```
+
+---
+
+## Key Learning
+
+In Day 10, we learned:
+
+```txt
+Node.js is event-driven
+An event means something happened
+EventEmitter is used to create and handle custom events
+events is a built-in Node.js module
+emitter.on listens for an event
+emitter.emit triggers an event
+Events can pass data
+Events can pass multiple values
+Passing object data is cleaner
+One event can have multiple listeners
+emitter.once runs listener only one time
+emitter.off removes a listener
+EventEmitter helps separate main actions from side actions
+Event-driven code is useful in backend applications
+```
