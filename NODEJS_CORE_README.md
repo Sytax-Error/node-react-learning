@@ -5421,3 +5421,724 @@ For small files Buffer is okay
 For large files Streams are better
 Buffer is important for uploads and file handling
 ```
+
+# Day 12: Streams in Node.js
+
+## Objective
+
+The objective of Day 12 is to understand Streams in Node.js.
+
+Streams are used to handle large data piece by piece instead of loading the full data into memory at once.
+
+Streams are important for:
+
+```txt
+Large files
+Video files
+Audio files
+File upload
+File download
+API response
+Network data
+```
+
+---
+
+## What is Stream?
+
+A Stream is used to process data in small parts called chunks.
+
+Simple meaning:
+
+```txt
+Stream = Process data piece by piece
+```
+
+Example:
+
+```txt
+Large video file = 500 MB
+```
+
+Using Buffer:
+
+```txt
+Full 500 MB loads into memory at once
+```
+
+Using Stream:
+
+```txt
+Small chunks load one by one
+```
+
+---
+
+## Buffer vs Stream
+
+```txt
+Buffer
+↓
+Loads full data into memory
+
+Stream
+↓
+Loads data in small chunks
+```
+
+---
+
+## Real-life Example
+
+Watching a YouTube video:
+
+```txt
+You do not wait for the full video to download
+↓
+Video plays chunk by chunk
+↓
+This is streaming
+```
+
+---
+
+## Create Large File for Practice
+
+Code:
+
+```js
+import fs from "fs";
+
+const data = "This is Node.js stream practice.\n";
+
+for (let i = 1; i <= 10000; i++) {
+  fs.appendFileSync("./files/large-file.txt", data);
+}
+
+console.log("Large file created successfully");
+```
+
+Output:
+
+```txt
+Large file created successfully
+```
+
+This creates:
+
+```txt
+nodejs-core/files/large-file.txt
+```
+
+---
+
+## Reading File Without Stream
+
+Code:
+
+```js
+import fs from "fs";
+
+console.log("Start reading file");
+
+const data = fs.readFileSync("./files/large-file.txt", "utf-8");
+
+console.log(data);
+
+console.log("File reading completed");
+```
+
+Flow:
+
+```txt
+large-file.txt
+↓
+Full file loads into memory
+↓
+Then output prints
+```
+
+This is okay for small files, but not good for very large files.
+
+---
+
+## Read File Using Stream
+
+Code:
+
+```js
+import fs from "fs";
+
+const readStream = fs.createReadStream("./files/large-file.txt", "utf-8");
+
+readStream.on("data", (chunk) => {
+  console.log("New chunk received:");
+  console.log(chunk);
+});
+
+readStream.on("end", () => {
+  console.log("File reading completed");
+});
+```
+
+Output looks like:
+
+```txt
+New chunk received:
+This is Node.js stream practice.
+This is Node.js stream practice.
+...
+
+New chunk received:
+This is Node.js stream practice.
+This is Node.js stream practice.
+...
+
+File reading completed
+```
+
+---
+
+## Meaning of createReadStream()
+
+```js
+fs.createReadStream("./files/large-file.txt", "utf-8");
+```
+
+This creates a read stream.
+
+```js
+readStream.on("data", callback);
+```
+
+This runs every time a chunk is received.
+
+```js
+readStream.on("end", callback);
+```
+
+This runs when full file reading is completed.
+
+Flow:
+
+```txt
+large-file.txt
+↓
+chunk 1
+↓
+chunk 2
+↓
+chunk 3
+↓
+end
+```
+
+---
+
+## Check Chunk Size
+
+Code:
+
+```js
+import fs from "fs";
+
+const readStream = fs.createReadStream("./files/large-file.txt", "utf-8");
+
+readStream.on("data", (chunk) => {
+  console.log("New chunk received");
+  console.log("Chunk size:", chunk.length);
+});
+
+readStream.on("end", () => {
+  console.log("File reading completed");
+});
+```
+
+Output looks like:
+
+```txt
+New chunk received
+Chunk size: 65536
+
+New chunk received
+Chunk size: 65536
+
+New chunk received
+Chunk size: 18888
+
+File reading completed
+```
+
+The last chunk size can be different.
+
+By default, file read stream commonly reads around:
+
+```txt
+64 KB = 65536 bytes
+```
+
+---
+
+## Control Chunk Size
+
+We can control chunk size using:
+
+```js
+highWaterMark
+```
+
+Code:
+
+```js
+import fs from "fs";
+
+const readStream = fs.createReadStream("./files/large-file.txt", {
+  encoding: "utf-8",
+  highWaterMark: 1024,
+});
+
+readStream.on("data", (chunk) => {
+  console.log("New chunk received");
+  console.log("Chunk size:", chunk.length);
+});
+
+readStream.on("end", () => {
+  console.log("File reading completed");
+});
+```
+
+Output:
+
+```txt
+New chunk received
+Chunk size: 1024
+
+New chunk received
+Chunk size: 1024
+
+New chunk received
+Chunk size: 1024
+
+...
+File reading completed
+```
+
+Meaning:
+
+```txt
+highWaterMark: 1024
+↓
+Read around 1024 bytes per chunk
+```
+
+---
+
+## Write File Using Stream
+
+Code:
+
+```js
+import fs from "fs";
+
+const writeStream = fs.createWriteStream("./files/write-stream-output.txt");
+
+writeStream.write("This is first line written using stream.\n");
+writeStream.write("This is second line written using stream.\n");
+writeStream.write("This is third line written using stream.\n");
+
+writeStream.end();
+
+writeStream.on("finish", () => {
+  console.log("File writing completed");
+});
+```
+
+Output:
+
+```txt
+File writing completed
+```
+
+This creates:
+
+```txt
+nodejs-core/files/write-stream-output.txt
+```
+
+---
+
+## Meaning of createWriteStream()
+
+```js
+fs.createWriteStream("./files/write-stream-output.txt");
+```
+
+This creates a stream for writing data.
+
+```js
+writeStream.write();
+```
+
+This writes data chunk by chunk.
+
+```js
+writeStream.end();
+```
+
+This means writing is finished.
+
+```js
+writeStream.on("finish");
+```
+
+This runs after writing is completed.
+
+Flow:
+
+```txt
+createWriteStream()
+↓
+write() first chunk
+↓
+write() second chunk
+↓
+write() third chunk
+↓
+end()
+↓
+finish event
+```
+
+---
+
+## Copy File Using Read Stream and Write Stream
+
+Code:
+
+```js
+import fs from "fs";
+
+const readStream = fs.createReadStream("./files/large-file.txt", "utf-8");
+const writeStream = fs.createWriteStream("./files/large-file-copy.txt");
+
+readStream.on("data", (chunk) => {
+  writeStream.write(chunk);
+});
+
+readStream.on("end", () => {
+  writeStream.end();
+  console.log("File copied successfully");
+});
+```
+
+Output:
+
+```txt
+File copied successfully
+```
+
+Flow:
+
+```txt
+large-file.txt
+↓
+read chunk
+↓
+write chunk
+↓
+read next chunk
+↓
+write next chunk
+↓
+large-file-copy.txt created
+```
+
+This avoids loading the full file into memory at once.
+
+---
+
+## Copy File Using pipe()
+
+`pipe()` is the easiest way to connect a read stream with a write stream.
+
+Code:
+
+```js
+import fs from "fs";
+
+const readStream = fs.createReadStream("./files/large-file.txt");
+const writeStream = fs.createWriteStream("./files/large-file-pipe-copy.txt");
+
+readStream.pipe(writeStream);
+
+writeStream.on("finish", () => {
+  console.log("File copied successfully using pipe");
+});
+```
+
+Output:
+
+```txt
+File copied successfully using pipe
+```
+
+Meaning:
+
+```js
+readStream.pipe(writeStream);
+```
+
+Flow:
+
+```txt
+readStream
+↓
+pipe()
+↓
+writeStream
+```
+
+This code:
+
+```js
+readStream.on("data", (chunk) => {
+  writeStream.write(chunk);
+});
+```
+
+can be replaced with:
+
+```js
+readStream.pipe(writeStream);
+```
+
+---
+
+## Handle Stream Error
+
+In real projects, we should handle stream errors.
+
+Possible errors:
+
+```txt
+File not found
+Permission issue
+Invalid file path
+Disk write issue
+```
+
+Code:
+
+```js
+import fs from "fs";
+
+const readStream = fs.createReadStream("./files/large-file.txt");
+const writeStream = fs.createWriteStream("./files/large-file-error-copy.txt");
+
+readStream.pipe(writeStream);
+
+readStream.on("error", (error) => {
+  console.log("Read stream error:", error.message);
+});
+
+writeStream.on("error", (error) => {
+  console.log("Write stream error:", error.message);
+});
+
+writeStream.on("finish", () => {
+  console.log("File copied successfully");
+});
+```
+
+Output:
+
+```txt
+File copied successfully
+```
+
+---
+
+## Test Error Case
+
+Change the file path:
+
+```js
+const readStream = fs.createReadStream("./files/wrong-file.txt");
+```
+
+Run again.
+
+Output:
+
+```txt
+Read stream error: ENOENT: no such file or directory...
+```
+
+Meaning:
+
+```js
+readStream.on("error", callback);
+```
+
+This handles reading errors.
+
+```js
+writeStream.on("error", callback);
+```
+
+This handles writing errors.
+
+---
+
+## Important Stream Events
+
+```txt
+data
+↓
+Runs when a chunk is received
+
+end
+↓
+Runs when reading is completed
+
+finish
+↓
+Runs when writing is completed
+
+error
+↓
+Runs when something goes wrong
+```
+
+---
+
+## Real Use with Image, Audio, Video, PDF
+
+The same stream concept works for:
+
+```txt
+photo.png
+song.mp3
+video.mp4
+document.pdf
+```
+
+Example flow:
+
+```txt
+video.mp4
+↓
+Read small chunk
+↓
+Write/send small chunk
+↓
+Read next chunk
+↓
+Write/send next chunk
+```
+
+For large files, this is better than Buffer.
+
+---
+
+## Copy Image Using Stream
+
+Code:
+
+```js
+import fs from "fs";
+
+const readStream = fs.createReadStream("./files/photo.png");
+const writeStream = fs.createWriteStream("./files/photo-copy.png");
+
+readStream.pipe(writeStream);
+
+writeStream.on("finish", () => {
+  console.log("Image copied successfully");
+});
+
+readStream.on("error", (error) => {
+  console.log("Read error:", error.message);
+});
+
+writeStream.on("error", (error) => {
+  console.log("Write error:", error.message);
+});
+```
+
+Same logic works for:
+
+```txt
+song.mp3
+video.mp4
+document.pdf
+```
+
+---
+
+## Buffer vs Stream Final Difference
+
+```txt
+Buffer
+↓
+Loads full file into memory
+
+Stream
+↓
+Handles file chunk by chunk
+```
+
+For small files:
+
+```txt
+Buffer is okay
+```
+
+For large files:
+
+```txt
+Stream is better
+```
+
+---
+
+## Real Backend Use Cases
+
+Streams are used in backend for:
+
+```txt
+Large file upload
+Large file download
+Video streaming
+Audio streaming
+PDF response
+Backup files
+Reading logs
+Network data transfer
+Cloud storage upload
+```
+
+---
+
+## Key Learning
+
+In Day 12, we learned:
+
+```txt
+Stream processes data piece by piece
+Stream uses chunks
+Buffer loads full data into memory
+Stream avoids loading full data at once
+createReadStream reads file in chunks
+data event runs when chunk is received
+end event runs when reading is completed
+createWriteStream writes data in chunks
+write() writes data to stream
+end() closes writing
+finish event runs when writing is completed
+pipe() connects read stream to write stream
+error event handles stream errors
+highWaterMark controls chunk size
+Streams are useful for large files
+Streams are better for video, audio, uploads, downloads, and API responses
+```
